@@ -1,7 +1,12 @@
-//! Windows capture: WH_KEYBOARD_LL / WH_MOUSE_LL hooks plus a Raw Input sink,
-//! all on one dedicated thread with its own message loop.
+//! Windows capture on one dedicated thread with its own message loop.
+//!
+//! Only one method is active at a time. Windows stops calling a process's
+//! low-level keyboard hook once that same process registers for raw keyboard
+//! input, so the two cannot run side by side: hook mode installs the hooks and
+//! removes the Raw Input registration, raw mode does the reverse.
 
-use super::{on_input, ForegroundPayload, Source};
+use super::{current_source, on_input, ForegroundPayload, Source};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::ffi::c_void;
 use std::mem::{size_of, zeroed};
 use std::ptr::{null, null_mut};
@@ -10,7 +15,7 @@ use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, HWND, LPARAM, LRESULT,
 use windows_sys::Win32::Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY};
 use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::System::Threading::{
-    GetCurrentProcess, OpenProcess, OpenProcessToken, QueryFullProcessImageNameW,
+    GetCurrentProcess, GetCurrentThreadId, OpenProcess, OpenProcessToken, QueryFullProcessImageNameW,
     PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows_sys::Win32::UI::Input::{
@@ -19,8 +24,8 @@ use windows_sys::Win32::UI::Input::{
 use windows_sys::Win32::UI::Shell::ShellExecuteW;
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetForegroundWindow,
-    GetMessageW, GetWindowThreadProcessId, RegisterClassW, SetWindowsHookExW, TranslateMessage,
-    KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WNDCLASSW,
+    GetMessageW, GetWindowThreadProcessId, PostThreadMessageW, RegisterClassW, SetWindowsHookExW,
+    TranslateMessage, UnhookWindowsHookEx, HHOOK, KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WNDCLASSW,
 };
 
 // Numeric values from the Windows SDK headers, kept local so the build does
@@ -39,6 +44,11 @@ const WM_XBUTTONUP: u32 = 0x020C;
 const HWND_MESSAGE: isize = -3;
 const RID_INPUT: u32 = 0x1000_0003;
 const RIDEV_INPUTSINK: u32 = 0x0000_0100;
+const RIDEV_REMOVE: u32 = 0x0000_0001;
+/// Private thread message: re-read the capture method and apply it.
+const WM_APP_RECONFIGURE: u32 = 0x8000 + 1;
+
+static INPUT_THREAD: AtomicU32 = AtomicU32::new(0);
 const RIM_TYPEMOUSE: u32 = 0;
 const RIM_TYPEKEYBOARD: u32 = 1;
 const RI_KEY_BREAK: u16 = 1;
@@ -154,13 +164,80 @@ unsafe extern "system" fn wnd_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam:
     DefWindowProcW(hwnd, msg, wparam, lparam)
 }
 
+struct Capture {
+    hinst: *mut c_void,
+    hwnd: HWND,
+    keyboard_hook: HHOOK,
+    mouse_hook: HHOOK,
+}
+
+impl Capture {
+    unsafe fn set_raw(&self, on: bool) {
+        if self.hwnd.is_null() {
+            return;
+        }
+        // Usage page 1: generic desktop. Usage 6 keyboard, 2 mouse.
+        // INPUTSINK delivers input while another window has focus.
+        // Removal requires a null target window.
+        let flags = if on { RIDEV_INPUTSINK } else { RIDEV_REMOVE };
+        let target = if on { self.hwnd } else { null_mut() };
+        let devices = [
+            RAWINPUTDEVICE { usUsagePage: 1, usUsage: 6, dwFlags: flags as _, hwndTarget: target },
+            RAWINPUTDEVICE { usUsagePage: 1, usUsage: 2, dwFlags: flags as _, hwndTarget: target },
+        ];
+        RegisterRawInputDevices(devices.as_ptr(), 2, size_of::<RAWINPUTDEVICE>() as u32);
+    }
+
+    unsafe fn set_hooks(&mut self, on: bool) {
+        if on {
+            // Low-level hooks are called on this thread through its message loop.
+            if self.keyboard_hook.is_null() {
+                self.keyboard_hook =
+                    SetWindowsHookExW(WH_KEYBOARD_LL as _, Some(keyboard_proc), self.hinst as _, 0);
+            }
+            if self.mouse_hook.is_null() {
+                self.mouse_hook =
+                    SetWindowsHookExW(WH_MOUSE_LL as _, Some(mouse_proc), self.hinst as _, 0);
+            }
+        } else {
+            if !self.keyboard_hook.is_null() {
+                UnhookWindowsHookEx(self.keyboard_hook);
+                self.keyboard_hook = null_mut();
+            }
+            if !self.mouse_hook.is_null() {
+                UnhookWindowsHookEx(self.mouse_hook);
+                self.mouse_hook = null_mut();
+            }
+        }
+    }
+
+    unsafe fn apply(&mut self, source: Source) {
+        match source {
+            Source::Hook => {
+                self.set_raw(false);
+                self.set_hooks(true);
+            }
+            Source::Raw => {
+                self.set_hooks(false);
+                self.set_raw(true);
+            }
+        }
+    }
+}
+
+/// Ask the capture thread to switch to the currently selected method.
+pub fn reconfigure() {
+    let thread = INPUT_THREAD.load(Ordering::SeqCst);
+    if thread != 0 {
+        unsafe {
+            PostThreadMessageW(thread, WM_APP_RECONFIGURE, 0, 0);
+        }
+    }
+}
+
 pub fn start() {
     std::thread::spawn(|| unsafe {
         let hinst = GetModuleHandleW(null());
-
-        // Low-level hooks are called on this thread through its message loop.
-        SetWindowsHookExW(WH_KEYBOARD_LL as _, Some(keyboard_proc), hinst as _, 0);
-        SetWindowsHookExW(WH_MOUSE_LL as _, Some(mouse_proc), hinst as _, 0);
 
         // Raw Input needs a window to deliver to; a message-only one is enough.
         let class_name = wide("VoiceInputSink");
@@ -183,18 +260,25 @@ pub fn start() {
             hinst as _,
             null(),
         );
-        if !hwnd.is_null() {
-            // Usage page 1: generic desktop. Usage 6 keyboard, 2 mouse.
-            // INPUTSINK delivers input while another window has focus.
-            let devices = [
-                RAWINPUTDEVICE { usUsagePage: 1, usUsage: 6, dwFlags: RIDEV_INPUTSINK as _, hwndTarget: hwnd },
-                RAWINPUTDEVICE { usUsagePage: 1, usUsage: 2, dwFlags: RIDEV_INPUTSINK as _, hwndTarget: hwnd },
-            ];
-            RegisterRawInputDevices(devices.as_ptr(), 2, size_of::<RAWINPUTDEVICE>() as u32);
-        }
 
+        let mut capture = Capture {
+            hinst: hinst as *mut c_void,
+            hwnd,
+            keyboard_hook: null_mut(),
+            mouse_hook: null_mut(),
+        };
+
+        // Creating the message queue before publishing the thread id means a
+        // reconfigure request posted from now on is never lost.
         let mut msg: MSG = zeroed();
+        INPUT_THREAD.store(GetCurrentThreadId(), Ordering::SeqCst);
+        capture.apply(current_source());
+
         while GetMessageW(&mut msg, null_mut(), 0, 0) > 0 {
+            if msg.hwnd.is_null() && msg.message == WM_APP_RECONFIGURE {
+                capture.apply(current_source());
+                continue;
+            }
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }

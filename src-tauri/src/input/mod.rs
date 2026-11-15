@@ -1,7 +1,7 @@
 //! System-wide push-to-talk input.
 //!
-//! Two capture methods run side by side so they can be compared in the game:
-//! a low-level keyboard/mouse hook and Raw Input. Both only observe; neither
+//! Two capture methods can be compared in the game, one at a time: a
+//! low-level keyboard/mouse hook and Raw Input. Both only observe; neither
 //! swallows a key, so the game always receives it too.
 //!
 //! Privacy: nothing about a key leaves this module unless it is bound to a
@@ -147,7 +147,17 @@ pub fn set_bindings(bindings: Vec<Binding>) {
 pub fn set_source(source: Source) {
     if let Ok(mut st) = state().lock() {
         st.source = source;
+        // A key held across the switch would otherwise look stuck down.
+        st.pressed_hook.clear();
+        st.pressed_raw.clear();
     }
+    #[cfg(windows)]
+    win::reconfigure();
+}
+
+#[allow(dead_code)]
+pub(crate) fn current_source() -> Source {
+    state().lock().map(|st| st.source).unwrap_or(Source::Hook)
 }
 
 pub fn capture_next() {

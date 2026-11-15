@@ -180,7 +180,14 @@ export default function App() {
                   <td>{n?.listeners ?? 0}</td>
                   <td>{n?.live ? <b>YOU </b> : null}{n?.speakers.join(", ")}</td>
                   <td>
-                    <button onClick={() => bind(id)} disabled={capturing !== null}>
+                    <button
+                      onClick={(e) => {
+                        // Drop focus so a bound Space or Enter does not click this button again.
+                        e.currentTarget.blur();
+                        void bind(id);
+                      }}
+                      disabled={capturing !== null}
+                    >
                       {capturing === id ? "Press a key or mouse button…" : b ? keyLabel(b.code) : "Bind"}
                     </button>
                   </td>
@@ -218,8 +225,8 @@ export default function App() {
                 Key/button transitions seen: hook {diag.hook} · raw {diag.raw}
               </p>
               <p className="muted">
-                Both counters should climb while you play. If one stays flat with the game in front, that method is
-                blocked there.
+Only the selected method counts. Its number should climb as you press keys with the game in front; if
+                it stays flat, that method is blocked there, so try the other.
               </p>
             </>
           ) : (
