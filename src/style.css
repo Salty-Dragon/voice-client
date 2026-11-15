@@ -1,0 +1,31 @@
+:root {
+  --bg-0: #0b0c0f; --bg-1: #12141a; --bg-2: #1a1d25; --line: #2a2e38;
+  --gold: #c8a45a; --gold-bright: #e6c77a; --text: #e8e4da; --muted: #9a968c;
+  --party: #5fd35f; --clan: #8c86ff; --command: #e6c77a; --broadcast: #e2553f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-0); color: var(--text); font: 14px/1.5 Inter, "Segoe UI", system-ui, sans-serif; }
+main { max-width: 920px; margin: 0 auto; padding: 16px; }
+main.join { max-width: 360px; padding-top: 12vh; display: grid; gap: 12px; }
+h1 { margin: 0; color: var(--gold-bright); letter-spacing: 0.08em; text-transform: uppercase; font-size: 22px; }
+h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+section { background: var(--bg-1); border: 1px solid var(--line); border-radius: 2px; padding: 12px; margin-bottom: 12px; }
+section.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+label { display: grid; gap: 4px; color: var(--muted); }
+label.inline { display: inline; color: var(--text); }
+input:not([type]), input[type="password"] { background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px; color: var(--text); padding: 8px; font: inherit; }
+button { background: var(--bg-2); border: 1px solid var(--gold); border-radius: 2px; color: var(--gold-bright); padding: 6px 12px; font: inherit; cursor: pointer; }
+button:disabled { opacity: 0.5; cursor: default; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 500; }
+td.net { font-weight: 600; }
+tr.party td.net { color: var(--party); } tr.clan td.net { color: var(--clan); }
+tr.command td.net { color: var(--command); } tr.broadcast td.net { color: var(--broadcast); }
+tr.live { background: var(--bg-2); }
+.ok { color: var(--party); } .bad, .error { color: var(--broadcast); }
+.muted { color: var(--muted); margin: 4px 0; }
+.mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+.warn { background: #3a1712; border: 1px solid var(--broadcast); border-radius: 2px; padding: 12px; margin-bottom: 12px; display: grid; gap: 8px; }
+.log { background: var(--bg-0); border: 1px solid var(--line); padding: 8px; height: 220px; overflow: auto; font-size: 12px; margin: 8px 0 0; white-space: pre-wrap; }
