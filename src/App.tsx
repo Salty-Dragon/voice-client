@@ -50,7 +50,7 @@ export default function App() {
   const [fg, setFg] = useState<Foreground | null>(null);
   const [alwaysAdmin, setAlwaysAdmin] = useState<boolean>(() => load("alwaysAdmin", false));
   const triedElevate = useRef(false);
-  const [diag, setDiag] = useState<InputDiag>({ hook: 0, raw: 0 });
+  const [diag, setDiag] = useState<InputDiag>({ hook: 0, raw: 0, poll: 0 });
   const [samples, setSamples] = useState<LatencySample[]>([]);
   const [log, setLog] = useState<string[]>([]);
 
@@ -127,7 +127,6 @@ export default function App() {
     setBindings((bs) => [...bs.filter((b) => b.net !== net), { net, code }]);
   }
 
-  const blocked = !!fg && !fg.selfElevated && fg.elevated !== false;
   const withAudio = samples.filter((s) => s.audioMs !== null).map((s) => s.audioMs as number);
 
   if (!joined) {
@@ -162,14 +161,6 @@ export default function App() {
 
   return (
     <main>
-      {blocked && (
-        <div className="warn">
-          <strong>{fg!.exe || "The window in front"} is running as administrator.</strong> Windows hides key presses
-          from this app while it has focus, so push-to-talk will not fire.
-          <button onClick={() => inputRef.current?.restartAsAdmin()}>Restart as administrator</button>
-        </div>
-      )}
-
       <section>
         <h2>Nets</h2>
         <table>
@@ -242,10 +233,13 @@ export default function App() {
                 </label>{" "}
                 <label className="inline">
                   <input type="radio" checked={source === "raw"} onChange={() => setSource("raw")} /> Raw Input
+                </label>{" "}
+                <label className="inline">
+                  <input type="radio" checked={source === "poll"} onChange={() => setSource("poll")} /> Polling
                 </label>
               </p>
               <p className="mono">
-                Key/button transitions seen: hook {diag.hook} · raw {diag.raw}
+                Key/button transitions seen: hook {diag.hook} · raw {diag.raw} · polling {diag.poll}
               </p>
               <p className="muted">
 Only the selected method counts. Its number should climb as you press keys with the game in front; if

@@ -18,6 +18,7 @@ use windows_sys::Win32::System::Threading::{
     GetCurrentProcess, GetCurrentThreadId, OpenProcess, OpenProcessToken, QueryFullProcessImageNameW,
     PROCESS_QUERY_LIMITED_INFORMATION,
 };
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
 use windows_sys::Win32::UI::Input::{
     GetRawInputData, RegisterRawInputDevices, HRAWINPUT, RAWINPUT, RAWINPUTDEVICE, RAWINPUTHEADER,
 };
@@ -221,6 +222,11 @@ impl Capture {
                 self.set_hooks(false);
                 self.set_raw(true);
             }
+            // Polling needs neither; the poll thread does the work.
+            Source::Poll => {
+                self.set_hooks(false);
+                self.set_raw(false);
+            }
         }
     }
 }
@@ -235,7 +241,35 @@ pub fn reconfigure() {
     }
 }
 
+/// Polling: ask Windows for the current state of every key a few hundred
+/// times a second. Slower to notice a press than the other two methods (up to
+/// one interval), but it registers nothing with the system.
+fn poll_loop() {
+    let mut held = [false; 256];
+    loop {
+        std::thread::sleep(std::time::Duration::from_millis(4));
+        if current_source() != Source::Poll {
+            held = [false; 256];
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            continue;
+        }
+        // Skips left/right mouse buttons and the generic Shift/Ctrl/Alt codes,
+        // which duplicate the left/right ones reported further up.
+        for vk in 0x04u32..0xFF {
+            if vk == VK_SHIFT || vk == VK_CONTROL || vk == VK_MENU {
+                continue;
+            }
+            let down = unsafe { GetAsyncKeyState(vk as i32) } < 0;
+            if down != held[vk as usize] {
+                held[vk as usize] = down;
+                on_input(Source::Poll, vk, down);
+            }
+        }
+    }
+}
+
 pub fn start() {
+    std::thread::spawn(poll_loop);
     std::thread::spawn(|| unsafe {
         let hinst = GetModuleHandleW(null());
 

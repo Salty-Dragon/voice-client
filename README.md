@@ -12,7 +12,7 @@ This is the **Phase 0 spike**: throwaway code that answers a few yes/no question
 
 ## Key capture and privacy
 
-The app installs a low-level keyboard and mouse hook and a Raw Input listener. Only keys you have bound to a net are ever passed on, plus the single key you press while binding. Nothing is logged or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
+The app installs a low-level keyboard and mouse hook or a Raw Input listener, or polls key state, depending on the method chosen. Only keys you have bound to a net are ever passed on, plus the single key you press while binding. Nothing is logged or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
 
 ## Test checklist
 
@@ -20,8 +20,8 @@ Install the latest build from [Releases](../../releases). It is unsigned, so Win
 
 1. Join, then bind a key to each net. Bind at least one mouse side button.
 2. **Game running normally.** With the game in front, hold each key and speak. Check on a second machine that the right net lights up, and that both capture counters climb.
-3. **Game running as administrator.** The app should show a red warning naming the game. Click **Restart as administrator** and repeat step 2.
-4. Switch the method between **Low-level hook** and **Raw Input** and repeat step 2.
+3. **Game running as administrator.** Tick **Always start as administrator**, restart the app and repeat step 2.
+4. Switch the method between **Low-level hook**, **Raw Input** and **Polling** and repeat step 2. Try **Polling** with the app running as a normal user too.
 5. **Latency.** Start talking, then press a key, twenty times or so. Note the "hook → audio leaving" median and max. Target: under 150 ms.
 6. **Reconnect.** Disable your network adapter for 10 seconds and re-enable it. Wait for the "all 4 rooms recovered" line, then use **Copy log**.
 

@@ -7,7 +7,7 @@ import type { NetId } from "./engine";
 import { mouseButtonToVk } from "./keys";
 
 export type Binding = { net: NetId; code: number };
-export type InputSource = "hook" | "raw";
+export type InputSource = "hook" | "raw" | "poll";
 
 export type PttEvent = { net: NetId; down: boolean; /** epoch ms at capture */ t: number };
 export type Foreground = {
@@ -16,7 +16,7 @@ export type Foreground = {
   elevated: boolean | null;
   exe: string;
 };
-export type InputDiag = { hook: number; raw: number };
+export type InputDiag = { hook: number; raw: number; poll: number };
 
 export interface InputBackend {
   readonly desktop: boolean;
