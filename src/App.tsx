@@ -48,6 +48,8 @@ export default function App() {
   const [capturing, setCapturing] = useState<NetId | null>(null);
   const [source, setSource] = useState<InputSource>(() => load("source", "hook"));
   const [fg, setFg] = useState<Foreground | null>(null);
+  const [alwaysAdmin, setAlwaysAdmin] = useState<boolean>(() => load("alwaysAdmin", false));
+  const triedElevate = useRef(false);
   const [diag, setDiag] = useState<InputDiag>({ hook: 0, raw: 0 });
   const [samples, setSamples] = useState<LatencySample[]>([]);
   const [log, setLog] = useState<string[]>([]);
@@ -80,6 +82,18 @@ export default function App() {
     save("source", source);
     void inputRef.current?.setSource(source);
   }, [source]);
+
+  useEffect(() => {
+    save("alwaysAdmin", alwaysAdmin);
+  }, [alwaysAdmin]);
+
+  // With the setting on, relaunch elevated once per start. If the Windows
+  // prompt is declined the app carries on as a normal user.
+  useEffect(() => {
+    if (!alwaysAdmin || !fg || fg.selfElevated || triedElevate.current) return;
+    triedElevate.current = true;
+    inputRef.current?.restartAsAdmin().catch(() => {});
+  }, [alwaysAdmin, fg]);
 
   async function join() {
     setBusy(true);
@@ -211,6 +225,15 @@ export default function App() {
                 <br />
                 In front: <b>{fg?.exe || "?"}</b> (
                 {fg?.elevated === true ? "administrator" : fg?.elevated === false ? "normal" : "unreadable, likely administrator"})
+              </p>
+              <p>
+                <label className="inline">
+                  <input type="checkbox" checked={alwaysAdmin} onChange={(e) => {
+                      triedElevate.current = true; // takes effect on the next start, not mid-session
+                      setAlwaysAdmin(e.target.checked);
+                    }} /> Always
+                  start as administrator (from the next start)
+                </label>
               </p>
               <p>
                 Method:{" "}
