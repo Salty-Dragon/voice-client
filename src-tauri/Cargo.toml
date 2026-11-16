@@ -1,6 +1,6 @@
 [package]
 name = "warcryer"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 license = "MIT"
 
@@ -12,12 +12,15 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-deep-link = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }
+# Updates are fetched with Windows' own TLS, so they follow the system's
+# certificate store and proxy settings.
+tauri-plugin-updater = { version = "2", default-features = false, features = ["native-tls", "system-proxy"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.59", features = [

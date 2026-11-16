@@ -1,5 +1,6 @@
 import { APP_NAME, APP_VERSION, isDesktop } from "../config";
 import { foreground } from "../runtime";
+import { checkForUpdate, installUpdate, useUpdate } from "../update";
 import { setSettings, useSettings, type BindTarget, type InputSource } from "../settings";
 import { useApp } from "./app-context";
 import { DevicePickers, KeyBind, MicTest, NET_NAME, NET_TEXT, PartyMode } from "./common";
@@ -38,6 +39,31 @@ function Toggle({ label, checked, onChange, hint }: { label: string; checked: bo
       </label>
       {hint && <Help text={hint} />}
     </span>
+  );
+}
+
+/** One line on where updates stand, for the Updates group. */
+function UpdateStatus() {
+  const u = useUpdate();
+  const text =
+    u.phase === "checking" ? "Checking…"
+    : u.phase === "current" ? "You have the latest version."
+    : u.phase === "downloading" ? `Downloading version ${u.version}${u.percent === null ? "…" : `: ${u.percent}%`}`
+    : u.phase === "ready" ? `Version ${u.version} is ready to install.`
+    : u.phase === "installing" ? `Installing version ${u.version}; the app will restart by itself.`
+    : u.phase === "failed" ? `Could not check for updates: ${u.message}`
+    : "";
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {u.phase === "ready" ? (
+        <button type="button" className="btn text-sm" onClick={() => void installUpdate()}>Restart to update</button>
+      ) : (
+        <button type="button" className="btn btn-quiet text-sm" disabled={u.phase === "checking" || u.phase === "downloading" || u.phase === "installing"} onClick={() => void checkForUpdate()}>
+          Check for updates
+        </button>
+      )}
+      <span className="text-xs text-text-muted" role="status">{text}</span>
+    </div>
   );
 }
 
@@ -165,6 +191,24 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
             <p className="text-xs text-text-muted">
               This app is running as {foreground?.selfElevated ? "administrator" : "a normal user"}. With Polling you should not need administrator rights.
             </p>
+          </Group>
+        )}
+
+        {isDesktop && (
+          <Group title="Window and updates">
+            <Toggle
+              label="Keep running in the tray when I close the window"
+              hint="Closing the window then hides it and you stay in voice. Click the tray icon to bring it back; right-click it and choose Quit to leave. Off: closing the window quits."
+              checked={s.closeToTray}
+              onChange={(v) => setSettings({ closeToTray: v })}
+            />
+            <Toggle
+              label="Update automatically"
+              hint="The app asks the server for a newer version when it starts and every few hours. An update found at start installs before you join voice; one found later waits for you to click Restart to update."
+              checked={s.autoUpdate}
+              onChange={(v) => setSettings({ autoUpdate: v })}
+            />
+            <UpdateStatus />
           </Group>
         )}
 

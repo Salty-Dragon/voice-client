@@ -1,7 +1,7 @@
 {
   "name": "warcryer",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -16,6 +16,7 @@
     "@tauri-apps/api": "^2.12.4",
     "@tauri-apps/plugin-deep-link": "^2.6.3",
     "@tauri-apps/plugin-opener": "^2.7.3",
+    "@tauri-apps/plugin-updater": "^2.14.1",
     "livekit-client": "^2.24.1",
     "marked": "^16.4.2",
     "react": "^19.3.1",

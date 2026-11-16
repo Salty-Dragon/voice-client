@@ -38,6 +38,10 @@ export type Settings = {
   playerVolume: Record<string, number>;
   /** Players you have muted for yourself. */
   playerMuted: Record<string, boolean>;
+  /** Desktop app: look for a new version at start and every few hours. */
+  autoUpdate: boolean;
+  /** Desktop app: closing the window hides it in the tray and voice keeps running. */
+  closeToTray: boolean;
 };
 
 const DEFAULTS: Settings = {
@@ -60,6 +64,8 @@ const DEFAULTS: Settings = {
   duckLevel: 0.3,
   playerVolume: {},
   playerMuted: {},
+  autoUpdate: true,
+  closeToTray: false,
 };
 
 const KEY = "settings.v1";

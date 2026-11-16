@@ -5,6 +5,7 @@ import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
+import { installUpdate, useUpdate } from "./update";
 import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
@@ -31,6 +32,7 @@ const TABS: { id: Tab; label: string }[] = [
 export default function App() {
   const s = useSettings();
   const eng = useEngine();
+  const update = useUpdate();
   const [token, setToken] = useState<string | null>(getToken);
   // The browser version has no token: it tries the site's cookie and falls back to the sign-in screen.
   const [phase, setPhase] = useState<Phase>(isDesktop && !token ? "signin" : "running");
@@ -231,6 +233,22 @@ export default function App() {
             <button type="button" className="btn btn-quiet text-sm" onClick={() => setShowSettings(true)}>Settings</button>
           </span>
         </header>
+
+        {(update.phase === "ready" || update.phase === "installing") && (
+          <div className="flex flex-wrap items-center gap-3 border-b border-gold-dim bg-bg-2 px-4 py-2" role="status">
+            <span>
+              Version {update.version} is ready.
+              <span className="ml-2 text-text-muted">
+                {update.phase === "installing"
+                  ? "Installing; the app will restart by itself."
+                  : "Restarting takes a few seconds and drops you from voice while it does."}
+              </span>
+            </span>
+            <button type="button" className="btn text-sm" disabled={update.phase === "installing"} onClick={() => void installUpdate()}>
+              Restart to update
+            </button>
+          </div>
+        )}
 
         <div key={tab} className="rise min-h-0 flex-1 overflow-y-auto">
           {tab === "voice" && <VoiceView />}

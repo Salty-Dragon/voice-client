@@ -4,7 +4,9 @@ This covers Warcryer, the Windows app built from this repository, and the server
 
 ## Before you sign in
 
-The app sends nothing to any server until you click **Sign in with Discord**. It has no telemetry, analytics, crash reporting, advertising or automatic update check.
+The app sends one thing before you click **Sign in with Discord**: an update check. When it starts, and every few hours while it runs, it asks the server whether a newer version exists, sending only its own version number and "Windows, 64-bit". You can switch this off in **Settings → Window and updates**.
+
+Apart from that it sends nothing until you sign in. It has no telemetry, analytics, crash reporting or advertising.
 
 ## What the app sends once you are signed in
 

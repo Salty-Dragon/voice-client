@@ -5,6 +5,11 @@ on:
     branches: [main]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: "Backend branch or commit to test against"
+        type: string
+        default: main
 
 permissions:
   contents: write
@@ -24,20 +29,34 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
+      # The installer is also the update package. Its signature (the .sig file)
+      # is made with the project's update key; installed apps accept an update
+      # only if that signature checks out against the key built into them.
       - run: npx tauri build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: installer
-          path: src-tauri/target/release/bundle/nsis/*.exe
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/nsis/*.exe.sig
           if-no-files-found: error
 
   # Installs that installer on a clean Windows machine and uses the app.
   test:
     needs: build
     uses: ./.github/workflows/test-windows.yml
+    with:
+      backend_ref: ${{ inputs.backend_ref || 'main' }}
     secrets: inherit
 
   # A tagged build is published only if the installed app passed its test.
+  #
+  # A plain version tag (v1.2.3) becomes the latest release, and installed apps
+  # update to it by themselves. A tag with a suffix (v1.2.3-rc.1) is published
+  # as a pre-release, which is never offered as an update.
   release:
     needs: [build, test]
     if: startsWith(github.ref, 'refs/tags/v')
@@ -47,10 +66,29 @@ jobs:
         with:
           name: installer
           path: installer
-      - name: Attach installer to the release
+      - name: Write the update list (latest.json)
+        run: |
+          set -euo pipefail
+          exe=$(ls installer/*.exe | head -1)
+          name=$(basename "$exe")
+          jq -n \
+            --arg version "${GITHUB_REF_NAME#v}" \
+            --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg url "https://github.com/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME/${name// /.}" \
+            --rawfile sig "$exe.sig" \
+            '{version: $version, notes: "", pub_date: $date, platforms: {"windows-x86_64": {signature: ($sig | gsub("\\s+$"; "")), url: $url}}}' \
+            > installer/latest.json
+          cat installer/latest.json
+      - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" installer/*.exe -R "$GITHUB_REPOSITORY" \
-            --title "$GITHUB_REF_NAME" --prerelease \
-            --notes "Unsigned test build. Windows SmartScreen will warn: choose More info, then Run anyway. This build passed the automated test of the installed app on Windows."
+          set -euo pipefail
+          notes="Not code-signed yet, so Windows SmartScreen warns on a first install: choose More info, then Run anyway. This build passed the automated test of the installed app on Windows."
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            gh release create "$GITHUB_REF_NAME" installer/*.exe installer/*.sig installer/latest.json -R "$GITHUB_REPOSITORY" \
+              --title "$GITHUB_REF_NAME" --prerelease --notes "Test build; not offered as an automatic update. $notes"
+          else
+            gh release create "$GITHUB_REF_NAME" installer/*.exe installer/*.sig installer/latest.json -R "$GITHUB_REPOSITORY" \
+              --title "$GITHUB_REF_NAME" --latest --notes "Installed copies of the app (0.8.0 and later) update to this version by themselves. $notes"
+          fi

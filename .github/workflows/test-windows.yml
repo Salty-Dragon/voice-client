@@ -80,7 +80,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
-        run: gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "*.exe" -D installer
+        run: gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "*.exe" -p "*.exe.sig" -D installer
       - name: Install and test
         shell: pwsh
         run: |

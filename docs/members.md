@@ -93,6 +93,14 @@ If you are moved out of your party, leadership passes to the next member automat
 
 Your account can have one voice connection at a time. Opening the app somewhere else disconnects the first one, which shows **Reconnect here**.
 
+## Updates and the tray icon
+
+The Windows app keeps itself up to date. If a new version is waiting when you start the app, it installs first (a few seconds) and the app opens by itself afterwards. If one arrives while the app is running, a bar offers **Restart to update**; nothing restarts until you click it, so it never interrupts an operation.
+
+While the app runs, its horn icon sits in the Windows tray beside the clock. Click it to bring the window to the front; right-click it for **Quit**.
+
+Closing the window quits the app and takes you out of voice. If you would rather it kept running, tick **Keep running in the tray when I close the window** in **Settings → Window and updates**. Then closing only hides the window, you stay in voice, and you leave with the tray icon's **Quit**.
+
 ## Troubleshooting
 
 | Problem | What to do |

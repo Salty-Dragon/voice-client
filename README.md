@@ -38,6 +38,12 @@ Download the latest installer from [Releases](../../releases) and run it. It ins
 
 Releases so far are not code-signed, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
 
+## Updates
+
+From version 0.8.0 the app updates itself. An update found when the app starts installs before you join voice; one found while it is running waits for you to click **Restart to update**. Every update is signed with the project's update key, and the app refuses one whose signature does not match the key built into it. Automatic checks can be switched off in **Settings → Window and updates**.
+
+Only full releases are offered as updates. A tag with a suffix, such as `v1.2.3-rc.1`, is published as a pre-release for testing and is never offered.
+
 ## Uninstall
 
 Open **Windows Settings → Apps → Installed apps**, find **Warcryer** and choose **Uninstall**. This removes the program, its Start menu entry and the sign-in link it registered. Tick "Delete the application data" in the uninstaller to also remove your saved key bindings and settings.
@@ -55,7 +61,7 @@ Every release is built from this repository by [GitHub Actions](.github/workflow
 
 ## Privacy policy
 
-This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. Nothing is sent until you sign in. What is sent after that, and what the server keeps, is described in the [privacy policy](PRIVACY.md).
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it, with one exception: it checks for updates, sending only its version number, which you can switch off in Settings. Nothing else is sent until you sign in. What is sent after that, and what the server keeps, is described in the [privacy policy](PRIVACY.md).
 
 ## Build
 
@@ -66,6 +72,8 @@ npm run build:web   # the same UI for the browser fallback, served under /voice/
 ```
 
 Requires Node 22 and stable Rust on Windows. GitHub Actions builds the installer on every push and attaches it to a release for every `v*` tag.
+
+Building the installer needs an update-signing key in `TAURI_SIGNING_PRIVATE_KEY`. For a build of your own, make a key pair with `npx tauri signer generate`, put its public half in `plugins.updater.pubkey` in `src-tauri/tauri.conf.json`, and change the update address there, or set `bundle.createUpdaterArtifacts` to `false` to build without updates.
 
 The server address is set at build time with `VITE_SERVER`.
 
