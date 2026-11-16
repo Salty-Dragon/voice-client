@@ -36,7 +36,17 @@ export async function rpc<T = unknown>(method: string, params: Record<string, un
 export type ClanRole = "leader" | "officer" | "member";
 export type Membership = { clanId: number; name: string; tag: string; role: ClanRole; status: "pending" | "active" | "removed" };
 export type Info = {
-  user: { id: number; name: string; nameSet: boolean; classTag: string | null; isAdmin: boolean };
+  user: {
+    id: number;
+    name: string;
+    nameSet: boolean;
+    classTag: string | null;
+    /** App admin: runs the install. */
+    isAdmin: boolean;
+    isAllianceAdmin: boolean;
+    /** App admin or alliance admin: may manage clans, operations and bans. */
+    runsAlliance: boolean;
+  };
   membership: Membership | null;
   /** Join requests waiting on this player as a clan leader or officer. */
   pendingApprovals: number;
@@ -64,3 +74,5 @@ export type OpView = {
 export type OpPerms = { isOrganiser: boolean; leadClanIds: number[]; canView: boolean; canEditParties: boolean };
 export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[] };
 export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[] };
+export type AllianceUser = { id: number; name: string; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
+export type AllianceView = { clans: ClanSummary[]; users: AllianceUser[] };

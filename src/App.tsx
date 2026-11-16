@@ -6,6 +6,7 @@ import { ControlClient, type ControlState, type NetSet } from "./control";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
 import { AppContext, type Tab } from "./ui/app-context";
+import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
 import { useEngine, Wordmark } from "./ui/common";
 import { NameStep } from "./ui/NameStep";
@@ -21,6 +22,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "voice", label: "Voice" },
   { id: "roster", label: "Operations" },
   { id: "clan", label: "Clan" },
+  { id: "alliance", label: "Alliance" },
 ];
 
 export default function App() {
@@ -159,7 +161,7 @@ export default function App() {
         <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
           <Wordmark />
           <nav className="flex gap-1" aria-label="Screens">
-            {TABS.map((t) => (
+            {TABS.filter((t) => t.id !== "alliance" || info.user.runsAlliance).map((t) => (
               <button
                 key={t.id}
                 type="button"
@@ -191,6 +193,7 @@ export default function App() {
           {tab === "voice" && <VoiceView />}
           {tab === "roster" && <RosterView />}
           {tab === "clan" && <ClanView />}
+          {tab === "alliance" && info.user.runsAlliance && <AllianceView />}
         </div>
 
         {showSettings && (

@@ -19,7 +19,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
   const [picked, setPicked] = useState<number[] | null>(null);
   const act = useAct();
   if (!data) return null;
-  if (data.clans.length === 0) return <p className="text-text-muted">Create a clan on the admin panel first.</p>;
+  if (data.clans.length === 0) return <p className="text-text-muted">Create a clan on the Alliance screen first.</p>;
   const clanIds = picked ?? (data.clans.length === 1 ? [data.clans[0].id] : []);
 
   return (
@@ -84,14 +84,14 @@ export function RosterView() {
       <section className="panel p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="title text-sm text-gold">Operations</h2>
-          {info.user.isAdmin && !creating && (
+          {info.user.runsAlliance && !creating && (
             <button type="button" className="btn text-sm" onClick={() => setCreating(true)}>New operation</button>
           )}
         </div>
         {error && <p className="text-danger">{error}</p>}
         {ops && ops.length === 0 && (
           <p className="text-text-muted">
-            {info.membership?.status === "active" || info.user.isAdmin
+            {info.membership?.status === "active" || info.user.runsAlliance
               ? "No operations yet. Until one starts, you are in the lounge."
               : "You will see your clan's operations here once you have been approved."}
           </p>
