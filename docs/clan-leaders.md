@@ -36,6 +36,17 @@ Approve only names you recognise. An approved player hears your clan's lounge, y
 
 The green dot beside a member means they have the app open right now.
 
+## Invite links
+
+Instead of telling every player to find your clan in the list, send them a link. On the **Clan** tab, under **Invite links**, choose how many times the link may be used and for how many days, and click **Create invite link**. **Copy link** puts it on your clipboard.
+
+A player who opens the link sees your clan's name and crest and a button that opens the app. There are two kinds of link:
+
+- **Still needs approval** (the default). The player lands on your waiting list and you approve them as usual. Use this when the link might travel further than you intend.
+- **Lets them straight in.** Tick **Let people who use it straight in, without approval** when you create it. There is no approval step: whoever made the link is recorded as having vouched for everyone who uses it. Hand such a link only to people you know, and keep the number of uses small.
+
+A link is a secret. Anyone who gets hold of it can use it until its uses run out, it expires, or you click **Revoke**. Post it in your clan's own private channel, never in a public one. If the leader or officer who made a straight-in link later loses that role, the link only adds people to the waiting list.
+
 ## Removing a member
 
 Click **Remove** beside their name and confirm. They are dropped from the lounge, from any party in an operation that has not ended, and from every net, at once. They can request to join again, and you can decline.

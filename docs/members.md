@@ -10,6 +10,7 @@ You never pick a voice channel in this app. Your place in the roster decides wha
 3. **Your name.** Enter your in-game name exactly as it appears in game (letters and digits, no spaces), and optionally a class tag such as BP, OL or SWS so callers can find healers and buffers.
 4. **Setup wizard.** Three short steps: choose your microphone and headset, record three seconds and hear them back, then choose how you talk (see [Talking](#talking)).
 5. **Join your clan.** Open the **Clan** tab, find your clan and click **Request to join**. A clan leader or officer has to approve you. Until then you cannot hear anything.
+   - **If you were sent an invite link,** you do not need to find your clan. Open the link and click **Open in Warcryer**, or paste the link on the **Clan** tab under **Have an invite link?**. Depending on how the link was made, you are let in at once or added to the clan's waiting list.
 
 Once approved you land in your clan's lounge automatically.
 

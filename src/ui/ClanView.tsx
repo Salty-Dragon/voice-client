@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList } from "../api";
+import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList, type Invite } from "../api";
+import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, Initial } from "./common";
 import { Help } from "./tips";
@@ -112,6 +113,116 @@ function JoinAClan() {
           </li>
         ))}
       </ul>
+      {act.error && <p className="text-danger" role="alert">{act.error}</p>}
+      <PasteInvite />
+    </Section>
+  );
+}
+
+/** For a player who was sent an invite link and has it on their clipboard. */
+function PasteInvite() {
+  const { refreshInfo } = useApp();
+  const act = useAct();
+  const [text, setText] = useState("");
+  const [done, setDone] = useState("");
+  return (
+    <form
+      className="flex flex-col gap-2 border-t border-line pt-3"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setDone("");
+        const ok = await act.run(async () => setDone(await redeemInvite(text)));
+        if (ok) {
+          setText("");
+          refreshInfo();
+        }
+      }}
+    >
+      <label className="flex flex-col gap-1 text-text-muted">
+        <span className="flex items-center gap-1">
+          Have an invite link?
+          <Help text={"A clan's leader or officer can send you an invite link. Paste it here (the whole address, or just its code) to join that clan.\nDepending on how the link was made, you are let in at once or added to the clan's waiting list."} />
+        </span>
+        <span className="flex flex-wrap gap-2">
+          <input className="field max-w-md flex-1" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the link here" aria-label="Invite link" />
+          <button className="btn text-sm" disabled={act.busy || text.trim().length < 8}>Use invite</button>
+        </span>
+      </label>
+      {act.error && <p className="text-danger" role="alert">{act.error}</p>}
+      {done && <p className="text-net-party" role="status">{done}</p>}
+    </form>
+  );
+}
+
+const INVITE_HELP = [
+  "An invite link brings a player to your clan without them having to find it in the list.",
+  "Send it privately, for example in your clan's own Discord channel. Anyone who has the link can use it until it runs out, expires, or you revoke it.",
+  "Still needs approval: the player joins your waiting list and you approve them as usual. This is the safe choice.",
+  "Lets them straight in: no approval step. Whoever made the link is recorded as having vouched for everyone who uses it. Use it only for a link you hand to people you know.",
+].join("\n");
+
+/** The clan leadership's invite links: make one, copy it, revoke it. */
+function InviteLinks({ clanId }: { clanId: number }) {
+  const { data, error, reload } = useLoad(() => rpc<Invite[]>("clan.invites", { clanId }), [clanId]);
+  const act = useAct();
+  const [uses, setUses] = useState(10);
+  const [days, setDays] = useState(7);
+  const [auto, setAuto] = useState(false);
+  const [copied, setCopied] = useState("");
+  const copy = async (inv: Invite) => {
+    try {
+      await navigator.clipboard.writeText(inv.link);
+      setCopied(inv.code);
+      window.setTimeout(() => setCopied(""), 2500);
+    } catch {
+      setCopied("");
+    }
+  };
+  return (
+    <Section title={`Invite links (${data?.length ?? 0})`} help={INVITE_HELP}>
+      {error && <p className="text-danger">{error}</p>}
+      {data && data.length === 0 && <p className="text-text-muted">No open invite links.</p>}
+      <ul className="flex flex-col divide-y divide-line">
+        {data?.map((inv) => (
+          <li key={inv.code} data-invite={inv.code} className="flex flex-col gap-1 py-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <input className="field min-w-0 flex-1 select-all text-xs" readOnly value={inv.link} aria-label="Invite link" onFocus={(e) => e.target.select()} />
+              <button type="button" className="btn text-sm" onClick={() => void copy(inv)}>{copied === inv.code ? "Copied" : "Copy link"}</button>
+              <ConfirmButton confirm="Revoke this link?" disabled={act.busy} onConfirm={() => void act.run(() => rpc("clan.revokeInvite", { code: inv.code })).then(reload)}>
+                Revoke
+              </ConfirmButton>
+            </div>
+            <p className="text-xs text-text-muted">
+              <span className={inv.autoApprove ? "text-net-command" : ""}>{inv.autoApprove ? "Lets them straight in" : "Still needs approval"}</span>
+              {` · used ${inv.uses} of ${inv.maxUses} · until ${new Date(inv.expiresAt).toLocaleDateString(undefined, { dateStyle: "medium" })} · made by ${inv.createdBy}`}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <form
+        className="flex flex-col gap-2 border-t border-line pt-3"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          await act.run(() => rpc("clan.createInvite", { clanId, maxUses: uses, days, autoApprove: auto }));
+          reload();
+        }}
+      >
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-text-muted">
+            Uses
+            <input type="number" className="field w-24" min={1} max={500} value={uses} onChange={(e) => setUses(Number(e.target.value))} aria-label="Number of uses" />
+          </label>
+          <label className="flex flex-col gap-1 text-text-muted">
+            Valid for (days)
+            <input type="number" className="field w-24" min={1} max={30} value={days} onChange={(e) => setDays(Number(e.target.value))} aria-label="Days valid" />
+          </label>
+          <button className="btn text-sm" disabled={act.busy}>Create invite link</button>
+        </div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> Let people who use it straight in, without approval
+        </label>
+        {auto && <p className="text-xs text-net-command">Anyone who gets hold of this link joins your clan and hears its nets. Share it only with people you know.</p>}
+      </form>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
     </Section>
   );
@@ -339,6 +450,7 @@ function Members({ clanId }: { clanId: number }) {
           ))}
         </ul>
       </Section>
+      {leads && <InviteLinks clanId={clanId} />}
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />
     </>
   );
@@ -347,9 +459,16 @@ function Members({ clanId }: { clanId: number }) {
 export function ClanView() {
   const { info, refreshInfo } = useApp();
   const act = useAct();
+  const invited = useInviteOutcome();
   const m = info.membership;
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
+      {invited && (
+        <div className={`panel flex flex-wrap items-center gap-3 px-4 py-3 ${invited.ok ? "border-net-party" : "border-danger"}`} role={invited.ok ? "status" : "alert"}>
+          <span className="flex-1">{invited.text}</span>
+          <button type="button" className="btn btn-quiet text-sm" onClick={clearInviteOutcome}>OK</button>
+        </div>
+      )}
       {!m && <JoinAClan />}
       {m?.status === "pending" && (
         <Section title="Waiting for approval">

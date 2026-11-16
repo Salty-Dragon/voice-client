@@ -1,11 +1,13 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { startInviteLinks } from "./invite";
 import { startShell } from "./shell";
 import { Boot } from "./ui/Boot";
 import { TipLayer } from "./ui/tips";
 import "./style.css";
 
 startShell();
+void startInviteLinks().catch(() => {});
 
 createRoot(document.getElementById("root")!).render(
   <>

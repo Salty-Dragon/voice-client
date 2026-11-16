@@ -3,6 +3,7 @@ import { ApiError, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
+import { redeemPending, usePendingInvite } from "./invite";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
 import { installUpdate, useUpdate } from "./update";
@@ -121,6 +122,18 @@ export default function App() {
       void engine.stop();
     };
   }, [phase, token, attempt, refreshInfo, leave]);
+
+  // An invite link that was opened: use it as soon as the player is signed in and set up, and show the Clan screen.
+  const pendingInvite = usePendingInvite();
+  const settled = phase === "running" && info?.user.nameSet === true && s.wizardDone;
+  useEffect(() => {
+    if (!settled || !pendingInvite) return;
+    void redeemPending().then(() => {
+      refreshInfoRef.current();
+      setTab("clan");
+      setBoardOp(null);
+    });
+  }, [settled, pendingInvite]);
 
   // Which clans have a crest. Reloaded whenever the server reports a change.
   const named = info?.user.nameSet === true;

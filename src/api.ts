@@ -66,6 +66,8 @@ export type OpState = "planned" | "live" | "ended";
 export type OpSummary = { id: number; name: string; startsAt: string | null; state: OpState; leaderName: string };
 export type Person = { userId: number; name: string; classTag: string | null; clanId: number | null; clanTag: string | null; clanRole: ClanRole | null };
 export type Party = { id: number; name: string; leaderId: number | null; memberIds: number[]; leaderLost: boolean; /** The constant party it was made from. */ cpId: number | null };
+/** An open invite link of a clan, as its leadership sees it. */
+export type Invite = { code: string; link: string; createdBy: string; expiresAt: string; maxUses: number; uses: number; autoApprove: boolean };
 /** A constant party: a standing group in a clan, dropped onto a board as a ready party. */
 export type Cp = { id: number; clanId: number; name: string; leaderId: number | null; members: { userId: number; name: string; classTag: string | null }[] };
 export type CpList = { cps: Cp[]; canCreate: boolean };
