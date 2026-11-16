@@ -32,7 +32,28 @@ Step-by-step guides for [members](docs/members.md), [clan leaders and officers](
 
 ## Install
 
-Download the latest installer from [Releases](../../releases). It is not code-signed yet, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
+Download the latest installer from [Releases](../../releases) and run it. It installs for the current Windows user only and needs no administrator rights.
+
+Releases up to v0.6.2 are not code-signed, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
+
+## Uninstall
+
+Open **Windows Settings → Apps → Installed apps**, find the app and choose **Uninstall**. This removes the program, its Start menu entry and the sign-in link it registered. Tick "Delete the application data" in the uninstaller to also remove your saved key bindings and settings.
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+Application in progress: this applies to releases published after it is accepted.
+
+- Committers and reviewers: [Salty-Dragon](https://github.com/Salty-Dragon)
+- Approvers: [Salty-Dragon](https://github.com/Salty-Dragon)
+
+Every release is built from this repository by [GitHub Actions](.github/workflows/build.yml) on GitHub-hosted runners, and is published only after the installed app passes an [automated test](.github/workflows/test-windows.yml) on a clean Windows machine.
+
+## Privacy policy
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. Nothing is sent until you sign in. What is sent after that, and what the server keeps, is described in the [privacy policy](PRIVACY.md).
 
 ## Build
 
