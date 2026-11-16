@@ -46,7 +46,7 @@ Open **Windows Settings → Apps → Installed apps**, find **Warcryer** and cho
 
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
 
-Application in progress: this applies to releases published after it is accepted.
+Not in effect yet: releases so far are unsigned. This applies to releases published after the project's application is accepted.
 
 - Committers and reviewers: [Salty-Dragon](https://github.com/Salty-Dragon)
 - Approvers: [Salty-Dragon](https://github.com/Salty-Dragon)
