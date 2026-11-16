@@ -121,7 +121,7 @@ body {
   .tip {
     position: fixed;
     z-index: 100;
-    max-width: 18rem;
+    max-width: 21rem;
     pointer-events: none;
     border: 1px solid var(--color-gold-dim);
     border-radius: 2px;
@@ -132,6 +132,82 @@ body {
     line-height: 1.35;
     box-shadow: 0 6px 18px rgb(0 0 0 / 0.5);
     user-select: none;
+    white-space: pre-line;
+  }
+
+  /* The help icon: a small scroll, rolled up until it is pointed at. */
+  .info {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    vertical-align: middle;
+    border-radius: 2px;
+    color: var(--color-gold);
+    opacity: 0.8;
+    cursor: help;
+    transition: color 150ms, opacity 150ms, filter 150ms;
+  }
+  .info:hover,
+  .info:focus-visible {
+    color: var(--color-gold-bright);
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgb(230 199 122 / 0.5));
+    outline: none;
+  }
+  .info svg {
+    overflow: visible;
+  }
+  .info-roll {
+    transition: transform 220ms ease-out;
+  }
+  .info-roll rect {
+    fill: var(--color-bg-1);
+    stroke: currentColor;
+    stroke-width: 1.3;
+  }
+  .info-roll circle {
+    fill: currentColor;
+  }
+  .info-page {
+    transform-origin: 10px 10px;
+    transform: scaleY(0.72);
+    transition: transform 220ms ease-out;
+  }
+  .info-page rect {
+    fill: currentColor;
+    fill-opacity: 0.22;
+    stroke: currentColor;
+    stroke-width: 1;
+  }
+  .info-page line {
+    stroke: currentColor;
+    stroke-width: 1.1;
+    stroke-linecap: round;
+  }
+  .info-roll-top {
+    transform: translateY(1.6px);
+  }
+  .info-roll-low {
+    transform: translateY(-1.6px);
+  }
+  .info:hover .info-page,
+  .info:focus-visible .info-page {
+    transform: scaleY(1);
+  }
+  .info:hover .info-roll,
+  .info:focus-visible .info-roll {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info,
+  .info-roll,
+  .info-page {
+    transition: none;
   }
 }
 
@@ -266,4 +342,98 @@ body {
 
 input[type="range"] {
   accent-color: var(--color-gold);
+}
+
+/* The guides, rendered from Markdown. */
+.prose {
+  max-width: none;
+  line-height: 1.6;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.prose > * {
+  max-width: 46rem;
+}
+.prose h1 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  color: var(--color-gold-bright);
+  margin: 0 0 0.75rem;
+}
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin: 1.75rem 0 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-line);
+  scroll-margin-top: 0.75rem;
+}
+.prose h3 {
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 1.25rem 0 0.35rem;
+  scroll-margin-top: 0.75rem;
+}
+.prose p,
+.prose ul,
+.prose ol,
+.prose table {
+  margin: 0.6rem 0;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+}
+.prose ul {
+  list-style: disc;
+}
+.prose ol {
+  list-style: decimal;
+}
+.prose li {
+  margin: 0.25rem 0;
+}
+.prose li::marker {
+  color: var(--color-gold-dim);
+}
+.prose strong {
+  color: var(--color-gold-bright);
+  font-weight: 600;
+}
+.prose a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.prose a:hover {
+  color: var(--color-gold-bright);
+}
+.prose code {
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  background: var(--color-bg-2);
+  padding: 0.05rem 0.3rem;
+  font-size: 0.85em;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93em;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--color-line);
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  background: var(--color-bg-2);
+  color: var(--color-text-muted);
+  font-weight: 600;
 }

@@ -31,6 +31,9 @@ export async function rpc<T = unknown>(method: string, params: Record<string, un
   return body.result as T;
 }
 
+/** Address of a clan's crest image. The version makes it safe to cache for good. */
+export const crestUrl = (clanId: number, version: number) => `${API}/api/clan-crest/${clanId}?v=${version}`;
+
 // ---- Shapes returned by the API (mirrors of the backend's types) ----
 
 export type ClanRole = "leader" | "officer" | "member";
@@ -54,7 +57,8 @@ export type Info = {
   joinRequests: JoinRequest[];
 };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
-export type ClanSummary = { id: number; name: string; tag: string; leaderName: string | null; members: number };
+/** `crest` is 0 when the clan has none. */
+export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
 export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active" };
 export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[] };
 
@@ -79,5 +83,5 @@ export type OpView = {
 export type OpPerms = { isOrganiser: boolean; leadClanIds: number[]; canView: boolean; canEditParties: boolean };
 export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[] };
 export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[] };
-export type AllianceUser = { id: number; name: string; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
+export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
 export type AllianceView = { clans: ClanSummary[]; users: AllianceUser[] };

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { ApiError, type Info } from "../api";
 import type { ControlState, NetSet } from "../control";
 
-export type Tab = "voice" | "roster" | "clan" | "alliance";
+export type Tab = "voice" | "roster" | "clan" | "alliance" | "guides";
 
 export type AppState = {
   info: Info;
@@ -18,6 +18,8 @@ export type AppState = {
   go: (tab: Tab, opId?: number) => void;
   boardOp: number | null;
   notice: string;
+  /** Clan id -> crest version, for clans that have a crest. */
+  crests: ReadonlyMap<number, number>;
 };
 
 export const AppContext = createContext<AppState | null>(null);

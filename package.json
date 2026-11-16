@@ -1,7 +1,7 @@
 {
   "name": "voice-client",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.6.0",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -17,6 +17,7 @@
     "@tauri-apps/plugin-deep-link": "^2.6.3",
     "@tauri-apps/plugin-opener": "^2.7.3",
     "livekit-client": "^2.24.1",
+    "marked": "^16.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

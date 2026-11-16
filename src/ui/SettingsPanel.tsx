@@ -1,25 +1,10 @@
-import { APP_NAME, APP_VERSION, DOCS_URL, isDesktop } from "../config";
+import { APP_NAME, APP_VERSION, isDesktop } from "../config";
 import { foreground } from "../runtime";
 import { setSettings, useSettings, type BindTarget, type InputSource } from "../settings";
 import { useApp } from "./app-context";
 import { DevicePickers, KeyBind, MicTest, NET_NAME, NET_TEXT, PartyMode } from "./common";
 import { ProfileForm } from "./NameStep";
-import { tip } from "./tips";
-
-async function openInBrowser(url: string) {
-  if (isDesktop) {
-    const { openUrl } = await import("@tauri-apps/plugin-opener");
-    await openUrl(url);
-  } else {
-    window.open(url, "_blank", "noopener");
-  }
-}
-
-const GUIDES = [
-  { file: "members.md", label: "Members" },
-  { file: "clan-leaders.md", label: "Clan leaders and officers" },
-  { file: "alliance-admins.md", label: "Alliance admins and event leaders" },
-];
+import { Help } from "./tips";
 
 const KEYS: { target: BindTarget; label: string; note: string }[] = [
   { target: "broadcast", label: "Broadcast", note: "Event leader and deputies" },
@@ -47,15 +32,18 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 function Toggle({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
-    <label className="flex items-center gap-2" {...(hint ? tip(hint) : {})}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} /> {label}
-    </label>
+    <span className="inline-flex items-center gap-1">
+      <label className="flex items-center gap-2">
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} /> {label}
+      </label>
+      {hint && <Help text={hint} />}
+    </span>
   );
 }
 
 export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onSignOut: () => void }) {
   const s = useSettings();
-  const { info, refreshInfo } = useApp();
+  const { info, refreshInfo, go } = useApp();
   return (
     <div className="absolute inset-0 z-20 flex justify-end bg-black/60" onClick={onClose}>
       <aside className="panel h-full w-full max-w-md overflow-y-auto p-6 flex flex-col gap-5" onClick={(e) => e.stopPropagation()} aria-label="Settings">
@@ -77,8 +65,11 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         <Group title="Party, Reserve and lounge">
           <PartyMode />
           {s.partyMode === "voice" && (
-            <label className="flex items-center gap-3 text-text-muted" {...tip("How long the mic stays open after you stop speaking, so word endings and short pauses are not cut off.")}>
-              Keep open after you stop
+            <label className="flex items-center gap-3 text-text-muted">
+              <span className="flex items-center gap-1">
+                Keep open after you stop
+                <Help text="How long the mic stays open after you stop speaking, so word endings and short pauses are not cut off." />
+              </span>
               <input
                 type="range"
                 min={100}
@@ -178,16 +169,22 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         )}
 
         <Group title="Help">
-          <ul className="flex flex-col gap-1">
-            {GUIDES.map((g) => (
-              <li key={g.file}>
-                <button type="button" className="text-gold hover:text-gold-bright cursor-pointer" onClick={() => void openInBrowser(`${DOCS_URL}/${g.file}`)}>
-                  Guide: {g.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-text-muted">Hover over almost anything in the app for a short explanation.</p>
+          <div>
+            <button
+              type="button"
+              className="btn btn-quiet text-sm"
+              onClick={() => {
+                onClose();
+                go("guides");
+              }}
+            >
+              Open the guides
+            </button>
+          </div>
+          <p className="flex items-center gap-1 text-xs text-text-muted">
+            Point at a scroll like this one for a short explanation.
+            <Help text="Like this. Explanations only appear when you point at a scroll, tab to it, or click it." />
+          </p>
         </Group>
 
         <Group title="Account">

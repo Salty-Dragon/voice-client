@@ -6,8 +6,8 @@ import { engine } from "../runtime";
 import { bindTargetOf, setSettings, useSettings, type BindTarget } from "../settings";
 import { rpc } from "../api";
 import { useAct, useApp } from "./app-context";
-import { Initial, KeyBind, NET_BORDER, NET_NAME, NET_TEXT, NET_TIP, NET_VAR, useEngine } from "./common";
-import { tip } from "./tips";
+import { ClanCrest, Initial, KeyBind, NET_BORDER, NET_NAME, NET_TEXT, NET_TIP, NET_VAR, useEngine } from "./common";
+import { Help } from "./tips";
 
 const STATE_TEXT: Record<NetView["state"], string> = {
   connecting: "Connecting…",
@@ -30,14 +30,14 @@ function MemberCard({ m, colour, open, onToggle }: { m: Member; colour: string; 
         aria-expanded={m.self ? undefined : open}
         onClick={onToggle}
         className={`flex items-center gap-2 px-2 py-1.5 text-left ${m.self ? "cursor-default" : "cursor-pointer"}`}
-        {...tip(m.self ? "This is you" : "Click to set your own volume for this player, or mute them. Only you are affected.")}
       >
         <Initial name={m.name} className={m.speaking && !m.muted ? "border-current text-current" : ""} />
         <span className={`truncate font-medium ${m.self ? "text-gold-bright" : m.muted ? "text-text-muted line-through" : "text-text"}`}>{m.name}</span>
         {m.classTag && <span className="text-xs text-gold">{m.classTag}</span>}
         <span className="ml-auto flex items-center gap-2 text-xs text-text-muted">
           {quiet && <span>{m.muted ? "muted" : `${Math.round(m.volume * 100)}%`}</span>}
-          {!m.canSpeak && <span {...tip("Can hear this net but not speak on it")}>listening</span>}
+          {!m.canSpeak && <span>listening</span>}
+          <ClanCrest clanId={m.clanId} size={14} />
           {m.clanTag && <span>[{m.clanTag}]</span>}
         </span>
       </button>
@@ -98,18 +98,26 @@ function NetCard({
       ? "You hear this lounge. Click Talk here to speak in it instead of the other one."
       : key === null && !voice
         ? "Bind a key in Settings to speak here."
-        : "How you speak on this net. Change it in Settings.";
+        : "Change how you speak in Settings.";
+  const help = [NET_TIP[net.net], howTip, onTalkHere && !talkHere ? "Talk here makes this the lounge your key and voice go to. You keep hearing both." : ""].filter(Boolean).join("\n");
+  // A clan's own rooms carry its crest.
+  const clanRoom = /^lounge-clan-(\d+)$|^op-\d+-clan-(\d+)$/.exec(net.room);
+  const clanId = clanRoom ? Number(clanRoom[1] ?? clanRoom[2]) : null;
   return (
     <li
       className={`panel border-l-4 ${NET_BORDER[net.net]} px-3 py-2 flex flex-col gap-1 ${net.live || shown ? "bg-bg-2" : ""}`}
       // Glows in the net's colour while your mic is open on it.
       style={net.live ? { boxShadow: `0 0 0 1px ${NET_VAR[net.net]}, 0 0 16px -4px ${NET_VAR[net.net]}` } : undefined}
     >
-      <button type="button" className="flex items-baseline gap-2 text-left cursor-pointer" onClick={onShow} aria-pressed={shown} {...tip(`${NET_TIP[net.net]} Click to see who is on it.`)}>
-        <span className={`title text-sm ${NET_TEXT[net.net]}`}>{net.label}</span>
-        {net.label !== NET_NAME[net.net] && net.net !== "lounge" && <span className="text-xs text-text-muted">{NET_NAME[net.net]}</span>}
-        <span className="ml-auto text-xs text-text-muted tabular-nums">{net.members.length}</span>
-      </button>
+      <div className="flex items-center gap-1">
+        <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left cursor-pointer" onClick={onShow} aria-pressed={shown}>
+          <ClanCrest clanId={clanId} size={18} />
+          <span className={`title min-w-0 break-words text-sm ${NET_TEXT[net.net]}`}>{net.label}</span>
+          {net.label !== NET_NAME[net.net] && net.net !== "lounge" && <span className="text-xs text-text-muted">{NET_NAME[net.net]}</span>}
+          <span className="ml-auto text-xs text-text-muted tabular-nums">{net.members.length}</span>
+        </button>
+        <Help text={help} />
+      </div>
       {net.state !== "connected" ? (
         <span className="text-xs text-danger">{STATE_TEXT[net.state]}</span>
       ) : (
@@ -120,9 +128,9 @@ function NetCard({
         </div>
       )}
       <div className="flex items-center text-xs text-text-muted">
-        <span {...tip(howTip)}>{how}</span>
+        <span>{how}</span>
         {onTalkHere && !talkHere && (
-          <button type="button" className="ml-auto text-gold hover:text-gold-bright cursor-pointer" onClick={onTalkHere} {...tip("Make this the lounge your key and voice go to. You keep hearing both.")}>Talk here</button>
+          <button type="button" className="ml-auto text-gold hover:text-gold-bright cursor-pointer" onClick={onTalkHere}>Talk here</button>
         )}
       </div>
     </li>
@@ -180,7 +188,6 @@ export function VoiceView() {
             className="field w-auto"
             value={where}
             aria-label="Where you are"
-            {...tip("A live operation pulls you in by itself. Pick the lounge to sit it out, or a planned operation to form up early.")}
             onChange={(e) => {
               // Picking the lounge during a live operation is a deliberate choice to sit it out.
               if (e.target.value === "lounge") select(hasLive ? "lounge" : "auto");
@@ -195,13 +202,14 @@ export function VoiceView() {
         ) : (
           <span className="font-medium">{op ? op.name : "the lounge"}</span>
         )}
+        <Help text={"Between operations you are in your clan's lounge. A live operation pulls you onto its nets by itself and returns you when it ends.\nIf operations are listed here, pick the lounge to sit one out, or a planned operation to form up early."} />
         {op && (
           <span className={`text-xs uppercase tracking-wider ${op.state === "live" ? "text-net-party" : "text-gold"}`}>
             {op.state === "live" ? "Live" : "Planned"}
           </span>
         )}
         {op && (
-          <button type="button" className="ml-auto text-text-muted hover:text-gold cursor-pointer" onClick={() => go("roster", op.id)} {...tip("See every party in this operation, and ask to join one")}>
+          <button type="button" className="ml-auto text-text-muted hover:text-gold cursor-pointer" onClick={() => go("roster", op.id)}>
             Open the roster board
           </button>
         )}
@@ -273,7 +281,7 @@ export function VoiceView() {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 gap-4 p-4">
-          <ul className="flex w-64 shrink-0 flex-col gap-2 overflow-y-auto" aria-label="Your nets">
+          <ul className="flex w-72 shrink-0 flex-col gap-2 overflow-y-auto" aria-label="Your nets">
             {nets.map((n) => (
               <NetCard
                 key={n.room}
@@ -294,6 +302,7 @@ export function VoiceView() {
                     {shown.members.length} connected
                     {shown.members.some((m) => !m.canSpeak) && ` · ${shown.members.filter((m) => m.canSpeak).length} can speak`}
                   </span>
+                  <Help text={"Everyone connected to this net. A green outline means that player is speaking.\n\"listening\" marks players who can hear this net but not speak on it.\nClick another player to set your own volume for them, or mute them. Only you are affected."} />
                   {shown.room !== home?.room && (
                     <button type="button" className="ml-auto text-text-muted hover:text-gold cursor-pointer" onClick={() => setShownRoom(null)}>
                       Back to {home?.label ?? "your net"}
@@ -325,15 +334,18 @@ export function VoiceView() {
       <footer className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-line bg-bg-1/85 px-4 py-2 text-xs text-text-muted">
         {hints.length === 0 && s.bindings.muteAll === null && <span>{voiceMode ? "Voice activation is on." : "No keys bound. Open Settings to bind them."}</span>}
         {hints.map((t) => (
-          <span key={t} {...tip("Hold this key to speak on this net")}>
+          <span key={t}>
             <kbd className="kbd">{keyLabel(s.bindings[t] as number)}</kbd>{" "}
             <span className={NET_TEXT[t]}>{t === "party" && !op ? "Lounge" : NET_NAME[t]}</span>
           </span>
         ))}
         {s.bindings.muteAll !== null && (
-          <span {...tip("Press once to silence your mic on every net, again to restore it")}>
+          <span>
             <kbd className="kbd">{keyLabel(s.bindings.muteAll)}</kbd> Mute all
           </span>
+        )}
+        {(hints.length > 0 || s.bindings.muteAll !== null) && (
+          <Help text={"Your keys. Hold a net's key to speak on it; the game still receives the key.\nMute all: press once to silence your mic on every net, press again to restore it."} />
         )}
         {!isDesktop && <span className="ml-auto">Browser mode: keys only work while this tab has focus.</span>}
       </footer>

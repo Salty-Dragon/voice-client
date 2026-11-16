@@ -25,6 +25,7 @@ export type Member = {
   name: string;
   classTag: string | null;
   clanTag: string | null;
+  clanId: number | null;
   speaking: boolean;
   self: boolean;
   /** May speak on this net (holds a published track or is allowed to). */
@@ -77,12 +78,12 @@ type Net = {
   seniorLiveUntil: number;
 };
 
-function meta(p: Participant): { classTag: string | null; clanTag: string | null; senior: boolean } {
+function meta(p: Participant): { classTag: string | null; clanTag: string | null; clanId: number | null; senior: boolean } {
   try {
-    const m = JSON.parse(p.metadata || "{}") as { classTag?: string | null; clanTag?: string | null; senior?: boolean };
-    return { classTag: m.classTag ?? null, clanTag: m.clanTag ?? null, senior: m.senior === true };
+    const m = JSON.parse(p.metadata || "{}") as { classTag?: string | null; clanTag?: string | null; clanId?: number | null; senior?: boolean };
+    return { classTag: m.classTag ?? null, clanTag: m.clanTag ?? null, clanId: typeof m.clanId === "number" ? m.clanId : null, senior: m.senior === true };
   } catch {
-    return { classTag: null, clanTag: null, senior: false };
+    return { classTag: null, clanTag: null, clanId: null, senior: false };
   }
 }
 

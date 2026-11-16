@@ -14,8 +14,15 @@ A clan leader is appointed by an alliance admin. The leader appoints officers. O
 | Speak on the **Clan** net | Yes | Yes |
 | On the **Command** net | Yes | No |
 | Build and edit parties of your clan's members in an operation | Yes | Yes |
+| Set or change the clan crest | Yes | No |
 
 The leader can only be replaced by an alliance admin.
+
+## The clan crest
+
+The leader can give the clan a crest. Open **Clan** and click **Upload crest**, then pick a PNG, JPEG or WebP image. The app shrinks it to a small square, so a simple, bold image reads best, and a transparent background suits the dark screens.
+
+The crest then appears beside the clan wherever it shows: the clan's lounge and Clan net, your members' cards in voice, roster boards with more than one clan, and the clan lists. Everyone in the alliance can see it. **Change crest** replaces it and **Remove** takes it away; alliance admins can also remove a crest.
 
 ## Approving members
 

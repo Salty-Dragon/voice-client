@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { APP_NAME } from "../config";
+import { APP_NAME, isDesktop } from "../config";
 import { keyLabel } from "../keys";
 import { captureKey, engine } from "../runtime";
 import { setSettings, useSettings, type BindTarget, type NetKind } from "../settings";
-import { tip } from "./tips";
+import { crestUrl } from "../api";
+import { useApp } from "./app-context";
+import { Help } from "./tips";
 
 export const NET_TEXT: Record<NetKind, string> = {
   broadcast: "text-net-broadcast",
@@ -30,7 +32,7 @@ export const NET_NAME: Record<NetKind, string> = {
   lounge: "Lounge",
 };
 
-/** One line on what each net is for, shown as a tooltip. */
+/** One line on what each net is for, shown behind the net's help icon. */
 export const NET_TIP: Record<NetKind, string> = {
   broadcast: "Broadcast: the event leader and deputies speak, everyone in the operation hears.",
   command: "Command: the event leader, deputies, clan leaders and party leaders talk to each other. Nobody else hears it.",
@@ -48,6 +50,24 @@ export const NET_VAR: Record<NetKind, string> = {
   reserve: "var(--color-net-reserve)",
   lounge: "var(--color-gold)",
 };
+
+/** Opens a web address in the system browser (or a new tab, in the browser version). */
+export async function openInBrowser(url: string) {
+  if (isDesktop) {
+    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    await openUrl(url);
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+/** A clan's crest, or nothing if the clan has none. */
+export function ClanCrest({ clanId, size = 16, className = "" }: { clanId: number | null | undefined; size?: number; className?: string }) {
+  const { crests } = useApp();
+  const version = clanId ? crests.get(clanId) : undefined;
+  if (!clanId || !version) return null;
+  return <img src={crestUrl(clanId, version)} width={size} height={size} alt="" draggable={false} className={`shrink-0 rounded-sm object-contain ${className}`} style={{ width: size, height: size }} />;
+}
 
 /** A small square with the player's initial, so a list of names is easier to scan. */
 export function Initial({ name, className = "" }: { name: string; className?: string }) {
@@ -120,7 +140,6 @@ export function Meter({ threshold }: { threshold?: number }) {
       className="relative h-3 rounded-sm bg-bg-2 border border-line overflow-hidden"
       role="img"
       aria-label="Microphone level"
-      {...tip(threshold !== undefined ? "Your microphone level. The mic opens when the bar passes the gold marker." : "Your microphone level right now.")}
     >
       <div ref={bar} className="h-full" style={{ width: 0 }} />
       {threshold !== undefined && (
@@ -142,7 +161,6 @@ export function KeyBind({ target, label }: { target: BindTarget; label?: string 
         className={`btn text-sm min-w-28 ${code === null && !capturing ? "btn-quiet" : ""}`}
         disabled={capturing}
         aria-label={`${label ?? target} key`}
-        {...tip("Click, then press the key or mouse button you want. The game still receives the key.")}
         onClick={async (e) => {
           // Drop focus so a bound Space or Enter does not click this button again.
           e.currentTarget.blur();
@@ -159,7 +177,6 @@ export function KeyBind({ target, label }: { target: BindTarget; label?: string 
           type="button"
           className="px-1 text-text-muted hover:text-danger cursor-pointer"
           aria-label={`Clear ${label ?? target} key`}
-          {...tip("Remove this key")}
           onClick={() => setSettings({ bindings: { ...s.bindings, [target]: null } })}
         >
           ×
@@ -207,7 +224,6 @@ export function MicTest() {
           type="button"
           className="btn btn-quiet text-sm"
           disabled={state !== "idle"}
-          {...tip("Records 3 seconds from your microphone and plays them back through your headset.")}
           onClick={async () => {
             setError("");
             setState("recording");
@@ -223,6 +239,7 @@ export function MicTest() {
         >
           {state === "recording" ? "Speak now…" : state === "playing" ? "Playing back…" : "Test: record 3 seconds"}
         </button>
+        <Help text="Records 3 seconds from your microphone and plays them back through your headset, so you hear what others will." />
         {error && <span className="text-danger" role="alert">{error}</span>}
       </div>
     </div>
@@ -235,13 +252,14 @@ export function PartyMode() {
   const [measuring, setMeasuring] = useState(false);
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-x-6 gap-y-1">
-        <label className="flex items-center gap-2" {...tip("Your mic is open only while you hold your key.")}>
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+        <label className="flex items-center gap-2">
           <input type="radio" checked={s.partyMode === "ptt"} onChange={() => setSettings({ partyMode: "ptt" })} /> Push-to-talk
         </label>
-        <label className="flex items-center gap-2" {...tip("Your mic opens by itself when you speak. Applies to your party, Reserve and the lounge only.")}>
+        <label className="flex items-center gap-2">
           <input type="radio" checked={s.partyMode === "voice"} onChange={() => setSettings({ partyMode: "voice" })} /> Voice activation
         </label>
+        <Help text={"Push-to-talk: your mic is open only while you hold your key.\nVoice activation: your mic opens by itself when you speak. It applies to your party, Reserve and the lounge only; Command, Clan and Broadcast always need a key.\nTo bind a key, click the key button, then press the key or mouse button you want. The game still receives the key."} />
       </div>
       {s.partyMode === "ptt" ? (
         <div className="flex flex-wrap items-center gap-3">
@@ -265,7 +283,6 @@ export function PartyMode() {
               type="button"
               className="btn btn-quiet text-sm"
               disabled={measuring}
-              {...tip("Measures the noise in your room for 5 seconds and sets the marker just above it.")}
               onClick={async () => {
                 setMeasuring(true);
                 setSettings({ vadThresholdDb: await engine.measureNoise(5000) });
@@ -274,6 +291,7 @@ export function PartyMode() {
             >
               {measuring ? "Stay quiet for 5 seconds…" : "Auto"}
             </button>
+            <Help text="Auto measures the noise in your room for 5 seconds and sets the marker just above it." />
             <span className="text-text-muted text-xs">
               The mic opens when the bar passes the marker. Set it above your keyboard noise and below your voice.
             </span>

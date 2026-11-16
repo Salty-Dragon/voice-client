@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, rpc, type Info } from "./api";
+import { ApiError, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
@@ -9,7 +9,8 @@ import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
 import { NET_NAME, useEngine, Wordmark } from "./ui/common";
-import { tip } from "./ui/tips";
+import { GuidesView } from "./ui/GuidesView";
+import { Help } from "./ui/tips";
 import { NameStep } from "./ui/NameStep";
 import { RosterView } from "./ui/RosterView";
 import { SettingsPanel } from "./ui/SettingsPanel";
@@ -19,11 +20,12 @@ import { Wizard } from "./ui/Wizard";
 
 type Phase = "signin" | "running" | "replaced";
 
-const TABS: { id: Tab; label: string; tip: string }[] = [
-  { id: "voice", label: "Voice", tip: "Where you are, who is there, and who is speaking" },
-  { id: "roster", label: "Operations", tip: "Events and their roster boards" },
-  { id: "clan", label: "Clan", tip: "Your clan and its members" },
-  { id: "alliance", label: "Alliance", tip: "Clans, clan leaders and bans" },
+const TABS: { id: Tab; label: string }[] = [
+  { id: "voice", label: "Voice" },
+  { id: "roster", label: "Operations" },
+  { id: "clan", label: "Clan" },
+  { id: "alliance", label: "Alliance" },
+  { id: "guides", label: "Guides" },
 ];
 
 export default function App() {
@@ -42,6 +44,7 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const [tab, setTab] = useState<Tab>("voice");
   const [boardOp, setBoardOp] = useState<number | null>(null);
+  const [crests, setCrests] = useState<ReadonlyMap<number, number>>(new Map());
   const control = useRef<ControlClient | null>(null);
   const retry = useRef<number | undefined>(undefined);
   const refreshInfoRef = useRef<() => void>(() => {});
@@ -110,6 +113,15 @@ export default function App() {
     };
   }, [phase, token, attempt, refreshInfo, leave]);
 
+  // Which clans have a crest. Reloaded whenever the server reports a change.
+  const named = info?.user.nameSet === true;
+  useEffect(() => {
+    if (phase !== "running" || !named) return;
+    rpc<ClanSummary[]>("clans.list")
+      .then((list) => setCrests(new Map(list.filter((c) => c.crest > 0).map((c) => [c.id, c.crest]))))
+      .catch(() => {});
+  }, [phase, named, tick]);
+
   if (phase === "signin") {
     return (
       <SignIn
@@ -166,7 +178,7 @@ export default function App() {
 
   return (
     <AppContext.Provider
-      value={{ info, refreshInfo, tick, set, control: state, select: (t) => control.current?.select(t), tab, go, boardOp, notice }}
+      value={{ info, refreshInfo, tick, set, control: state, select: (t) => control.current?.select(t), tab, go, boardOp, notice, crests }}
     >
       <div className="frame flex h-full flex-col">
         <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
@@ -178,39 +190,41 @@ export default function App() {
                 type="button"
                 aria-current={tab === t.id ? "page" : undefined}
                 onClick={() => go(t.id)}
-                {...tip(t.tip)}
                 className={`border-b-2 px-3 py-1 cursor-pointer transition-colors duration-150 ${
                   tab === t.id ? "border-gold text-gold-bright" : "border-transparent text-text-muted hover:text-text"
                 }`}
               >
                 {t.label}
                 {t.id === "roster" && info.joinRequests.length > 0 && (
-                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" {...tip("Players asking to join a party you lead")}>{info.joinRequests.length}</span>
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.joinRequests.length} asking to join your party`}>{info.joinRequests.length}</span>
                 )}
                 {t.id === "clan" && info.pendingApprovals > 0 && (
-                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" {...tip("Players waiting for you to approve them")}>{info.pendingApprovals}</span>
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.pendingApprovals} waiting for approval`}>{info.pendingApprovals}</span>
                 )}
               </button>
             ))}
           </nav>
           <span className="ml-auto flex items-center gap-3">
             {onAir.length > 0 && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-net-party" {...tip(`Your mic is open on: ${onAir.join(", ")}`)}>
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-net-party" aria-label={`Your mic is open on ${onAir.join(", ")}`}>
                 <span className="pulse h-2 w-2 rounded-full bg-net-party" />
                 On air
+                <span className="font-normal normal-case tracking-normal text-text-muted">{onAir.join(", ")}</span>
               </span>
             )}
             {state !== "online" && (
-              <span className="text-xs text-danger" {...tip("The link that delivers roster changes dropped. Your voice keeps working, and it reconnects by itself.")}>
+              <span className="flex items-center gap-1 text-xs text-danger">
                 Server link lost, retrying…
+                <Help text="The link that delivers roster changes dropped. Your voice keeps working, and it reconnects by itself." />
               </span>
             )}
             {eng.muteAll && (
-              <span className="text-xs font-semibold uppercase tracking-wider text-danger" {...tip("Your Mute all key is on. Press it again to speak.")}>
+              <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-danger">
                 Mic muted
+                <Help text="Your Mute all key is on. Press it again to speak." />
               </span>
             )}
-            <span className="text-text-muted" {...tip("Your in-game name and class tag. Change them in Settings.")}>
+            <span className="text-text-muted">
               {info.user.name}
               {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}
             </span>
@@ -223,6 +237,7 @@ export default function App() {
           {tab === "roster" && <RosterView />}
           {tab === "clan" && <ClanView />}
           {tab === "alliance" && info.user.runsAlliance && <AllianceView />}
+          {tab === "guides" && <GuidesView />}
         </div>
 
         {showSettings && (

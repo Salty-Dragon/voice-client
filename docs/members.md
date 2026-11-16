@@ -13,6 +13,11 @@ You never pick a voice channel in this app. Your place in the roster decides wha
 
 Once approved you land in your clan's lounge automatically.
 
+## Help inside the app
+
+- **Scroll icons.** Small scroll icons sit beside nets, headings, buttons and settings. Point at one, tab to it, or click it for a short explanation. Nothing pops up unless you ask for it.
+- **Guides.** The **Guides** tab holds this guide and the ones for clan leaders and alliance admins, matching the version you have installed.
+
 ## Where you are
 
 The **Voice** tab always shows where you are and who is there.

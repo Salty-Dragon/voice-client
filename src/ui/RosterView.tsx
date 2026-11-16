@@ -2,10 +2,20 @@ import { useState } from "react";
 import { rpc, type OpOptions, type OpSummary } from "../api";
 import { useAct, useApp, useLoad } from "./app-context";
 import { Board } from "./Board";
-import { tip } from "./tips";
+import { ClanCrest } from "./common";
+import { Help } from "./tips";
 
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
 const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text-text-muted" } as const;
+
+const OPERATIONS_HELP = [
+  "An operation is one event: a siege, a raid, an epic boss.",
+  "Each has its own roster of parties and its own nets: Broadcast, Command, Clan, Party and Reserve.",
+  "Planned: the roster is being built. Players stay in their lounge unless they choose to form up early.",
+  "Live: everyone on the roster is pulled onto its nets.",
+  "Ended: everyone is back in their lounge and the roster is locked.",
+  "Alliance admins create operations. Open one to see its board.",
+].join("\n");
 
 export function when(iso: string | null): string {
   return iso ? new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "No start time";
@@ -41,11 +51,17 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         <input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Aden siege" required />
       </label>
       <label className="flex flex-col gap-1 text-text-muted">
-        Starts (your local time, optional)
+        <span className="flex items-center gap-1">
+          Starts (your local time, optional)
+          <Help text={"Shown to players so they know when to be ready. Each player sees it in their own local time.\nThe operation does not start by itself: the event leader presses Start operation."} />
+        </span>
         <input type="datetime-local" className="field" value={starts} onChange={(e) => setStarts(e.target.value)} />
       </label>
       <label className="flex flex-col gap-1 text-text-muted">
-        Event leader
+        <span className="flex items-center gap-1">
+          Event leader
+          <Help text={"The player who runs the event. They speak on Broadcast and Command, appoint deputies, build the roster, and start and end the operation.\nIt can be you or anyone who has signed in. Alliance admins keep the same powers over every operation."} />
+        </span>
         <select className="field" value={leader} onChange={(e) => setLeader(Number(e.target.value))}>
           {data.users.map((u) => (
             <option key={u.id} value={u.id}>{u.name}{u.clanTag ? ` [${u.clanTag}]` : ""}</option>
@@ -53,7 +69,10 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         </select>
       </label>
       <fieldset className="flex flex-col gap-1">
-        <legend className="text-text-muted mb-1">Clans taking part</legend>
+        <legend className="text-text-muted mb-1 flex items-center gap-1">
+          Clans taking part
+          <Help text={"Every member of the clans you tick is on this operation's roster, starting in Reserve until placed in a party.\nEach clan gets its own Clan net. Players from other clans cannot join the operation's nets."} />
+        </legend>
         {data.clans.map((c) => (
           <label key={c.id} className="flex items-center gap-2">
             <input
@@ -61,6 +80,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
               checked={clanIds.includes(c.id)}
               onChange={(e) => setPicked(e.target.checked ? [...clanIds, c.id] : clanIds.filter((x) => x !== c.id))}
             />{" "}
+            <ClanCrest clanId={c.id} size={16} />
             {c.name} [{c.tag}]
           </label>
         ))}
@@ -84,9 +104,12 @@ export function RosterView() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
       <section className="panel p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="title title-rule flex-1 text-sm text-gold">Operations</h2>
+          <h2 className="title title-rule flex-1 text-sm text-gold">
+            Operations
+            <Help text={OPERATIONS_HELP} />
+          </h2>
           {info.user.runsAlliance && !creating && (
-            <button type="button" className="btn text-sm" onClick={() => setCreating(true)} {...tip("Plan an event: name it, pick its leader and the clans taking part")}>New operation</button>
+            <button type="button" className="btn text-sm" onClick={() => setCreating(true)}>New operation</button>
           )}
         </div>
         {error && <p className="text-danger">{error}</p>}
@@ -115,7 +138,10 @@ export function RosterView() {
       {creating && (
         <section className="panel p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h2 className="title title-rule flex-1 text-sm text-gold">New operation</h2>
+            <h2 className="title title-rule flex-1 text-sm text-gold">
+              New operation
+              <Help text={"Plan an event: name it, pick who leads it and which clans take part. It is created as Planned, and its roster board opens so you can build parties.\nNothing changes for players until the event leader starts it."} />
+            </h2>
             <button type="button" className="btn btn-quiet text-sm" onClick={() => setCreating(false)}>Cancel</button>
           </div>
           <NewOperation
