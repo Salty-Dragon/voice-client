@@ -4,7 +4,7 @@
 // offered: the server checks every move again.
 
 import { useState } from "react";
-import { rpc, type OpDetail, type Party, type Person } from "../api";
+import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
@@ -35,6 +35,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const [selected, setSelected] = useState<number | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | "reserve" | null>(null);
+  const [placed, setPlaced] = useState("");
 
   if (error && !data) {
     return (
@@ -51,6 +52,21 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const online = new Set(data.onlineIds);
   const person = new Map(op.people.map((p) => [p.userId, p]));
   const partyOf = (userId: number) => op.parties.find((p) => p.memberIds.includes(userId)) ?? null;
+
+  // Constant parties that can still be dropped onto this board.
+  const offered = (data.cps ?? []).filter((cp) => !cp.onBoard && cp.members > 0);
+  const addCps = (cpId: number | null) => {
+    setPlaced("");
+    void act
+      .run(async () => {
+        const r = await rpc<CpPlaced>("op.addCps", { opId, cpId });
+        if (r.skipped.length > 0) setPlaced(`Already in another party, left where they are: ${r.skipped.join(", ")}.`);
+      })
+      .then(() => {
+        reload();
+        refreshInfo();
+      });
+  };
 
   const run = (method: string, params: Record<string, unknown>) => {
     void act.run(() => rpc(method, { opId, ...params })).then(() => {
@@ -241,6 +257,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         )}
         {act.busy && <span className="text-text-muted">Saving…</span>}
         {act.error && <span className="text-danger" role="alert">{act.error}</span>}
+        {placed && <span className="text-text-muted" role="status">{placed}</span>}
       </div>
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -298,6 +315,26 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               })}
             </PartyBlock>
           ))}
+          {perms.canEditParties && open && offered.length > 0 && (
+            <div className="flex min-h-24 flex-col gap-2 rounded-sm border border-dashed border-gold-dim p-3">
+              <span className="flex items-center gap-1 text-text-muted">
+                Constant parties
+                <Help text={"Standing groups set up on the Clan screen. Click one to put it on the board as a ready party, with its members in order and its leader in charge.\nA member who is already in another party here stays where they are. Afterwards the party is an ordinary one: change it freely, the constant party itself is not affected."} />
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {offered.map((cp) => (
+                  <button key={cp.id} type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={() => addCps(cp.id)}>
+                    {cp.name} ({cp.members})
+                  </button>
+                ))}
+              </div>
+              {offered.length > 1 && (
+                <div>
+                  <button type="button" className="btn text-sm" disabled={act.busy} onClick={() => addCps(null)}>Add all {offered.length}</button>
+                </div>
+              )}
+            </div>
+          )}
           {perms.canEditParties && (
             <button
               type="button"
@@ -364,7 +401,7 @@ function PartyBlock({
   const [editing, setEditing] = useState(false);
   const count = party.memberIds.length;
   return (
-    <div {...dnd} className={`panel flex flex-col gap-2 p-3 ${highlight ? "border-gold-bright" : ""}`}>
+    <div {...dnd} data-party={party.id} className={`panel flex flex-col gap-2 p-3 ${highlight ? "border-gold-bright" : ""}`}>
       <div className="flex items-baseline gap-2">
         {editing ? (
           <form
@@ -387,6 +424,7 @@ function PartyBlock({
             )}
           </h2>
         )}
+        {party.cpId !== null && <span className="text-xs uppercase tracking-wider text-gold-dim">Constant</span>}
         <span className={`tabular-nums ${count > PARTY_SIZE ? "text-danger" : "text-text-muted"}`}>{count}/{PARTY_SIZE}</span>
       </div>
       {count > PARTY_SIZE && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}

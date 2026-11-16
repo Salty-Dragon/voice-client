@@ -50,12 +50,27 @@ The leader clicks **Make officer** beside a member, or **Remove officer** to und
 - **Command net (leader only):** you coordinate with the event leader and the other leaders. You count as a senior voice there: while you, the event leader or a deputy speaks, party leaders are made quieter for everyone listening.
 - **Lounge:** between operations everyone in the clan can talk freely there.
 
+## Constant parties
+
+A constant party is a group of your members who always fight together: a fixed line-up, in order, with a leader. Set them up once on the **Clan** tab, under **Constant parties**, and they can be put on any operation's board with one click.
+
+- **Create one:** type a name and click **Create**. The clan leader and officers can do this.
+- **Add members:** pick them from **Add a member…**. They are kept in the order you add them, and the first one leads it.
+- **Change the leader:** **Make leader** beside a member. The leader becomes the party's leader in an operation.
+- **Take out** removes a member. **Delete** removes the constant party.
+- **Rename:** click its name.
+
+A player is in one constant party at a time: adding them to another moves them. A constant party's own leader can rename it, change its members and hand leadership on, so you can leave each group to look after itself. The count turns red past 9, which is a warning, not a limit.
+
+Every member of the clan can see the clan's constant parties; their own is marked.
+
 ## Parties in an operation
 
 When your clan takes part in an operation, open **Operations**, then the operation, to reach the roster board.
 
 You can:
 
+- **Add your constant parties:** each one not yet on the board is offered under **Constant parties**. Click it and it becomes a party, with its members in order and its leader in charge. **Add all** adds every one at once. A member who is already in another party stays there. After that it is an ordinary party: change it as you like, your constant party is not affected.
 - **Create a party** with **+ New party**, and rename it by clicking its name.
 - **Place your own members:** drag a card onto a party or onto Reserve, or click the card and use **Move to…**.
 - **Choose a party's leader:** click a member of the party, then **Make party leader**.

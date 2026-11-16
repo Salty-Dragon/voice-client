@@ -65,7 +65,13 @@ export type ClanView = { clan: { id: number; name: string; tag: string }; myRole
 export type OpState = "planned" | "live" | "ended";
 export type OpSummary = { id: number; name: string; startsAt: string | null; state: OpState; leaderName: string };
 export type Person = { userId: number; name: string; classTag: string | null; clanId: number | null; clanTag: string | null; clanRole: ClanRole | null };
-export type Party = { id: number; name: string; leaderId: number | null; memberIds: number[] };
+export type Party = { id: number; name: string; leaderId: number | null; memberIds: number[]; leaderLost: boolean; /** The constant party it was made from. */ cpId: number | null };
+/** A constant party: a standing group in a clan, dropped onto a board as a ready party. */
+export type Cp = { id: number; clanId: number; name: string; leaderId: number | null; members: { userId: number; name: string; classTag: string | null }[] };
+export type CpList = { cps: Cp[]; canCreate: boolean };
+/** A constant party the viewer may add to a board. */
+export type BoardCp = { id: number; clanId: number; name: string; members: number; onBoard: boolean };
+export type CpPlaced = { parties: number; players: number; skipped: string[] };
 export type OpView = {
   id: number;
   name: string;
@@ -81,7 +87,9 @@ export type OpView = {
   requests: { partyId: number; userId: number }[];
 };
 export type OpPerms = { isOrganiser: boolean; leadClanIds: number[]; canView: boolean; canEditParties: boolean };
-export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[] };
-export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[] };
+export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[]; cps: BoardCp[] };
+/** An earlier operation whose roster a new one can start from. */
+export type PreviousOp = { id: number; name: string; state: OpState; startsAt: string | null; eventLeaderId: number; clanIds: number[]; parties: number; players: number };
+export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[]; previous: PreviousOp[] };
 export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
 export type AllianceView = { clans: ClanSummary[]; users: AllianceUser[] };

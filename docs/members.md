@@ -85,6 +85,10 @@ The first player placed in a party leads it. A party leader:
 
 If you are moved out of your party, leadership passes to the next member automatically.
 
+## Constant parties
+
+If you always fight with the same group, your clan's leader or officers can save it as a **constant party**. You can see your clan's constant parties on the **Clan** tab, with yours marked. Organisers put a constant party on an operation's board with one click, so you are in the right party from the start. If you lead a constant party, you can rename it, change its members and hand leadership on from that same screen.
+
 ## If your party leader drops out
 
 A party's leader is its only voice on Command. If the leader drops out of a live operation (the app closed or crashed, the connection died, or they are sitting the operation out), the party is not left waiting:

@@ -54,16 +54,24 @@ An operation is one event: a siege, an epic boss, a mass PvP. It has an event le
 
 1. Open **Operations** and click **New operation**.
 2. Give it a name and, if you like, a start time in your own time zone.
-3. Choose the **event leader**. It defaults to you.
-4. Tick the **clans taking part**.
-5. Click **Create operation**. Its roster board opens.
+3. To reuse an earlier roster, pick that operation under **Start from** (see below). Otherwise leave it on "An empty roster".
+4. Choose the **event leader**. It defaults to you.
+5. Tick the **clans taking part**.
+6. Click **Create operation**. Its roster board opens.
 
 The operation is **Planned**. Nobody is pulled into it yet: players stay in their lounge while you build the roster.
+
+### Starting from an earlier operation
+
+You do not have to rebuild the roster for every event. **Start from** lists your recent operations with their size. Pick one and the new operation begins with the same parties in the same order, with the same leaders, members and deputies. The clans and event leader are filled in to match; change them if you need to.
+
+Only players who are still approved members of the clans you tick are carried over. Anyone banned, removed from their clan, or in a clan that is not taking part this time is left out, and everyone not in a party starts in Reserve as usual. The earlier operation is not changed.
 
 ### Building the roster
 
 Every approved member of the participating clans appears in **Reserve**, with a green dot if they have the app open.
 
+- **Constant parties** set up by the clans are offered on the board. Click one to add it as a ready party, or **Add all** to add every one: for most events this builds most of the roster in one click. Parties made this way are marked **Constant**.
 - **+ New party** adds a party. Click its name to rename it.
 - **Drag** a card onto a party or back to Reserve. Or click a card and use **Move to…**, which does the same thing without dragging.
 - The first player in a party leads it. To change that, click a member and choose **Make party leader**.

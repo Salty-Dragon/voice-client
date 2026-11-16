@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { rpc, type ClanSummary, type ClanView as ClanData } from "../api";
+import { useRef, useState } from "react";
+import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, Initial } from "./common";
 import { Help } from "./tips";
@@ -117,6 +117,150 @@ function JoinAClan() {
   );
 }
 
+const PARTY_SIZE = 9;
+const CP_HELP = [
+  "A constant party is a standing group in your clan: the players who always fight together, in a fixed order, with a leader.",
+  "On an operation's roster board it is dropped in with one click as a ready party, so the roster does not have to be rebuilt for every event.",
+  "A player is in one constant party at a time: adding them to another moves them.",
+  "The clan leader and officers create and delete them. A constant party's own leader can rename it, change its members and hand leadership on.",
+  "Changing one here does not change operations it was already added to.",
+].join("\n");
+
+/** The clan's constant parties. Everyone in the clan sees them; who may change what is decided per party. */
+function ConstantParties({ clanId, members, leads }: { clanId: number; members: ClanMember[]; leads: boolean }) {
+  const { info } = useApp();
+  const me = info.user.id;
+  const { data, error, reload } = useLoad(() => rpc<CpList>("cps.list", { clanId }), [clanId]);
+  const act = useAct();
+  const [name, setName] = useState("");
+  const call = (method: string, params: Record<string, unknown>) => act.run(() => rpc(method, params)).then(reload);
+  if (error) return <p className="text-danger">{error}</p>;
+  if (!data) return null;
+  // Nothing to show a plain member of a clan that has none.
+  if (data.cps.length === 0 && !data.canCreate) return null;
+  const active = members.filter((m) => m.status === "active");
+
+  return (
+    <Section title={`Constant parties (${data.cps.length})`} help={CP_HELP}>
+      {data.cps.length === 0 && <p className="text-text-muted">None yet. Create one for each group that always fights together.</p>}
+      <ul className="flex flex-col gap-3">
+        {data.cps.map((cp) => (
+          <CpCard key={cp.id} cp={cp} me={me} canManage={leads || data.canCreate || cp.leaderId === me} canDelete={data.canCreate} clanMembers={active} busy={act.busy} call={call} />
+        ))}
+      </ul>
+      {data.canCreate && (
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await call("cp.create", { clanId, name });
+            setName("");
+          }}
+        >
+          <input className="field w-56" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} placeholder="Name, for example Vanguard" aria-label="New constant party" />
+          <button className="btn text-sm" disabled={act.busy || name.trim().length < 2}>Create</button>
+        </form>
+      )}
+      {act.error && <p className="text-danger" role="alert">{act.error}</p>}
+    </Section>
+  );
+}
+
+function CpCard({
+  cp,
+  me,
+  canManage,
+  canDelete,
+  clanMembers,
+  busy,
+  call,
+}: {
+  cp: Cp;
+  me: number;
+  canManage: boolean;
+  canDelete: boolean;
+  clanMembers: ClanMember[];
+  busy: boolean;
+  call: (method: string, params: Record<string, unknown>) => Promise<void>;
+}) {
+  const [renaming, setRenaming] = useState(false);
+  const inside = new Set(cp.members.map((m) => m.userId));
+  const mine = inside.has(me);
+  const over = cp.members.length > PARTY_SIZE;
+  return (
+    <li data-cp={cp.id} className={`flex flex-col gap-2 border p-3 ${mine ? "border-gold-dim" : "border-line"}`}>
+      <div className="flex flex-wrap items-baseline gap-3">
+        {renaming ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const next = String(new FormData(e.currentTarget).get("name") ?? "").trim();
+              setRenaming(false);
+              if (next && next !== cp.name) await call("cp.rename", { cpId: cp.id, name: next });
+            }}
+          >
+            <input name="name" defaultValue={cp.name} maxLength={48} autoFocus onBlur={() => setRenaming(false)} className="field py-0.5" aria-label="Constant party name" />
+          </form>
+        ) : (
+          <h3 className="title text-sm text-net-party">
+            {canManage ? (
+              <button type="button" className="title cursor-text hover:text-gold-bright" aria-label={`Rename ${cp.name}`} onClick={() => setRenaming(true)}>{cp.name}</button>
+            ) : (
+              cp.name
+            )}
+          </h3>
+        )}
+        {mine && <span className="text-xs uppercase tracking-wider text-gold">Your constant party</span>}
+        <span className={`ml-auto tabular-nums ${over ? "text-danger" : "text-text-muted"}`}>{cp.members.length}/{PARTY_SIZE}</span>
+        {canDelete && (
+          <ConfirmButton className="text-xs text-text-muted hover:text-danger cursor-pointer" confirm={`Delete ${cp.name}?`} disabled={busy} onConfirm={() => void call("cp.delete", { cpId: cp.id })}>
+            Delete
+          </ConfirmButton>
+        )}
+      </div>
+      {over && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
+      {cp.members.length === 0 ? (
+        <p className="text-text-muted">No members yet.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-line">
+          {cp.members.map((m) => (
+            <li key={m.userId} className="flex flex-wrap items-center gap-3 py-1.5">
+              <Initial name={m.name} />
+              <span className={`font-medium ${m.userId === me ? "text-gold-bright" : ""}`}>{m.name}</span>
+              {m.classTag && <span className="text-gold">{m.classTag}</span>}
+              {m.userId === cp.leaderId && <span className="text-xs uppercase tracking-wider text-net-command">Leader</span>}
+              {canManage && (
+                <span className="ml-auto flex gap-2">
+                  {m.userId !== cp.leaderId && (
+                    <button type="button" className="btn btn-quiet text-sm" disabled={busy} onClick={() => void call("cp.setLeader", { cpId: cp.id, userId: m.userId })}>Make leader</button>
+                  )}
+                  <button type="button" className="btn btn-quiet text-sm" disabled={busy} onClick={() => void call("cp.setMember", { cpId: cp.id, userId: m.userId, member: false })}>Take out</button>
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {canManage && (
+        <select
+          className="field w-auto self-start text-sm"
+          value=""
+          disabled={busy}
+          aria-label={`Add a member to ${cp.name}`}
+          onChange={(e) => e.target.value && void call("cp.setMember", { cpId: cp.id, userId: Number(e.target.value), member: true })}
+        >
+          <option value="">Add a member…</option>
+          {clanMembers
+            .filter((m) => !inside.has(m.userId))
+            .map((m) => (
+              <option key={m.userId} value={m.userId}>{m.name}</option>
+            ))}
+        </select>
+      )}
+    </li>
+  );
+}
+
 function Members({ clanId }: { clanId: number }) {
   const { info, refreshInfo } = useApp();
   const { data, error, reload } = useLoad(() => rpc<ClanData>("clan.get", { clanId }), [clanId]);
@@ -195,6 +339,7 @@ function Members({ clanId }: { clanId: number }) {
           ))}
         </ul>
       </Section>
+      <ConstantParties clanId={clanId} members={data.members} leads={leads} />
     </>
   );
 }

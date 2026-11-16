@@ -28,6 +28,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
   const [starts, setStarts] = useState("");
   const [leader, setLeader] = useState(info.user.id);
   const [picked, setPicked] = useState<number[] | null>(null);
+  const [copyFrom, setCopyFrom] = useState<number | null>(null);
   const act = useAct();
   if (!data) return null;
   if (data.clans.length === 0) return <p className="text-text-muted">Create a clan on the Alliance screen first.</p>;
@@ -41,7 +42,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         let id = 0;
         const ok = await act.run(async () => {
           const startsAt = starts ? new Date(starts).toISOString() : null;
-          id = (await rpc<{ id: number }>("op.create", { name, startsAt, eventLeaderId: leader, clanIds })).id;
+          id = (await rpc<{ id: number }>("op.create", { name, startsAt, eventLeaderId: leader, clanIds, copyFrom })).id;
         });
         if (ok) onCreated(id);
       }}
@@ -50,6 +51,33 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         Name
         <input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Aden siege" required />
       </label>
+      {data.previous.length > 0 && (
+        <label className="flex flex-col gap-1 text-text-muted">
+          <span className="flex items-center gap-1">
+            Start from
+            <Help text={"Begin with the parties of an earlier operation: the same parties in the same order, with the same leaders, members and deputies.\nOnly players who are still approved members of the clans you tick below are carried over; everyone else starts in Reserve.\nThe earlier operation is not changed. You can rearrange the new one freely afterwards."} />
+          </span>
+          <select
+            className="field"
+            aria-label="Start from"
+            value={copyFrom ?? ""}
+            onChange={(e) => {
+              const from = data.previous.find((p) => p.id === Number(e.target.value)) ?? null;
+              setCopyFrom(from?.id ?? null);
+              if (from) {
+                // Same clans and leader as last time, unless they are gone; both can still be changed below.
+                setPicked(from.clanIds.filter((id) => data.clans.some((c) => c.id === id)));
+                if (data.users.some((u) => u.id === from.eventLeaderId)) setLeader(from.eventLeaderId);
+              }
+            }}
+          >
+            <option value="">An empty roster</option>
+            {data.previous.map((p) => (
+              <option key={p.id} value={p.id}>{`${p.name}: ${p.parties} ${p.parties === 1 ? "party" : "parties"}, ${p.players} ${p.players === 1 ? "player" : "players"}`}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="flex flex-col gap-1 text-text-muted">
         <span className="flex items-center gap-1">
           Starts (your local time, optional)
