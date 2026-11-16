@@ -83,8 +83,9 @@ function Strip() {
       ) : (
         lines.map((line, i) => (
           <div key={`${line.net}-${line.label}`} className={`flex items-center gap-2 ${line.lowered ? "opacity-60" : ""}`}>
-            <span className={`w-[4.5rem] shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider ${NET_TEXT[line.net]}`}>
-              {line.net === "party" || line.net === "lounge" ? line.label : NET_NAME[line.net]}
+            <span className={`w-[5.5rem] shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider ${NET_TEXT[line.net]}`}>
+              {/* A party goes by its own name; a lounge's full name is too long for this column. */}
+              {line.net === "party" ? line.label : line.net === "lounge" && /^alliance/i.test(line.label) ? "Alliance" : NET_NAME[line.net]}
             </span>
             <span className="min-w-0 flex-1 truncate">
               {line.you && <span className={`mr-1 font-semibold ${NET_TEXT[line.net]}`}>You</span>}
