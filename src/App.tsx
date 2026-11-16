@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, rpc, type ClanSummary, type Info } from "./api";
+import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
 import { redeemPending, usePendingInvite } from "./invite";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
+import { publishStrip } from "./strip/publish";
 import { installUpdate, useUpdate } from "./update";
 import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
@@ -122,6 +123,28 @@ export default function App() {
       void engine.stop();
     };
   }, [phase, token, attempt, refreshInfo, leave]);
+
+  // The compact strip shows the nets with someone speaking. It has no connection of its own, so tell it on every change.
+  useEffect(() => {
+    const nets = phase === "running" && set ? eng.view() : [];
+    publishStrip({
+      where: phase === "running" && set ? (set.operation?.name ?? nets.find((n) => n.net === "lounge")?.label ?? null) : null,
+      lines: nets
+        .filter((n) => n.live || n.speakers.length > 0)
+        .map((n) => ({
+          net: n.net,
+          label: n.label,
+          you: n.live,
+          lowered: n.lowered,
+          speakers: n.speakers.map((sp) => {
+            const version = sp.clanId === null ? undefined : crests.get(sp.clanId);
+            return { name: sp.name, crest: sp.clanId !== null && version ? crestUrl(sp.clanId, version) : null, tag: sp.clanTag };
+          }),
+        })),
+      muted: eng.muteAll,
+      locked: eng.broadcastLocked,
+    });
+  });
 
   // An invite link that was opened: use it as soon as the player is signed in and set up, and show the Clan screen.
   const pendingInvite = usePendingInvite();

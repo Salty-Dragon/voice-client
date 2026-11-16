@@ -252,6 +252,12 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
               onChange={(v) => setSettings({ closeToTray: v })}
             />
             <Toggle
+              label="Show the compact strip"
+              hint="A small window that stays on top of other windows and shows who is speaking, one line per net, so you can see it without switching to the app. Drag it where you like; double-click it to bring the app forward. It sits over a game running in a window or in borderless mode, not over one in exclusive full screen."
+              checked={s.strip}
+              onChange={(v) => setSettings({ strip: v })}
+            />
+            <Toggle
               label="Update automatically"
               hint="The app asks the server for a newer version when it starts and every few hours. An update found at start installs before you join voice; one found later waits for you to click Restart to update."
               checked={s.autoUpdate}

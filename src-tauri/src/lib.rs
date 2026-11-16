@@ -1,6 +1,6 @@
 //! Desktop shell. The UI and all audio live in the WebView; this side owns
-//! system-wide key capture, the administrator checks, the tray icon and the
-//! updater plugin.
+//! system-wide key capture, the administrator checks, the tray icon, the
+//! compact strip's window and the updater plugin.
 
 mod input;
 
@@ -39,6 +39,41 @@ fn restart_as_admin(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn set_close_to_tray(enabled: bool) {
     CLOSE_TO_TRAY.store(enabled, Ordering::Relaxed);
+}
+
+/// Brings the main window forward. The compact strip calls this when it is double-clicked.
+#[tauri::command]
+fn show_main_window(app: tauri::AppHandle) {
+    show_main(&app);
+}
+
+/// Opens or closes the compact strip: a small always-on-top window, described
+/// in tauri.conf.json, that shows who is speaking. It runs no voice of its own.
+/// Async, because creating a window from a synchronous command can hang on Windows.
+#[tauri::command]
+async fn set_strip(app: tauri::AppHandle, show: bool, x: Option<f64>, y: Option<f64>) -> Result<(), String> {
+    match (app.get_webview_window("strip"), show) {
+        (Some(window), false) => window.close().map_err(|e| e.to_string()),
+        (None, true) => {
+            let config = app
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|w| w.label == "strip")
+                .cloned()
+                .ok_or_else(|| String::from("the strip window is not configured"))?;
+            let window = tauri::WebviewWindowBuilder::from_config(&app, &config)
+                .map_err(|e| e.to_string())?
+                .build()
+                .map_err(|e| e.to_string())?;
+            if let (Some(x), Some(y)) = (x, y) {
+                let _ = window.set_position(tauri::LogicalPosition::new(x, y));
+            }
+            Ok(())
+        }
+        _ => Ok(()),
+    }
 }
 
 fn show_main(app: &tauri::AppHandle) {
@@ -134,11 +169,20 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                if CLOSE_TO_TRAY.load(Ordering::Relaxed) && !QUITTING.load(Ordering::Relaxed) {
-                    api.prevent_close();
-                    let _ = window.hide();
+            // Only the main window decides the app's life. The strip just closes.
+            if window.label() != "main" {
+                return;
+            }
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    if CLOSE_TO_TRAY.load(Ordering::Relaxed) && !QUITTING.load(Ordering::Relaxed) {
+                        api.prevent_close();
+                        let _ = window.hide();
+                    }
                 }
+                // With the main window gone the app is over, even if the strip is still open.
+                tauri::WindowEvent::Destroyed => window.app_handle().exit(0),
+                _ => {}
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -146,7 +190,9 @@ pub fn run() {
             set_source,
             capture_next,
             restart_as_admin,
-            set_close_to_tray
+            set_close_to_tray,
+            set_strip,
+            show_main_window
         ])
         .run(context)
         .expect("failed to start the app");

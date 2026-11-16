@@ -43,6 +43,8 @@ export type Settings = {
   autoUpdate: boolean;
   /** Desktop app: closing the window hides it in the tray and voice keeps running. */
   closeToTray: boolean;
+  /** Desktop app: a small always-on-top window that shows who is speaking. */
+  strip: boolean;
 };
 
 const DEFAULTS: Settings = {
@@ -67,6 +69,7 @@ const DEFAULTS: Settings = {
   playerMuted: {},
   autoUpdate: true,
   closeToTray: false,
+  strip: false,
 };
 
 const KEY = "settings.v1";

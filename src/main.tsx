@@ -1,29 +1,10 @@
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import { startInviteLinks } from "./invite";
-import { startShell } from "./shell";
-import { Boot } from "./ui/Boot";
-import { TipLayer } from "./ui/tips";
+// Two windows share this page: the app itself, and the compact strip. The
+// strip must never start the voice engine or the key capture (the server
+// allows one voice connection per account), so each side is loaded on its own.
 import "./style.css";
 
-startShell();
-void startInviteLinks().catch(() => {});
+type Internals = { metadata?: { currentWindow?: { label?: string } } };
+const label = (window as unknown as { __TAURI_INTERNALS__?: Internals }).__TAURI_INTERNALS__?.metadata?.currentWindow?.label;
 
-createRoot(document.getElementById("root")!).render(
-  <>
-    <Boot>
-      <App />
-    </Boot>
-    <TipLayer />
-  </>,
-);
-
-// Space and the arrow keys scroll the page by default, which is distracting
-// when they are bound to a net. Typing in a text field is left alone.
-window.addEventListener("keydown", (e) => {
-  const el = e.target as HTMLElement | null;
-  const typing = !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA");
-  if (!typing && [" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(e.key)) {
-    e.preventDefault();
-  }
-});
+if (label === "strip") void import("./strip/main");
+else void import("./main-app");

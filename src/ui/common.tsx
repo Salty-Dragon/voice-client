@@ -7,14 +7,9 @@ import { crestUrl } from "../api";
 import { useApp } from "./app-context";
 import { Help } from "./tips";
 
-export const NET_TEXT: Record<NetKind, string> = {
-  broadcast: "text-net-broadcast",
-  command: "text-net-command",
-  clan: "text-net-clan",
-  party: "text-net-party",
-  reserve: "text-net-reserve",
-  lounge: "text-text",
-};
+export { NET_NAME, NET_TEXT } from "./net-style";
+import { NET_NAME, NET_TEXT } from "./net-style";
+
 export const NET_BORDER: Record<NetKind, string> = {
   broadcast: "border-l-net-broadcast",
   command: "border-l-net-command",
@@ -23,15 +18,6 @@ export const NET_BORDER: Record<NetKind, string> = {
   reserve: "border-l-net-reserve",
   lounge: "border-l-gold-dim",
 };
-export const NET_NAME: Record<NetKind, string> = {
-  broadcast: "Broadcast",
-  command: "Command",
-  clan: "Clan",
-  party: "Party",
-  reserve: "Reserve",
-  lounge: "Lounge",
-};
-
 /** One line on what each net is for, shown behind the net's help icon. */
 export const NET_TIP: Record<NetKind, string> = {
   broadcast: "Broadcast: the event leader and deputies speak, everyone in the operation hears.",
