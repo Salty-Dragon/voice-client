@@ -1,13 +1,15 @@
 import { isDesktop } from "../config";
 import { foreground } from "../runtime";
 import { setSettings, useSettings, type BindTarget, type InputSource } from "../settings";
+import { useApp } from "./app-context";
 import { DevicePickers, KeyBind, MicTest, NET_NAME, NET_TEXT, PartyMode } from "./common";
+import { ProfileForm } from "./NameStep";
 
 const KEYS: { target: BindTarget; label: string; note: string }[] = [
   { target: "broadcast", label: "Broadcast", note: "Event leader and deputies" },
   { target: "command", label: "Command", note: "Leaders" },
   { target: "clan", label: "Clan", note: "Clan leader and officers" },
-  { target: "party", label: "Party", note: "Your party" },
+  { target: "party", label: "Party", note: "Your party, and the lounge" },
   { target: "reserve", label: "Reserve", note: "While you have no party" },
   { target: "muteAll", label: "Mute all", note: "Press once to silence your mic everywhere, again to restore" },
 ];
@@ -37,6 +39,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 
 export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onSignOut: () => void }) {
   const s = useSettings();
+  const { info, refreshInfo } = useApp();
   return (
     <div className="absolute inset-0 z-20 flex justify-end bg-black/60" onClick={onClose}>
       <aside className="panel h-full w-full max-w-md overflow-y-auto p-6 flex flex-col gap-5" onClick={(e) => e.stopPropagation()} aria-label="Settings">
@@ -55,7 +58,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           </div>
         </Group>
 
-        <Group title="Party and Reserve">
+        <Group title="Party, Reserve and lounge">
           <PartyMode />
           {s.partyMode === "voice" && (
             <label className="flex items-center gap-3 text-text-muted">
@@ -137,6 +140,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         )}
 
         <Group title="Account">
+          <ProfileForm name={info.user.name} classTag={info.user.classTag ?? ""} onSaved={refreshInfo} submit="Save" />
           <div><button type="button" className="btn btn-quiet text-sm" onClick={onSignOut}>Sign out</button></div>
         </Group>
       </aside>

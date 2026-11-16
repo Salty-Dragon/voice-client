@@ -4,6 +4,10 @@ Windows voice client built on [Tauri](https://tauri.app) and [LiveKit](https://l
 
 Voice follows the roster: the server tells the client which voice rooms ("nets") it belongs in, and the client connects to exactly those. Nobody picks a channel by hand. When an organiser moves you to another party, your audio follows within a couple of seconds.
 
+Between events you sit in your clan's lounge. When an operation you belong to goes live you are pulled into it, and returned to the lounge when it ends.
+
+The app is also where the alliance is run: joining a clan, approving members, creating operations and building the roster on a drag-and-drop board. Each screen offers only what your role allows, and the server checks every action again.
+
 ## What it does
 
 - Holds several nets at once (Broadcast, Command, Clan, Party, Reserve) from a single microphone capture.
@@ -43,5 +47,6 @@ The server address is set at build time with `VITE_SERVER`. The product name is 
 | `src/engine.ts` | Rooms, microphone, push-to-talk and voice activation |
 | `src/control.ts` | The control channel that delivers your nets |
 | `src/auth.ts` | Sign-in through the system browser |
-| `src/ui/` | Screens |
+| `src/api.ts` | Calls to the backend for clans, operations and the roster |
+| `src/ui/` | Screens: voice, operations and roster board, clan, settings |
 | `src-tauri/src/input/` | System-wide key capture (Windows) |

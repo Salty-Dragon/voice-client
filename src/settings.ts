@@ -2,10 +2,12 @@
 
 import { useSyncExternalStore } from "react";
 
-export type NetKind = "broadcast" | "command" | "clan" | "party" | "reserve";
+export type NetKind = "broadcast" | "command" | "clan" | "party" | "reserve" | "lounge";
 /** Highest priority first. */
-export const NET_ORDER: NetKind[] = ["broadcast", "command", "clan", "party", "reserve"];
-export type BindTarget = NetKind | "muteAll";
+export const NET_ORDER: NetKind[] = ["broadcast", "command", "clan", "party", "reserve", "lounge"];
+/** What a key can be bound to. A lounge uses the Party key: both are "talk to the people around me". */
+export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll";
+export const bindTargetOf = (net: NetKind): Exclude<NetKind, "lounge"> => (net === "lounge" ? "party" : net);
 export type InputSource = "poll" | "hook" | "raw";
 
 export type Settings = {
@@ -42,7 +44,7 @@ const DEFAULTS: Settings = {
   partyMode: "ptt",
   vadThresholdDb: -45,
   vadHoldMs: 400,
-  netVolume: { broadcast: 1, command: 1, clan: 1, party: 1, reserve: 1 },
+  netVolume: { broadcast: 1, command: 1, clan: 1, party: 1, reserve: 1, lounge: 1 },
   cues: true,
   cueVolume: 0.5,
   alwaysAdmin: false,

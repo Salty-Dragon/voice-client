@@ -3,7 +3,7 @@ import { engine } from "../runtime";
 import { setSettings, useSettings } from "../settings";
 import { DevicePickers, MicTest, PartyMode, useEngine, Wordmark } from "./common";
 
-const STEPS = ["Devices", "Microphone test", "Party voice"] as const;
+const STEPS = ["Devices", "Microphone test", "How you talk"] as const;
 
 /** First run: pick devices, hear yourself, then choose how you talk to your party. */
 export function Wizard() {
@@ -48,7 +48,7 @@ export function Wizard() {
         {step === 2 && (
           <>
             <p className="text-text-muted">
-              Your party hears you either while you hold a key, or whenever you speak. Mouse side buttons work as keys.
+              Your party, and your clan's lounge between events, hear you either while you hold a key or whenever you speak. Mouse side buttons work as keys.
               Command, Clan and Broadcast always need a key; you bind those if you get such a role.
             </p>
             <PartyMode />

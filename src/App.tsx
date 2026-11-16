@@ -1,38 +1,73 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError, rpc, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
-import { ControlClient, type ControlState, type Me, type NetSet } from "./control";
+import { ControlClient, type ControlState, type NetSet } from "./control";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
-import { Main } from "./ui/Main";
+import { AppContext, type Tab } from "./ui/app-context";
+import { ClanView } from "./ui/ClanView";
+import { useEngine, Wordmark } from "./ui/common";
+import { NameStep } from "./ui/NameStep";
+import { RosterView } from "./ui/RosterView";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import { SignIn } from "./ui/SignIn";
+import { VoiceView } from "./ui/VoiceView";
 import { Wizard } from "./ui/Wizard";
-import { Wordmark } from "./ui/common";
 
 type Phase = "signin" | "running" | "replaced";
 
+const TABS: { id: Tab; label: string }[] = [
+  { id: "voice", label: "Voice" },
+  { id: "roster", label: "Operations" },
+  { id: "clan", label: "Clan" },
+];
+
 export default function App() {
   const s = useSettings();
+  const eng = useEngine();
   const [token, setToken] = useState<string | null>(getToken);
-  // The browser fallback has no token: it tries its cookie and falls back to the sign-in screen.
+  // The browser version has no token: it tries the site's cookie and falls back to the sign-in screen.
   const [phase, setPhase] = useState<Phase>(isDesktop && !token ? "signin" : "running");
   const [attempt, setAttempt] = useState(0);
-  const [me, setMe] = useState<Me | null>(null);
+  const [info, setInfo] = useState<Info | null>(null);
   const [set, setSet] = useState<NetSet | null>(null);
   const [state, setState] = useState<ControlState>("connecting");
   const [notice, setNotice] = useState("");
   const [signInNotice, setSignInNotice] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [tick, setTick] = useState(0);
+  const [tab, setTab] = useState<Tab>("voice");
+  const [boardOp, setBoardOp] = useState<number | null>(null);
   const control = useRef<ControlClient | null>(null);
+
+  const leave = useCallback((why: string) => {
+    void engine.stop();
+    setSet(null);
+    setInfo(null);
+    if (isDesktop) {
+      void signOut();
+      setToken(null);
+    }
+    setSignInNotice(why);
+    setPhase("signin");
+  }, []);
+
+  const refreshInfo = useCallback(() => {
+    rpc<Info>("me")
+      .then(setInfo)
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 401) leave(isDesktop ? "You were signed out. Sign in again to continue." : "");
+      });
+  }, [leave]);
 
   useEffect(() => {
     if (phase !== "running") return;
+    refreshInfo();
     const c = new ControlClient(CONTROL_URL, token);
     control.current = c;
     let noticeTimer: number | undefined;
     c.onState = setState;
-    c.onHello = setMe;
     c.onNetSet = (next) => {
       setSet(next);
       void engine.apply(next);
@@ -43,16 +78,17 @@ export default function App() {
         noticeTimer = window.setTimeout(() => setNotice(""), 8000);
       }
     };
+    c.onChanged = () => {
+      setTick((n) => n + 1);
+      refreshInfo();
+    };
     c.onEnded = (why) => {
-      void engine.stop();
-      setSet(null);
-      if (why === "replaced") return setPhase("replaced");
-      if (isDesktop) {
-        void signOut();
-        setToken(null);
-        setSignInNotice("You were signed out. Sign in again to continue.");
+      if (why === "replaced") {
+        void engine.stop();
+        setSet(null);
+        return setPhase("replaced");
       }
-      setPhase("signin");
+      leave(isDesktop ? "You were signed out. Sign in again to continue." : "");
     };
     engine.onNeedRefresh = () => c.refresh();
     c.start();
@@ -62,7 +98,7 @@ export default function App() {
       control.current = null;
       void engine.stop();
     };
-  }, [phase, token, attempt]);
+  }, [phase, token, attempt, refreshInfo, leave]);
 
   if (phase === "signin") {
     return (
@@ -100,34 +136,74 @@ export default function App() {
     );
   }
 
+  if (!info) {
+    return (
+      <main className="flex h-full items-center justify-center">
+        <p className="text-text-muted">Connecting…</p>
+      </main>
+    );
+  }
+  if (!info.user.nameSet) return <NameStep onSaved={refreshInfo} />;
   if (!s.wizardDone) return <Wizard />;
 
+  const go = (next: Tab, opId?: number) => {
+    setTab(next);
+    setBoardOp(next === "roster" ? (opId ?? null) : null);
+  };
+
   return (
-    <div className="relative h-full">
-      <Main
-        me={me}
-        set={set}
-        control={state}
-        notice={notice}
-        onSelect={(id) => control.current?.select(id)}
-        onSettings={() => setShowSettings(true)}
-      />
-      {showSettings && (
-        <SettingsPanel
-          onClose={() => setShowSettings(false)}
-          onSignOut={() => {
-            setShowSettings(false);
-            if (isDesktop) {
-              void signOut();
-              setToken(null);
-              setPhase("signin");
-            } else {
-              // The browser's session belongs to the site; sign out there.
-              window.location.href = `${SERVER}/`;
-            }
-          }}
-        />
-      )}
-    </div>
+    <AppContext.Provider
+      value={{ info, refreshInfo, tick, set, control: state, select: (t) => control.current?.select(t), tab, go, boardOp, notice }}
+    >
+      <div className="relative flex h-full flex-col">
+        <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
+          <Wordmark />
+          <nav className="flex gap-1" aria-label="Screens">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                aria-current={tab === t.id ? "page" : undefined}
+                onClick={() => go(t.id)}
+                className={`rounded-sm px-3 py-1 cursor-pointer transition-colors duration-150 ${
+                  tab === t.id ? "bg-bg-2 text-gold-bright" : "text-text-muted hover:text-text"
+                }`}
+              >
+                {t.label}
+                {t.id === "clan" && info.pendingApprovals > 0 && (
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" title="Waiting for approval">{info.pendingApprovals}</span>
+                )}
+              </button>
+            ))}
+          </nav>
+          <span className="ml-auto flex items-center gap-3">
+            {state !== "online" && <span className="text-xs text-danger">Server link lost, retrying…</span>}
+            {eng.muteAll && <span className="text-xs font-semibold uppercase tracking-wider text-danger">Mic muted</span>}
+            <span className="text-text-muted">
+              {info.user.name}
+              {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}
+            </span>
+            <button type="button" className="btn btn-quiet text-sm" onClick={() => setShowSettings(true)}>Settings</button>
+          </span>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {tab === "voice" && <VoiceView />}
+          {tab === "roster" && <RosterView />}
+          {tab === "clan" && <ClanView />}
+        </div>
+
+        {showSettings && (
+          <SettingsPanel
+            onClose={() => setShowSettings(false)}
+            onSignOut={() => {
+              setShowSettings(false);
+              if (isDesktop) leave("");
+              else window.location.href = `${SERVER}/`; // the browser's session belongs to the site
+            }}
+          />
+        )}
+      </div>
+    </AppContext.Provider>
   );
 }

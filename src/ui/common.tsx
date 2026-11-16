@@ -10,6 +10,7 @@ export const NET_TEXT: Record<NetKind, string> = {
   clan: "text-net-clan",
   party: "text-net-party",
   reserve: "text-net-reserve",
+  lounge: "text-text",
 };
 export const NET_BORDER: Record<NetKind, string> = {
   broadcast: "border-l-net-broadcast",
@@ -17,6 +18,7 @@ export const NET_BORDER: Record<NetKind, string> = {
   clan: "border-l-net-clan",
   party: "border-l-net-party",
   reserve: "border-l-net-reserve",
+  lounge: "border-l-gold-dim",
 };
 export const NET_NAME: Record<NetKind, string> = {
   broadcast: "Broadcast",
@@ -24,6 +26,7 @@ export const NET_NAME: Record<NetKind, string> = {
   clan: "Clan",
   party: "Party",
   reserve: "Reserve",
+  lounge: "Lounge",
 };
 
 export function Wordmark({ className = "" }: { className?: string }) {
@@ -206,7 +209,7 @@ export function PartyMode() {
       </div>
       {s.partyMode === "ptt" ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-text-muted">Party key</span>
+          <span className="text-text-muted">Party and lounge key</span>
           <KeyBind target="party" label="Party" />
         </div>
       ) : (

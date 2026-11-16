@@ -9,10 +9,12 @@ export type NetSet = {
   url: string;
   operation: OpInfo | null;
   operations: OpInfo[];
+  /** True when these are lounge rooms, not an operation's nets. */
+  lounge: boolean;
   nets: NetGrant[];
   notice?: { kind: "moved"; party: string | null };
 };
-export type Me = { id: number; name: string; classTag: string | null };
+export type Me = { id: number; name: string; classTag: string | null; nameSet: boolean; isAdmin: boolean };
 export type ControlState = "connecting" | "online" | "offline";
 /** Why the server ended the session for good. */
 export type Ended = "replaced" | "signed_out";
@@ -28,6 +30,8 @@ export class ControlClient {
   onHello: (me: Me) => void = () => {};
   onNetSet: (set: NetSet) => void = () => {};
   onEnded: (why: Ended) => void = () => {};
+  /** Something in the roster changed; any open roster screen should reload. */
+  onChanged: () => void = () => {};
 
   /** `token` is the desktop session token; the browser passes null and is recognised by its cookie. */
   constructor(private url: string, private token: string | null) {}
@@ -45,9 +49,9 @@ export class ControlClient {
     this.ws = null;
   }
 
-  /** Ask for a different operation, or null to let the server choose. */
-  select(operationId: number | null) {
-    this.send({ type: "select", operationId });
+  /** Choose where to be: an operation, the lounge, or "auto" to let the server decide. */
+  select(target: number | "lounge" | "auto") {
+    this.send({ type: "select", operationId: typeof target === "number" ? target : null, lounge: target === "lounge" });
   }
 
   /** Ask for fresh tokens, after a room could not reconnect with the ones we hold. */
@@ -79,6 +83,8 @@ export class ControlClient {
         this.onHello(msg.user as Me);
       } else if (msg.type === "netset") {
         this.onNetSet(msg as unknown as NetSet);
+      } else if (msg.type === "changed") {
+        this.onChanged();
       } else if (msg.type === "replaced" || msg.type === "signed_out") {
         this.stopped = true;
         this.onEnded(msg.type);

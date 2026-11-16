@@ -88,6 +88,8 @@ export class VoiceEngine {
   private voiceUntil = 0;
   private refreshTimer: number | undefined;
   private settings: Settings = getSettings();
+  /** With more than one lounge, the one the player talks in. They hear all of them. */
+  private talkLounge: string | null = null;
 
   /** Latest mic level in dBFS, about every 10 ms. */
   level = -100;
@@ -388,14 +390,26 @@ export class VoiceEngine {
     this.onChange();
   }
 
-  /** The net voice activation applies to: the party, or Reserve for a player without one. */
+  /** The room the player talks in when in a lounge. */
+  get loungeRoom(): string | null {
+    const lounges = [...this.nets.values()].filter((n) => n.grant.net === "lounge").map((n) => n.grant.room);
+    return this.talkLounge && lounges.includes(this.talkLounge) ? this.talkLounge : (lounges[0] ?? null);
+  }
+
+  setLoungeRoom(room: string) {
+    this.talkLounge = room;
+    this.update();
+    this.onChange();
+  }
+
+  /** The net voice activation applies to: the party, Reserve for a player without one, or the lounge. */
   private voiceRoom(): string | null {
     let reserve: string | null = null;
     for (const net of this.nets.values()) {
       if (net.grant.net === "party") return net.grant.room;
       if (net.grant.net === "reserve") reserve = net.grant.room;
     }
-    return reserve;
+    return reserve ?? this.loungeRoom;
   }
 
   /** Decides, for every net, whether the mic should be open now. Runs on every key event and meter tick. */
@@ -406,11 +420,13 @@ export class VoiceEngine {
     if (voiceMode && this.level >= s.vadThresholdDb) this.voiceUntil = now + s.vadHoldMs;
     const keyedHeld = KEYED_ONLY.some((k) => this.held.has(k));
     const voiceRoom = voiceMode ? this.voiceRoom() : null;
+    const loungeRoom = this.loungeRoom;
     let changed = false;
 
     for (const net of this.nets.values()) {
       if (!net.track) continue;
-      const byKey = this.held.has(net.grant.net);
+      // A lounge is talked in with the Party key, and only the chosen one.
+      const byKey = net.grant.net === "lounge" ? net.grant.room === loungeRoom && this.held.has("party") : this.held.has(net.grant.net);
       const byVoice = net.grant.room === voiceRoom && !keyedHeld && now < this.voiceUntil;
       const want = !this.muteAll && (byKey || byVoice);
 
@@ -508,7 +524,7 @@ export class VoiceEngine {
   }
 
   view(): NetView[] {
-    const order: NetKind[] = ["broadcast", "command", "clan", "party", "reserve"];
+    const order: NetKind[] = ["broadcast", "command", "clan", "party", "reserve", "lounge"];
     return [...this.nets.values()]
       .sort((a, b) => order.indexOf(a.grant.net) - order.indexOf(b.grant.net))
       .map((net) => {
