@@ -67,13 +67,23 @@ jobs:
         with:
           name: installer
           path: installer
+      # The same build numbered 0.0.1, which the update test upgrades from.
+      - name: Old-numbered copy from this build
+        if: inputs.tag == '' && inputs.run_id == ''
+        uses: actions/download-artifact@v4
+        with:
+          name: update-base
+          path: update-base
       - name: Installer from an earlier build
         if: inputs.run_id != ''
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ inputs.run_id }}
-        run: gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -n installer -D installer
+        run: |
+          gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -n installer -D installer
+          # Kept for three days only; without it the update checks are skipped.
+          gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -n update-base -D update-base || true
       - name: Installer from a release
         if: inputs.tag != ''
         shell: bash
@@ -85,7 +95,9 @@ jobs:
         shell: pwsh
         run: |
           $installer = (Get-ChildItem installer -Filter *.exe | Select-Object -First 1).FullName
-          ./backend/e2e/desktop/ci.ps1 -Installer $installer -Client "$PWD\client"
+          $base = ""
+          if (Test-Path update-base) { $base = (Get-ChildItem update-base -Filter *.exe | Select-Object -First 1).FullName }
+          ./backend/e2e/desktop/ci.ps1 -Installer $installer -Client "$PWD\client" -UpdateBase "$base"
       - name: Keep screenshots and logs
         if: always()
         uses: actions/upload-artifact@v4
