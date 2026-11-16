@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    paths-ignore: ["site/**", ".github/workflows/site.yml"]   # the project page has its own workflow
   workflow_dispatch:
 
 permissions:
