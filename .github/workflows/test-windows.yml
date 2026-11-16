@@ -54,7 +54,7 @@ jobs:
       # The backend is private; this key can only read it.
       - uses: actions/checkout@v4
         with:
-          repository: Salty-Dragon/voice-backend
+          repository: Warcryer/server
           ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
           ref: ${{ inputs.backend_ref }}
           path: backend

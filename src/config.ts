@@ -14,7 +14,7 @@ export const CONTROL_URL: string = import.meta.env.VITE_CONTROL_URL ?? `${SERVER
 export const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? "dev";
 
 /** The guides, kept beside the client's source. */
-export const DOCS_URL = "https://github.com/Salty-Dragon/voice-client/blob/main/docs";
+export const DOCS_URL = "https://github.com/Warcryer/client/blob/main/docs";
 
 /** Link scheme that brings a browser sign-in back to the desktop app. */
 export const LINK_SCHEME = "warcryer";
