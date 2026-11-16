@@ -23,6 +23,7 @@ The app is also where the alliance is run: joining a clan (by request or by invi
 - Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
 - Updates itself, with every update signed. Sits in the Windows tray; can keep running there when the window is closed.
+- An optional compact strip: a small always-on-top window showing who is speaking on which net. It is an ordinary window, never drawn into the game.
 
 ## Key capture and privacy
 
@@ -90,6 +91,7 @@ The server address is set at build time with `VITE_SERVER`.
 | `src/auth.ts` | Sign-in through the system browser |
 | `src/update.ts` | Checking for, verifying and installing updates |
 | `src/invite.ts` | Clan invite links opened in the app |
+| `src/strip/` | The compact strip: its own small page, fed by the main window, with no voice of its own |
 | `src/api.ts` | Calls to the backend for clans, operations and the roster |
 | `src/ui/` | Screens: voice, operations and roster board, clan, settings |
 | `src-tauri/src/input/` | System-wide key capture (Windows) |

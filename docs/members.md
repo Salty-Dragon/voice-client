@@ -110,6 +110,16 @@ The new leader is told ("You now lead Vanguard") and is on Command at once, so b
 
 Your account can have one voice connection at a time. Opening the app somewhere else disconnects the first one, which shows **Reconnect here**.
 
+## The compact strip
+
+You do not have to switch to the app to see who is talking. Tick **Show the compact strip** in **Settings → Window and updates** and a small window appears that stays on top of other windows. It shows one line for each net with someone speaking: the net, the speakers with their clan's crest, and **You** while your own mic is open. When nobody is speaking it shrinks to one line saying where you are.
+
+- **Drag** it wherever suits you; it remembers the place.
+- **Double-click** it to bring the app forward.
+- **×** closes it; switch it on again in Settings.
+
+It sits over a game that runs in a window or in borderless mode. A game in exclusive full screen covers it, because the app never draws inside the game.
+
 ## Updates and the tray icon
 
 The Windows app keeps itself up to date. If a new version is waiting when you start the app, it installs first (a few seconds) and the app opens by itself afterwards. If one arrives while the app is running, a bar offers **Restart to update**; nothing restarts until you click it, so it never interrupts an operation.
@@ -132,6 +142,7 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | An invite link's **Open in Warcryer** button does nothing | The app is not installed yet, or the browser blocked the link. Install the app, or copy the invite page's address and paste it on the **Clan** tab under **Have an invite link?** |
 | An invite link "no longer works" | It expired, ran out of uses or was withdrawn. Ask your clan's leader or an officer for a new one. |
 | You closed the window but others still see you in voice | **Keep running in the tray** is on. Click the horn icon beside the Windows clock to bring the window back, or right-click it and choose **Quit**. |
+| The compact strip does not show over the game | The game is in exclusive full screen. Switch it to windowed or borderless mode in the game's own options. |
 | The app does not update | **Settings → Window and updates → Check for updates** says where it stands. If it reports a problem, download the newest installer from the Releases page and run it over the top; your settings are kept. |
 | A bar says your party leader has dropped out | Click **I will** or a member's name. See [If your party leader drops out](#if-your-party-leader-drops-out). |
 
