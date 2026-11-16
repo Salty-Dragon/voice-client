@@ -182,6 +182,14 @@ export function VoiceView() {
   ];
   const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll">[];
 
+  // What the footer says when it has no key to list for the nets on screen.
+  const speakNets = nets.filter((n) => n.speak);
+  const idleHint =
+    speakNets.length === 0 ? "You are listening only on these nets."
+    : voiceMode && speakNets.every((n) => TALK.has(n.net)) ? "Voice activation is on."
+    : Object.values(s.bindings).some((code) => code !== null) ? "The keys you have bound are for other nets. Open Settings to bind one for these."
+    : "No keys bound. Open Settings to bind them.";
+
   const hasLive = set?.operations.some((o) => o.state === "live") ?? false;
   const where = op ? String(op.id) : "lounge";
 
@@ -338,7 +346,7 @@ export function VoiceView() {
       )}
 
       <footer className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-line bg-bg-1/85 px-4 py-2 text-xs text-text-muted">
-        {hints.length === 0 && s.bindings.muteAll === null && <span>{voiceMode ? "Voice activation is on." : "No keys bound. Open Settings to bind them."}</span>}
+        {hints.length === 0 && s.bindings.muteAll === null && <span>{idleHint}</span>}
         {hints.map((t) => (
           <span key={t}>
             <kbd className="kbd">{keyLabel(s.bindings[t] as number)}</kbd>{" "}

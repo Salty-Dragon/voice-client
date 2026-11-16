@@ -43,6 +43,25 @@ jobs:
             src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/nsis/*.exe.sig
           if-no-files-found: error
+      # Cargo.lock pins the exact version of every Rust dependency, so the same
+      # commit always builds from the same code. Rust is only ever built here,
+      # so this is also where a changed lock file comes from: it is kept with
+      # the run, to be committed.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cargo-lock
+          path: src-tauri/Cargo.lock
+          if-no-files-found: error
+      - name: Cargo.lock matches the repository
+        shell: bash
+        run: |
+          if ! git ls-files --error-unmatch src-tauri/Cargo.lock > /dev/null 2>&1; then
+            echo "::warning::src-tauri/Cargo.lock is not committed yet. Download the cargo-lock file from this run and commit it."
+          elif ! git diff --quiet -- src-tauri/Cargo.lock; then
+            git diff --stat -- src-tauri/Cargo.lock
+            echo "::error::This build changed src-tauri/Cargo.lock (a dependency or the version changed). Download the cargo-lock file from this run, commit it as src-tauri/Cargo.lock, and build again."
+            exit 1
+          fi
       # Only for the test: the same code numbered 0.0.1. The test installs it
       # and then delivers the real build to it as an update. Its signature is
       # not kept, so it can never be offered to anyone as an update itself.
