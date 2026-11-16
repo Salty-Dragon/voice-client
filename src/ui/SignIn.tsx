@@ -30,8 +30,13 @@ export function SignIn({ onToken, notice }: { onToken: (token: string) => void; 
 
   return (
     <main className="flex h-full items-center justify-center p-6">
-      <div className="panel w-full max-w-sm p-8 flex flex-col gap-5 text-center">
+      <div className="panel rise w-full max-w-sm p-8 flex flex-col gap-5 text-center">
         <Wordmark className="text-2xl" />
+        <div className="flex items-center gap-3" aria-hidden>
+          <span className="h-px flex-1 bg-gradient-to-l from-gold-dim to-transparent" />
+          <span className="h-1.5 w-1.5 rotate-45 bg-gold" />
+          <span className="h-px flex-1 bg-gradient-to-r from-gold-dim to-transparent" />
+        </div>
         <p className="text-text-muted">Voice that follows the chain of command.</p>
         {notice && <p className="text-gold" role="status">{notice}</p>}
         {!isDesktop ? (

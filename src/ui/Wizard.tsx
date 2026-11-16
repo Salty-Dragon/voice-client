@@ -19,10 +19,15 @@ export function Wizard() {
 
   return (
     <main className="flex h-full items-center justify-center p-6">
-      <div className="panel w-full max-w-lg p-8 flex flex-col gap-6">
+      <div className="panel rise w-full max-w-lg p-8 flex flex-col gap-6">
         <div className="flex items-baseline justify-between">
           <Wordmark className="text-lg" />
           <span className="text-text-muted tabular-nums">Step {step + 1} of {STEPS.length}</span>
+        </div>
+        <div className="flex gap-1" aria-hidden>
+          {STEPS.map((name, i) => (
+            <span key={name} className={`h-0.5 flex-1 transition-colors duration-150 ${i <= step ? "bg-gold" : "bg-line"}`} />
+          ))}
         </div>
         <h1 className="title text-gold">{STEPS[step]}</h1>
 

@@ -1,8 +1,14 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { TipLayer } from "./ui/tips";
 import "./style.css";
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <>
+    <App />
+    <TipLayer />
+  </>,
+);
 
 // Space and the arrow keys scroll the page by default, which is distracting
 // when they are bound to a net. Typing in a text field is left alone.

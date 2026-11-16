@@ -1,0 +1,120 @@
+# Guide for alliance admins and event leaders
+
+Read the [members guide](members.md) first, and the [clan leaders guide](clan-leaders.md) for how clans work from the inside.
+
+## The roles above clan leader
+
+| Role | Scope | How you get it |
+| --- | --- | --- |
+| **App admin** | Everything. Runs the install. | Claimed once with a code from the server |
+| **Alliance admin** | Clans, clan leaders, every operation, bans | Appointed by the app admin |
+| **Event leader** | One operation | Chosen when the operation is created |
+| **Deputy** | One operation | Named by the event leader on the roster board |
+
+| | App admin | Alliance admin | Event leader | Deputy |
+| --- | --- | --- | --- | --- |
+| Create clans, appoint clan leaders | Yes | Yes | | |
+| Create operations | Yes | Yes | | |
+| Ban and unban players | Yes | Yes, except admins | | |
+| Start and end the operation, name deputies | Yes | Yes | Yes | |
+| Move anyone in the operation, edit parties | Yes | Yes | Yes | Yes |
+| Speak on Broadcast and Command | If also leading it | If also leading it | Yes | Yes |
+| Appoint alliance admins | Yes | | | |
+| Alliance lounge switch | Yes | | | |
+
+Being an admin does not by itself put you on any net. What you hear and where you speak comes from your clan and from your role in the operation.
+
+## The Alliance tab
+
+Alliance admins and the app admin see a fourth tab, **Alliance**.
+
+### Clans
+
+- **Create a clan:** enter a name and a tag, click **Create clan**.
+- **Appoint its leader:** use the selector beside the clan. The player must have signed in once. A player who belongs to another clan has to be removed from it first. The previous leader becomes an ordinary member.
+
+A clan with no leader cannot approve anyone, so appoint the leader straight away.
+
+### Players
+
+Every player who has signed in and confirmed a name. Use **Find a player** to filter.
+
+- **Ban:** click **Ban** and confirm. The player is signed out everywhere and removed from every room at once. The ban follows their Discord account, so signing in again does not lift it.
+- **Lift ban** reverses it. Their clan membership is as it was.
+
+An alliance admin cannot ban the app admin or another alliance admin.
+
+## Operations
+
+An operation is one event: a siege, an epic boss, a mass PvP. It has an event leader, deputies, parties and a Reserve.
+
+### Creating one
+
+1. Open **Operations** and click **New operation**.
+2. Give it a name and, if you like, a start time in your own time zone.
+3. Choose the **event leader**. It defaults to you.
+4. Tick the **clans taking part**.
+5. Click **Create operation**. Its roster board opens.
+
+The operation is **Planned**. Nobody is pulled into it yet: players stay in their lounge while you build the roster.
+
+### Building the roster
+
+Every approved member of the participating clans appears in **Reserve**, with a green dot if they have the app open.
+
+- **+ New party** adds a party. Click its name to rename it.
+- **Drag** a card onto a party or back to Reserve. Or click a card and use **Move to…**, which does the same thing without dragging.
+- The first player in a party leads it. To change that, click a member and choose **Make party leader**.
+- **Make deputy** on a selected player gives them Broadcast, Command and the power to move anyone.
+- The count on each party turns red past 9. That is a warning, not a limit.
+- Members can click **Ask to join** on a party. You, or the party's leader, accept or decline.
+
+Clan leaders and officers can do most of this for their own members, so you can leave each clan to fill its own parties.
+
+### Starting
+
+Click **Start operation** and confirm. Every participant with the app open is moved from their lounge into their nets within a second or two, with no action on their side. Anyone who opens the app later joins straight in.
+
+### During the event
+
+- **Broadcast** is yours and your deputies'. Hold your Broadcast key for calls to everyone: push, fall back, target, regroup. While you speak, everyone's lower nets are made quieter for them.
+- **Command** links you with the clan leaders and party leaders. You are a senior voice there, so party leaders are made quieter while you speak.
+- **Moves take effect at once.** Drag a player to another party and they hear a cue, see where they went, and are talking to the new party within a second or two.
+- **Late arrivals** sit in Reserve, where they can talk to each other and to you. They still hear Broadcast and their Clan net.
+- **Click a net** on the Voice tab to see exactly who is connected to it.
+
+### Ending
+
+Click **End operation** and confirm. Everyone returns to their lounge, the operation's rooms close, and its roster can no longer be changed.
+
+### A checklist for event night
+
+1. Create the operation ahead of time and tell the clans.
+2. Let clan leaders fill their parties; check the board.
+3. Name your deputies.
+4. Ten minutes before: check the green dots. Chase anyone missing.
+5. Check that every party has the right leader and that leaders have bound their Command key.
+6. Start the operation.
+7. Afterwards, end it.
+
+## How access is enforced
+
+This matters for trust, so it is worth knowing.
+
+- The server decides who may join each net, from the roster as it is at that moment. The app only shows what the server allows.
+- When someone is moved, removed or banned, the server takes them out of the rooms they should no longer be in. A modified app cannot stay behind or get back in.
+- A plain member can only ever hear their party, their clan and Broadcast. Command is only given to current leaders.
+- Every join and leave on every net, every roster move and every role change is recorded with who did it. There is no screen for reading that record yet; the app admin can query it.
+- Voice is never recorded.
+
+No voice tool can stop a trusted member from relaying what they hear. The design limits how much any one person hears and keeps a record of who was listening.
+
+## App admin only
+
+These are on the website, at `https://ignite.v1rtopia.com/admin`, and nowhere in the app.
+
+- **Alliance admins:** appoint or remove them. The player must have signed in once.
+- **Alliance lounge:** one extra lounge shared by every clan. It is off by default, because it lets every approved member of any clan hear whoever is talking there. Turn it on if the clans should mix between events.
+- The same clan and ban tools as the Alliance tab.
+
+The first app admin claims the role on the website with the one-time code stored on the server. Once there is an app admin, that option disappears.

@@ -5,11 +5,12 @@
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
+import { tip } from "./tips";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="panel p-5 flex flex-col gap-3">
-      <h2 className="title text-sm text-gold">{title}</h2>
+      <h2 className="title title-rule text-sm text-gold">{title}</h2>
       {children}
     </section>
   );
@@ -47,6 +48,7 @@ export function AllianceView() {
                 value=""
                 disabled={act.busy}
                 aria-label={`Leader of ${c.name}`}
+                {...tip("The leader approves members and appoints officers. The previous leader becomes an ordinary member.")}
                 onChange={(e) => void call("alliance.appointLeader", { clanId: c.id, userId: Number(e.target.value) })}
               >
                 <option value="" disabled>{c.leaderName ? "Change leader…" : "Appoint leader…"}</option>
@@ -88,8 +90,8 @@ export function AllianceView() {
             <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
               <span className={u.banned ? "line-through text-text-muted" : "font-medium"}>{u.name}</span>
               {u.clanTag && <span className="text-text-muted">[{u.clanTag}]</span>}
-              {u.isAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim">App admin</span>}
-              {u.isAllianceAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim">Alliance admin</span>}
+              {u.isAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim" {...tip("Runs this install. Full access.")}>App admin</span>}
+              {u.isAllianceAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim" {...tip("Manages clans, clan leaders, operations and bans")}>Alliance admin</span>}
               {u.banned && <span className="text-xs uppercase tracking-wider text-danger">Banned</span>}
               {/* Offered only where the server would allow it; it checks again. */}
               {u.id !== info.user.id && !u.isAdmin && (!u.isAllianceAdmin || info.user.isAdmin) && (

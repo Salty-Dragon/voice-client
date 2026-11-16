@@ -7,6 +7,7 @@ import { useState } from "react";
 import { rpc, type OpDetail, type Party, type Person } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { when } from "./RosterView";
+import { tip } from "./tips";
 
 const PARTY_SIZE = 9;
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
@@ -105,15 +106,15 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             selected === p.userId ? "border-gold-bright bg-bg-2" : "border-line bg-bg-2/60 hover:border-gold-dim"
           } ${draggable ? "cursor-grab" : "cursor-default"}`}
         >
-          <span className={`h-2 w-2 shrink-0 rounded-full ${online.has(p.userId) ? "bg-net-party" : "bg-line"}`} title={online.has(p.userId) ? "App open" : "Offline"} />
+          <span className={`h-2 w-2 shrink-0 rounded-full ${online.has(p.userId) ? "bg-net-party" : "bg-line"}`} {...tip(online.has(p.userId) ? "App open" : "Offline")} />
           <span className={`truncate font-medium ${p.userId === me ? "text-gold-bright" : ""}`}>{p.name}</span>
           {p.classTag && <span className="text-xs text-gold">{p.classTag}</span>}
           <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-text-muted">
-            {op.eventLeaderId === p.userId && <span title="Event leader" className="text-net-broadcast">♛ Lead</span>}
-            {op.deputyIds.includes(p.userId) && <span title="Deputy" className="text-net-broadcast">Deputy</span>}
-            {p.clanRole === "leader" && <span title="Clan leader" className="text-net-clan">⚑ Clan</span>}
-            {p.clanRole === "officer" && <span title="Clan officer" className="text-net-clan">Officer</span>}
-            {party?.leaderId === p.userId && <span title="Party leader" className="text-net-command">» PL</span>}
+            {op.eventLeaderId === p.userId && <span {...tip("Event leader: speaks on Broadcast and Command, starts and ends the operation")} className="text-net-broadcast">♛ Lead</span>}
+            {op.deputyIds.includes(p.userId) && <span {...tip("Deputy: speaks on Broadcast and Command, can move anyone")} className="text-net-broadcast">Deputy</span>}
+            {p.clanRole === "leader" && <span {...tip("Clan leader: speaks on Clan and Command")} className="text-net-clan">⚑ Clan</span>}
+            {p.clanRole === "officer" && <span {...tip("Clan officer: speaks on Clan")} className="text-net-clan">Officer</span>}
+            {party?.leaderId === p.userId && <span {...tip("Party leader: on Command for this party")} className="text-net-command">» PL</span>}
             {op.clans.length > 1 && p.clanTag && <span>[{p.clanTag}]</span>}
           </span>
         </button>
@@ -132,11 +133,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         <span className="text-text-muted">{when(op.startsAt)}</span>
         <span className="text-text-muted">{op.clans.map((c) => c.name).join(", ")} · {op.people.length} players · {op.people.filter((p) => online.has(p.userId)).length} online</span>
         {open && !here && (
-          <button type="button" className="btn text-sm ml-auto" onClick={() => select(op.id)} title="Connect your voice to this operation">
+          <button type="button" className="btn text-sm ml-auto" onClick={() => select(op.id)} {...tip("Connect your voice to this operation now, before it goes live")}>
             Join voice
           </button>
         )}
-        {here && <span className="ml-auto text-xs text-net-party">Your voice is here</span>}
+        {here && <span className="ml-auto text-xs text-net-party" {...tip("You are connected to this operation's nets")}>Your voice is here</span>}
       </div>
 
       {/* Operation controls */}
@@ -162,9 +163,13 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         {canRunOp && open && (
           <span className="ml-auto flex gap-2">
             {op.state === "planned" && (
-              <ConfirmButton className="btn text-sm" confirm="Go live now?" onConfirm={() => run("op.setState", { state: "live" })}>Start operation</ConfirmButton>
+              <span {...tip("Moves every player from their lounge into their party and nets")}>
+                <ConfirmButton className="btn text-sm" confirm="Go live now?" onConfirm={() => run("op.setState", { state: "live" })}>Start operation</ConfirmButton>
+              </span>
             )}
-            <ConfirmButton confirm="End for everyone?" onConfirm={() => run("op.setState", { state: "ended" })}>End operation</ConfirmButton>
+            <span {...tip("Returns everyone to their lounge and locks this roster")}>
+              <ConfirmButton confirm="End for everyone?" onConfirm={() => run("op.setState", { state: "ended" })}>End operation</ConfirmButton>
+            </span>
           </span>
         )}
       </div>
@@ -206,12 +211,12 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               </select>
             )}
             {selParty && selParty.leaderId !== sel.userId && canLead(sel, selParty) && (
-              <button type="button" className="btn btn-quiet text-sm" onClick={() => run("party.setLeader", { partyId: selParty.id, userId: sel.userId })}>
+              <button type="button" className="btn btn-quiet text-sm" onClick={() => run("party.setLeader", { partyId: selParty.id, userId: sel.userId })} {...tip("Party leaders are on Command and answer join requests")}>
                 Make party leader
               </button>
             )}
             {canRunOp && open && sel.userId !== op.eventLeaderId && !op.deputyIds.includes(sel.userId) && (
-              <button type="button" className="btn btn-quiet text-sm" onClick={() => run("op.setDeputy", { userId: sel.userId, on: true })}>
+              <button type="button" className="btn btn-quiet text-sm" onClick={() => run("op.setDeputy", { userId: sel.userId, on: true })} {...tip("Deputies speak on Broadcast and Command and can move anyone")}>
                 Make deputy
               </button>
             )}
@@ -264,7 +269,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
                       );
                     })}
                   {canAsk && !party.memberIds.includes(me) && myRequest !== party.id && (
-                    <button type="button" className="btn btn-quiet text-xs self-start px-2 py-0.5" onClick={() => run("party.requestJoin", { partyId: party.id })}>
+                    <button type="button" className="btn btn-quiet text-xs self-start px-2 py-0.5" onClick={() => run("party.requestJoin", { partyId: party.id })} {...tip("The party's leader gets your request and accepts or declines")}>
                       Ask to join
                     </button>
                   )}
@@ -281,6 +286,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             <button
               type="button"
               onClick={() => run("party.create", { name: "" })}
+              {...tip("Add an empty party. The first player placed in it leads it.")}
               className="min-h-24 rounded-sm border border-dashed border-gold-dim text-gold hover:border-gold hover:text-gold-bright cursor-pointer transition-colors duration-150"
             >
               + New party
@@ -295,7 +301,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           onDrop={drop(null)}
           className={`panel flex w-full flex-col gap-3 p-3 lg:w-72 ${over === "reserve" ? "border-gold-bright" : ""}`}
         >
-          <h2 className="title flex items-baseline justify-between text-sm text-net-reserve">
+          <h2 className="title flex items-baseline justify-between text-sm text-net-reserve" {...tip("Everyone taking part who is not in a party. They can talk to each other and to the organisers.")}>
             Reserve <span className="font-sans tabular-nums">{op.reserveIds.length}</span>
           </h2>
           {op.reserveIds.length === 0 ? (
@@ -358,13 +364,13 @@ function PartyBlock({
         ) : (
           <h2 className="title flex-1 truncate text-sm text-net-party">
             {canRename ? (
-              <button type="button" className="title cursor-text hover:text-gold-bright" title="Rename" onClick={() => setEditing(true)}>{party.name}</button>
+              <button type="button" className="title cursor-text hover:text-gold-bright" {...tip("Click to rename")} onClick={() => setEditing(true)}>{party.name}</button>
             ) : (
               party.name
             )}
           </h2>
         )}
-        <span className={`tabular-nums ${count > PARTY_SIZE ? "text-danger" : "text-text-muted"}`}>{count}/{PARTY_SIZE}</span>
+        <span className={`tabular-nums ${count > PARTY_SIZE ? "text-danger" : "text-text-muted"}`} {...tip(`Usual party size is ${PARTY_SIZE}. Going over is allowed.`)}>{count}/{PARTY_SIZE}</span>
       </div>
       {count > PARTY_SIZE && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
       {count === 0 ? <p className="py-3 text-center text-text-muted">Empty</p> : <ul className="flex flex-col gap-1">{children}</ul>}

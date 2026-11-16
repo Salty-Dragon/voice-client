@@ -8,7 +8,8 @@ import { useSettings } from "./settings";
 import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
-import { useEngine, Wordmark } from "./ui/common";
+import { NET_NAME, useEngine, Wordmark } from "./ui/common";
+import { tip } from "./ui/tips";
 import { NameStep } from "./ui/NameStep";
 import { RosterView } from "./ui/RosterView";
 import { SettingsPanel } from "./ui/SettingsPanel";
@@ -18,11 +19,11 @@ import { Wizard } from "./ui/Wizard";
 
 type Phase = "signin" | "running" | "replaced";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "voice", label: "Voice" },
-  { id: "roster", label: "Operations" },
-  { id: "clan", label: "Clan" },
-  { id: "alliance", label: "Alliance" },
+const TABS: { id: Tab; label: string; tip: string }[] = [
+  { id: "voice", label: "Voice", tip: "Where you are, who is there, and who is speaking" },
+  { id: "roster", label: "Operations", tip: "Events and their roster boards" },
+  { id: "clan", label: "Clan", tip: "Your clan and its members" },
+  { id: "alliance", label: "Alliance", tip: "Clans, clan leaders and bans" },
 ];
 
 export default function App() {
@@ -155,6 +156,9 @@ export default function App() {
   if (!info.user.nameSet) return <NameStep onSaved={refreshInfo} />;
   if (!s.wizardDone) return <Wizard />;
 
+  // Nets your mic is open on right now, for the header's indicator.
+  const onAir = eng.view().filter((n) => n.live).map((n) => (n.net === "lounge" || n.net === "party" ? n.label : NET_NAME[n.net]));
+
   const go = (next: Tab, opId?: number) => {
     setTab(next);
     setBoardOp(next === "roster" ? (opId ?? null) : null);
@@ -164,7 +168,7 @@ export default function App() {
     <AppContext.Provider
       value={{ info, refreshInfo, tick, set, control: state, select: (t) => control.current?.select(t), tab, go, boardOp, notice }}
     >
-      <div className="relative flex h-full flex-col">
+      <div className="frame flex h-full flex-col">
         <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
           <Wordmark />
           <nav className="flex gap-1" aria-label="Screens">
@@ -174,24 +178,39 @@ export default function App() {
                 type="button"
                 aria-current={tab === t.id ? "page" : undefined}
                 onClick={() => go(t.id)}
-                className={`rounded-sm px-3 py-1 cursor-pointer transition-colors duration-150 ${
-                  tab === t.id ? "bg-bg-2 text-gold-bright" : "text-text-muted hover:text-text"
+                {...tip(t.tip)}
+                className={`border-b-2 px-3 py-1 cursor-pointer transition-colors duration-150 ${
+                  tab === t.id ? "border-gold text-gold-bright" : "border-transparent text-text-muted hover:text-text"
                 }`}
               >
                 {t.label}
                 {t.id === "roster" && info.joinRequests.length > 0 && (
-                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" title="Asking to join your party">{info.joinRequests.length}</span>
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" {...tip("Players asking to join a party you lead")}>{info.joinRequests.length}</span>
                 )}
                 {t.id === "clan" && info.pendingApprovals > 0 && (
-                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" title="Waiting for approval">{info.pendingApprovals}</span>
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" {...tip("Players waiting for you to approve them")}>{info.pendingApprovals}</span>
                 )}
               </button>
             ))}
           </nav>
           <span className="ml-auto flex items-center gap-3">
-            {state !== "online" && <span className="text-xs text-danger">Server link lost, retrying…</span>}
-            {eng.muteAll && <span className="text-xs font-semibold uppercase tracking-wider text-danger">Mic muted</span>}
-            <span className="text-text-muted">
+            {onAir.length > 0 && (
+              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-net-party" {...tip(`Your mic is open on: ${onAir.join(", ")}`)}>
+                <span className="pulse h-2 w-2 rounded-full bg-net-party" />
+                On air
+              </span>
+            )}
+            {state !== "online" && (
+              <span className="text-xs text-danger" {...tip("The link that delivers roster changes dropped. Your voice keeps working, and it reconnects by itself.")}>
+                Server link lost, retrying…
+              </span>
+            )}
+            {eng.muteAll && (
+              <span className="text-xs font-semibold uppercase tracking-wider text-danger" {...tip("Your Mute all key is on. Press it again to speak.")}>
+                Mic muted
+              </span>
+            )}
+            <span className="text-text-muted" {...tip("Your in-game name and class tag. Change them in Settings.")}>
               {info.user.name}
               {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}
             </span>
@@ -199,7 +218,7 @@ export default function App() {
           </span>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div key={tab} className="rise min-h-0 flex-1 overflow-y-auto">
           {tab === "voice" && <VoiceView />}
           {tab === "roster" && <RosterView />}
           {tab === "clan" && <ClanView />}

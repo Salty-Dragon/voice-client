@@ -1,10 +1,12 @@
 import { rpc, type ClanSummary, type ClanView as ClanData } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
+import { Initial } from "./common";
+import { tip } from "./tips";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="panel p-5 flex flex-col gap-3">
-      <h2 className="title text-sm text-gold">{title}</h2>
+      <h2 className="title title-rule text-sm text-gold">{title}</h2>
       {children}
     </section>
   );
@@ -75,7 +77,7 @@ function Members({ clanId }: { clanId: number }) {
                   <span className="font-medium">{m.name}</span>
                   {m.classTag && <span className="text-gold">{m.classTag}</span>}
                   <span className="ml-auto flex gap-2">
-                    <button type="button" className="btn text-sm" disabled={act.busy} onClick={call("clan.approve", { userId: m.userId })}>Approve</button>
+                    <button type="button" className="btn text-sm" disabled={act.busy} onClick={call("clan.approve", { userId: m.userId })} {...tip("Lets this player into the clan lounge, your Clan net and your operations")}>Approve</button>
                     <ConfirmButton confirm="Decline?" disabled={act.busy} onConfirm={call("clan.remove", { userId: m.userId })}>Decline</ConfirmButton>
                   </span>
                 </li>
@@ -91,15 +93,20 @@ function Members({ clanId }: { clanId: number }) {
             <li key={m.userId} className="flex flex-wrap items-center gap-3 py-2">
               <span
                 className={`h-2 w-2 rounded-full ${online.has(m.userId) ? "bg-net-party" : "bg-line"}`}
-                title={online.has(m.userId) ? "App open" : "Offline"}
+                {...tip(online.has(m.userId) ? "App open" : "Offline")}
                 aria-label={online.has(m.userId) ? "online" : "offline"}
               />
+              <Initial name={m.name} />
               <span className={`font-medium ${m.userId === info.user.id ? "text-gold-bright" : ""}`}>{m.name}</span>
               {m.classTag && <span className="text-gold">{m.classTag}</span>}
-              {m.role !== "member" && <span className="text-xs uppercase tracking-wider text-net-clan">{m.role}</span>}
+              {m.role !== "member" && (
+                <span className="text-xs uppercase tracking-wider text-net-clan" {...tip(m.role === "leader" ? "Clan leader: speaks on Clan and Command" : "Officer: speaks on Clan, shares the leader's roster powers")}>
+                  {m.role}
+                </span>
+              )}
               <span className="ml-auto flex gap-2">
                 {data.myRole === "leader" && m.role === "member" && (
-                  <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={call("clan.setOfficer", { userId: m.userId, officer: true })}>Make officer</button>
+                  <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={call("clan.setOfficer", { userId: m.userId, officer: true })} {...tip("Officers approve and remove members, build parties, and speak on the Clan net")}>Make officer</button>
                 )}
                 {data.myRole === "leader" && m.role === "officer" && (
                   <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={call("clan.setOfficer", { userId: m.userId, officer: false })}>Remove officer</button>

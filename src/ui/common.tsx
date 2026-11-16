@@ -3,6 +3,7 @@ import { APP_NAME } from "../config";
 import { keyLabel } from "../keys";
 import { captureKey, engine } from "../runtime";
 import { setSettings, useSettings, type BindTarget, type NetKind } from "../settings";
+import { tip } from "./tips";
 
 export const NET_TEXT: Record<NetKind, string> = {
   broadcast: "text-net-broadcast",
@@ -28,6 +29,34 @@ export const NET_NAME: Record<NetKind, string> = {
   reserve: "Reserve",
   lounge: "Lounge",
 };
+
+/** One line on what each net is for, shown as a tooltip. */
+export const NET_TIP: Record<NetKind, string> = {
+  broadcast: "Broadcast: the event leader and deputies speak, everyone in the operation hears.",
+  command: "Command: the event leader, deputies, clan leaders and party leaders talk to each other. Nobody else hears it.",
+  clan: "Clan: the clan leader and officers speak, the whole clan hears.",
+  party: "Party: you and your party talk here.",
+  reserve: "Reserve: players without a party, and the organisers placing them.",
+  lounge: "Lounge: your clan's room between operations. Everyone in it can talk.",
+};
+/** The net colours as CSS values, for glows and shadows. */
+export const NET_VAR: Record<NetKind, string> = {
+  broadcast: "var(--color-net-broadcast)",
+  command: "var(--color-net-command)",
+  clan: "var(--color-net-clan)",
+  party: "var(--color-net-party)",
+  reserve: "var(--color-net-reserve)",
+  lounge: "var(--color-gold)",
+};
+
+/** A small square with the player's initial, so a list of names is easier to scan. */
+export function Initial({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <span aria-hidden className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-bg-0 border border-line text-[10px] font-semibold uppercase text-text-muted ${className}`}>
+      {name.trim().charAt(0) || "?"}
+    </span>
+  );
+}
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return <span className={`title text-gold-bright ${className}`}>{APP_NAME}</span>;
@@ -87,7 +116,12 @@ export function Meter({ threshold }: { threshold?: number }) {
     });
   }, [threshold]);
   return (
-    <div className="relative h-3 rounded-sm bg-bg-2 border border-line overflow-hidden" role="img" aria-label="Microphone level">
+    <div
+      className="relative h-3 rounded-sm bg-bg-2 border border-line overflow-hidden"
+      role="img"
+      aria-label="Microphone level"
+      {...tip(threshold !== undefined ? "Your microphone level. The mic opens when the bar passes the gold marker." : "Your microphone level right now.")}
+    >
       <div ref={bar} className="h-full" style={{ width: 0 }} />
       {threshold !== undefined && (
         <div className="absolute top-0 bottom-0 w-0.5 bg-gold-bright" style={{ left: `${pct(threshold)}%` }} />
@@ -108,6 +142,7 @@ export function KeyBind({ target, label }: { target: BindTarget; label?: string 
         className={`btn text-sm min-w-28 ${code === null && !capturing ? "btn-quiet" : ""}`}
         disabled={capturing}
         aria-label={`${label ?? target} key`}
+        {...tip("Click, then press the key or mouse button you want. The game still receives the key.")}
         onClick={async (e) => {
           // Drop focus so a bound Space or Enter does not click this button again.
           e.currentTarget.blur();
@@ -124,7 +159,7 @@ export function KeyBind({ target, label }: { target: BindTarget; label?: string 
           type="button"
           className="px-1 text-text-muted hover:text-danger cursor-pointer"
           aria-label={`Clear ${label ?? target} key`}
-          title="Clear"
+          {...tip("Remove this key")}
           onClick={() => setSettings({ bindings: { ...s.bindings, [target]: null } })}
         >
           ×
@@ -172,6 +207,7 @@ export function MicTest() {
           type="button"
           className="btn btn-quiet text-sm"
           disabled={state !== "idle"}
+          {...tip("Records 3 seconds from your microphone and plays them back through your headset.")}
           onClick={async () => {
             setError("");
             setState("recording");
@@ -200,10 +236,10 @@ export function PartyMode() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-x-6 gap-y-1">
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2" {...tip("Your mic is open only while you hold your key.")}>
           <input type="radio" checked={s.partyMode === "ptt"} onChange={() => setSettings({ partyMode: "ptt" })} /> Push-to-talk
         </label>
-        <label className="flex items-center gap-2">
+        <label className="flex items-center gap-2" {...tip("Your mic opens by itself when you speak. Applies to your party, Reserve and the lounge only.")}>
           <input type="radio" checked={s.partyMode === "voice"} onChange={() => setSettings({ partyMode: "voice" })} /> Voice activation
         </label>
       </div>
@@ -229,6 +265,7 @@ export function PartyMode() {
               type="button"
               className="btn btn-quiet text-sm"
               disabled={measuring}
+              {...tip("Measures the noise in your room for 5 seconds and sets the marker just above it.")}
               onClick={async () => {
                 setMeasuring(true);
                 setSettings({ vadThresholdDb: await engine.measureNoise(5000) });

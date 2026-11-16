@@ -42,7 +42,7 @@ export function ProfileForm({ name, classTag, onSaved, submit }: { name: string;
 export function NameStep({ onSaved }: { onSaved: () => void }) {
   return (
     <main className="flex h-full items-center justify-center p-6">
-      <div className="panel w-full max-w-md p-8 flex flex-col gap-5">
+      <div className="panel rise w-full max-w-md p-8 flex flex-col gap-5">
         <Wordmark className="text-lg" />
         <h1 className="title text-gold">Your name</h1>
         <p className="text-text-muted">Welcome. First, confirm the name you play under. Your clan leader approves you by this name.</p>

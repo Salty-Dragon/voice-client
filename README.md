@@ -24,6 +24,10 @@ Only keys you have bound to a net are ever acted on, plus the single key you pre
 
 Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, and your in-game name and class tag when you set them.
 
+## Guides
+
+Step-by-step guides for [members](docs/members.md), [clan leaders and officers](docs/clan-leaders.md) and [alliance admins and event leaders](docs/alliance-admins.md).
+
 ## Install
 
 Download the latest installer from [Releases](../../releases). It is not code-signed yet, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.

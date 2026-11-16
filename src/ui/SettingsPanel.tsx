@@ -1,9 +1,25 @@
-import { isDesktop } from "../config";
+import { APP_NAME, APP_VERSION, DOCS_URL, isDesktop } from "../config";
 import { foreground } from "../runtime";
 import { setSettings, useSettings, type BindTarget, type InputSource } from "../settings";
 import { useApp } from "./app-context";
 import { DevicePickers, KeyBind, MicTest, NET_NAME, NET_TEXT, PartyMode } from "./common";
 import { ProfileForm } from "./NameStep";
+import { tip } from "./tips";
+
+async function openInBrowser(url: string) {
+  if (isDesktop) {
+    const { openUrl } = await import("@tauri-apps/plugin-opener");
+    await openUrl(url);
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+const GUIDES = [
+  { file: "members.md", label: "Members" },
+  { file: "clan-leaders.md", label: "Clan leaders and officers" },
+  { file: "alliance-admins.md", label: "Alliance admins and event leaders" },
+];
 
 const KEYS: { target: BindTarget; label: string; note: string }[] = [
   { target: "broadcast", label: "Broadcast", note: "Event leader and deputies" },
@@ -23,15 +39,15 @@ const SOURCES: { id: InputSource; label: string; note: string }[] = [
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3 border-t border-line pt-4 first:border-0 first:pt-0">
-      <h2 className="title text-sm text-gold">{title}</h2>
+      <h2 className="title title-rule text-sm text-gold">{title}</h2>
       {children}
     </section>
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ label, checked, onChange, hint }: { label: string; checked: boolean; onChange: (v: boolean) => void; hint?: string }) {
   return (
-    <label className="flex items-center gap-2">
+    <label className="flex items-center gap-2" {...(hint ? tip(hint) : {})}>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} /> {label}
     </label>
   );
@@ -52,16 +68,16 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           <DevicePickers />
           <MicTest />
           <div className="flex flex-wrap gap-x-5 gap-y-1">
-            <Toggle label="Echo cancellation" checked={s.echoCancellation} onChange={(v) => setSettings({ echoCancellation: v })} />
-            <Toggle label="Noise suppression" checked={s.noiseSuppression} onChange={(v) => setSettings({ noiseSuppression: v })} />
-            <Toggle label="Auto gain" checked={s.autoGainControl} onChange={(v) => setSettings({ autoGainControl: v })} />
+            <Toggle label="Echo cancellation" hint="Stops others hearing themselves through your speakers. Leave on unless you use a headset and hear artefacts." checked={s.echoCancellation} onChange={(v) => setSettings({ echoCancellation: v })} />
+            <Toggle label="Noise suppression" hint="Removes fans, keyboard and background noise. It also runs before voice activation, so key clicks open the mic less often." checked={s.noiseSuppression} onChange={(v) => setSettings({ noiseSuppression: v })} />
+            <Toggle label="Auto gain" hint="Evens out your volume so you are not too quiet or too loud." checked={s.autoGainControl} onChange={(v) => setSettings({ autoGainControl: v })} />
           </div>
         </Group>
 
         <Group title="Party, Reserve and lounge">
           <PartyMode />
           {s.partyMode === "voice" && (
-            <label className="flex items-center gap-3 text-text-muted">
+            <label className="flex items-center gap-3 text-text-muted" {...tip("How long the mic stays open after you stop speaking, so word endings and short pauses are not cut off.")}>
               Keep open after you stop
               <input
                 type="range"
@@ -110,7 +126,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         </Group>
 
         <Group title="Priority">
-          <Toggle label="Lower other nets while a higher one is live" checked={s.ducking} onChange={(v) => setSettings({ ducking: v })} />
+          <Toggle label="Lower other nets while a higher one is live" hint="So a Broadcast or Command call cuts through party chatter. Nothing is muted, only made quieter." checked={s.ducking} onChange={(v) => setSettings({ ducking: v })} />
           <label className="flex items-center gap-3 text-text-muted">
             Lowered nets stay at
             <input
@@ -161,10 +177,25 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           </Group>
         )}
 
+        <Group title="Help">
+          <ul className="flex flex-col gap-1">
+            {GUIDES.map((g) => (
+              <li key={g.file}>
+                <button type="button" className="text-gold hover:text-gold-bright cursor-pointer" onClick={() => void openInBrowser(`${DOCS_URL}/${g.file}`)}>
+                  Guide: {g.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-text-muted">Hover over almost anything in the app for a short explanation.</p>
+        </Group>
+
         <Group title="Account">
           <ProfileForm name={info.user.name} classTag={info.user.classTag ?? ""} onSaved={refreshInfo} submit="Save" />
           <div><button type="button" className="btn btn-quiet text-sm" onClick={onSignOut}>Sign out</button></div>
         </Group>
+
+        <p className="text-center text-xs text-text-muted">{APP_NAME} {APP_VERSION}</p>
       </aside>
     </div>
   );

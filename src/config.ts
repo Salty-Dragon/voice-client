@@ -11,5 +11,10 @@ export const SERVER: string = (isDesktop ? (import.meta.env.VITE_SERVER ?? "http
 
 export const CONTROL_URL: string = import.meta.env.VITE_CONTROL_URL ?? `${SERVER.replace(/^http/, "ws")}/control`;
 
+export const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? "dev";
+
+/** The guides, kept beside the client's source. */
+export const DOCS_URL = "https://github.com/Salty-Dragon/voice-client/blob/main/docs";
+
 /** Link scheme that brings a browser sign-in back to the desktop app. */
 export const LINK_SCHEME = "ignite-voice";
