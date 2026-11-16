@@ -112,6 +112,14 @@ Click **End operation** and confirm. Everyone returns to their lounge, the opera
 7. Brief everyone with Broadcast locked open, then release it before the fight.
 8. Afterwards, end it.
 
+## The log
+
+At the bottom of the **Alliance** tab, **Log** is the record of who changed what, newest first: clans and their leaders, requests, approvals and removals, officers, invite links, constant parties, operations, every roster move, bans and deleted accounts. Click **Show the log**; it loads a hundred entries at a time, with **Older entries** for more and a **Filter** box for a name or a word.
+
+- A line that starts with **The server** is something done automatically, such as promoting a party's next member when its leader dropped out.
+- An account that has since been deleted is shown as "a deleted account": the log keeps only its number.
+- A clan's leader can read the part that concerns their own clan, on their **Clan** tab. Officers and members cannot read the log.
+
 ## How access is enforced
 
 This matters for trust, so it is worth knowing.
@@ -119,7 +127,7 @@ This matters for trust, so it is worth knowing.
 - The server decides who may join each net, from the roster as it is at that moment. The app only shows what the server allows.
 - When someone is moved, removed or banned, the server takes them out of the rooms they should no longer be in. A modified app cannot stay behind or get back in.
 - A plain member can only ever hear their party, their clan and Broadcast. Command is only given to current leaders.
-- Every join and leave on every net, every roster move and every role change is recorded with who did it. There is no screen for reading that record yet; the app admin can query it.
+- Every roster move and every role change is recorded with who did it. Read it on the **Alliance** tab under **Log** (see below). Every join and leave on every net is recorded too; there is no screen for those yet, and the app admin can query them.
 - Voice is never recorded.
 
 No voice tool can stop a trusted member from relaying what they hear. The design limits how much any one person hears and keeps a record of who was listening.

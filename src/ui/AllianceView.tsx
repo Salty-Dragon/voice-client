@@ -7,6 +7,7 @@ import { rpc, type AllianceView as AllianceData } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
+import { AuditLog } from "./AuditLog";
 
 function Section({ title, help, children }: { title: string; help?: string; children: React.ReactNode }) {
   return (
@@ -118,6 +119,12 @@ export function AllianceView() {
         </ul>
         <p className="text-xs text-text-muted">A ban signs the player out everywhere and removes them from every room at once. It follows their Discord account.</p>
       </Section>
+
+      <AuditLog
+        scope="alliance"
+        title="Log"
+        help={"Who changed what, newest first: clans and their leaders, approvals and removals, invite links, constant parties, operations, every roster move, bans.\nA line that starts with The server is something done automatically, such as promoting a party's next member when its leader dropped out.\nAn account that has since been deleted shows as a deleted account.\nA clan's leader can read the part of this that concerns their own clan, on the Clan tab."}
+      />
     </div>
   );
 }

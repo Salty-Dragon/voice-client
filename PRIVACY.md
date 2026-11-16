@@ -32,7 +32,7 @@ To notice push-to-talk keys while a game has focus, the app reads keyboard and m
 
 ## Who can see what
 
-Other signed-in members see your in-game name, class tag, clan and which voice room you are in. Clan leaders, event leaders and alliance admins also see join requests and rosters. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
+Other signed-in members see your in-game name, class tag, clan and which voice room you are in. Clan leaders, event leaders and alliance admins also see join requests and rosters. Alliance admins can read the log of changes (who moved, approved, removed or banned whom, and when); a clan's leader can read the part of it that concerns their own clan. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
 
 ## How long it is kept
 

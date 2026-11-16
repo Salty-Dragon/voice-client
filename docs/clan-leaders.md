@@ -18,6 +18,7 @@ A clan leader is appointed by an alliance admin. The leader appoints officers. O
 | Create and revoke invite links | Yes | Yes |
 | Create, change and delete constant parties | Yes | Yes |
 | Asked to choose a new leader when one of your members drops out as party leader | Yes | Yes |
+| Read the clan's log | Yes | No |
 
 The leader can only be replaced by an alliance admin.
 
@@ -96,6 +97,10 @@ You cannot move members of another clan, and you cannot start or end the operati
 The first player placed in a party leads it, and party leaders are on Command. If a leader is moved out, the next member takes over, so a party is never cut off from Command. If a leader drops out of a live operation, their party and you (the leader's clan leader and officers) are asked after about 30 seconds to choose a new one; if nobody does, the next member in voice is promoted after 30 seconds more.
 
 Until the operation is started, everyone stays in their lounge while you build the roster. Starting it moves every player into their party at once.
+
+## The clan log
+
+The leader has a **Clan log** at the bottom of the **Clan** tab: who changed what in the clan, newest first. It covers requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations (moves, party leadership, bans). Click **Show the log**; use **Filter** to find a name. A line that starts with **The server** was done automatically. Alliance admins can read the whole alliance's log.
 
 ## Before an event
 

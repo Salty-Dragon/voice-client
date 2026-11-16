@@ -4,6 +4,7 @@ import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, Initial } from "./common";
 import { Help } from "./tips";
+import { AuditLog } from "./AuditLog";
 
 function Section({ title, help, before, children }: { title: string; help?: string; before?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -452,6 +453,14 @@ function Members({ clanId }: { clanId: number }) {
       </Section>
       {leads && <InviteLinks clanId={clanId} />}
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />
+      {data.myRole === "leader" && (
+        <AuditLog
+          scope="clan"
+          clanId={clanId}
+          title="Clan log"
+          help={"Who changed what in your clan, newest first: requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations.\nOnly the clan's leader sees this. Alliance admins see the whole alliance's log.\nAn account that has since been deleted shows as a deleted account."}
+        />
+      )}
     </>
   );
 }
