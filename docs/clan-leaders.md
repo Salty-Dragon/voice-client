@@ -64,7 +64,7 @@ You can:
 
 You cannot move members of another clan, and you cannot start or end the operation. The event leader, deputies and alliance admins can do both.
 
-The first player placed in a party leads it, and party leaders are on Command. If a leader is moved out, the next member takes over, so a party is never cut off from Command.
+The first player placed in a party leads it, and party leaders are on Command. If a leader is moved out, the next member takes over, so a party is never cut off from Command. If a leader drops out of a live operation, their party and you (the leader's clan leader and officers) are asked after about 30 seconds to choose a new one; if nobody does, the next member in voice is promoted after 30 seconds more.
 
 Until the operation is started, everyone stays in their lounge while you build the roster. Starting it moves every player into their party at once.
 

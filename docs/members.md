@@ -85,6 +85,15 @@ The first player placed in a party leads it. A party leader:
 
 If you are moved out of your party, leadership passes to the next member automatically.
 
+## If your party leader drops out
+
+A party's leader is its only voice on Command. If the leader drops out of a live operation (the app closed or crashed, the connection died, or they are sitting the operation out), the party is not left waiting:
+
+1. After about 30 seconds a bar appears for everyone in the party: "**Orin has dropped out.** Vanguard has no one on Command. Who leads it now?" Click **I will**, or the name of another member who is in voice. The leader's clan officers see the same bar and can choose too.
+2. If nobody chooses within another 30 seconds, the next member in party order who is in voice becomes the leader automatically.
+
+The new leader is told ("You now lead Vanguard") and is on Command at once, so bind a Command key if you have not. If the old leader comes back before anyone is chosen, the bar goes away and they still lead. If they come back afterwards, they are an ordinary member again; the new leader or an organiser can hand leadership back.
+
 ## Browser version
 
 `https://ignite.v1rtopia.com/voice` is the same app in a browser, for a quick look or a second PC. Sign in on the site first. Its keys only work while the browser tab has focus, so use the Windows app for events.

@@ -11,6 +11,7 @@ import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
 import { NET_NAME, useEngine, Wordmark } from "./ui/common";
 import { GuidesView } from "./ui/GuidesView";
+import { LeaderLostBar } from "./ui/LeaderLostBar";
 import { Help } from "./ui/tips";
 import { NameStep } from "./ui/NameStep";
 import { RosterView } from "./ui/RosterView";
@@ -85,11 +86,17 @@ export default function App() {
     c.onNetSet = (next) => {
       setSet(next);
       void engine.apply(next);
-      if (next.notice?.kind === "moved") {
+      if (next.notice) {
         engine.cue("moved");
-        setNotice(next.notice.party ? `You were moved to ${next.notice.party}.` : "You were moved to Reserve.");
+        setNotice(
+          next.notice.kind === "leader"
+            ? `You now lead ${next.notice.party ?? "your party"}. You are on Command: bind a Command key if you have not.`
+            : next.notice.party
+              ? `You were moved to ${next.notice.party}.`
+              : "You were moved to Reserve.",
+        );
         window.clearTimeout(noticeTimer);
-        noticeTimer = window.setTimeout(() => setNotice(""), 8000);
+        noticeTimer = window.setTimeout(() => setNotice(""), next.notice.kind === "leader" ? 15000 : 8000);
       }
     };
     c.onChanged = () => {
@@ -249,6 +256,8 @@ export default function App() {
             </button>
           </div>
         )}
+
+        {set?.operation && (set.leaderLost ?? []).map((lost) => <LeaderLostBar key={lost.partyId} opId={set.operation!.id} lost={lost} myId={info.user.id} />)}
 
         <div key={tab} className="rise min-h-0 flex-1 overflow-y-auto">
           {tab === "voice" && <VoiceView />}

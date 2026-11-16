@@ -12,8 +12,11 @@ export type NetSet = {
   /** True when these are lounge rooms, not an operation's nets. */
   lounge: boolean;
   nets: NetGrant[];
-  notice?: { kind: "moved"; party: string | null };
+  notice?: { kind: "moved" | "leader"; party: string | null };
+  /** Parties whose leader has dropped out, where this player is asked to pick a new one. */
+  leaderLost?: LeaderLost[];
 };
+export type LeaderLost = { partyId: number; party: string; leader: string; members: { id: number; name: string; here: boolean }[] };
 export type Me = { id: number; name: string; classTag: string | null; nameSet: boolean; isAdmin: boolean };
 export type ControlState = "connecting" | "online" | "offline";
 /** Why the server ended the session for good. */
