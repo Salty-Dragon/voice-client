@@ -116,3 +116,5 @@ Closing the window quits the app and takes you out of voice. If you would rather
 ## What is stored about you
 
 On the server: your Discord account ID and name, your in-game name and class tag, your clan membership, your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
+
+To remove all of it, open **Settings → Account → Delete my account**. It asks once more before deleting, and cannot be undone. The full details are in the [privacy policy](../PRIVACY.md).

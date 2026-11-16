@@ -120,3 +120,7 @@ These are on the website, at `https://ignite.v1rtopia.com/admin`, and nowhere in
 - The same clan and ban tools as the Alliance tab.
 
 The first app admin claims the role on the website with the one-time code stored on the server. Once there is an app admin, that option disappears.
+
+### Deleting a player's account
+
+Players can delete their own account in the app (**Settings → Account → Delete my account**). If someone asks you to do it for them, for example because they can no longer sign in, the app admin deletes it on the website's admin page under **Players**. Deleting removes the account and everything that belongs to it; a banned player stays banned. What is kept and why is set out in the [privacy policy](../PRIVACY.md).

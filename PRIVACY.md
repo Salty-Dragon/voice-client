@@ -39,7 +39,17 @@ Sign-in sessions expire and are deleted. Account, clan, roster, voice-room times
 
 ## Removing your data
 
-Signing out ends your session. To have your account and its records deleted, ask an alliance admin, or open an issue in this repository (do not put personal details in the issue).
+Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name and class tag, your clan membership, your places on rosters, your join requests and the record of when you were in voice.
+
+What stays, without you:
+
+- A clan you led stays, without a leader, until an alliance admin appoints one.
+- An operation you led that has ended stays in the list, shown as led by "Deleted player". You cannot delete your account while you lead an operation that has not ended; end it first.
+- Entries in the audit log about changes you made or that were made to you stay, but they hold only your account's number, which no longer leads to a name or a Discord account.
+- If you were banned, your Discord account ID and the ban are kept, and nothing else, so that the ban still holds.
+- Backups of the database are kept for 14 days, so a deleted account can remain in a backup for that long.
+
+If you cannot sign in, ask an alliance admin to pass your request to the app admin, who can delete an account from the admin page.
 
 ## Other services involved
 

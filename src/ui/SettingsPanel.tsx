@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { rpc } from "../api";
 import { APP_NAME, APP_VERSION, isDesktop } from "../config";
 import { foreground } from "../runtime";
 import { checkForUpdate, installUpdate, useUpdate } from "../update";
@@ -39,6 +41,52 @@ function Toggle({ label, checked, onChange, hint }: { label: string; checked: bo
       </label>
       {hint && <Help text={hint} />}
     </span>
+  );
+}
+
+/** Deleting your own account: one click to open the warning, a second to do it. */
+function DeleteAccount({ leadsClan, onDeleted }: { leadsClan: boolean; onDeleted: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  if (!open) {
+    return (
+      <div>
+        <button type="button" className="text-xs text-text-muted underline hover:text-danger cursor-pointer" onClick={() => setOpen(true)}>
+          Delete my account
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2 border border-danger/60 p-3" role="alertdialog" aria-label="Delete my account">
+      <p>
+        This removes your account from the server for good: your name, your clan membership, your places on rosters and the record of
+        when you were in voice. It cannot be undone. Signing in again later starts from nothing.
+      </p>
+      {leadsClan && <p className="text-text-muted">Your clan will be left without a leader until an alliance admin appoints one.</p>}
+      {error && <p className="text-danger" role="alert">{error}</p>}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="btn text-sm"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            setError("");
+            rpc("account.delete")
+              .then(onDeleted)
+              .catch((e: unknown) => {
+                setError(e instanceof Error ? e.message : "That did not work. Try again.");
+                setBusy(false);
+              });
+          }}
+        >
+          Delete my account for good
+        </button>
+        <button type="button" className="btn btn-quiet text-sm" disabled={busy} onClick={() => setOpen(false)}>Keep my account</button>
+      </div>
+    </div>
   );
 }
 
@@ -234,6 +282,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         <Group title="Account">
           <ProfileForm name={info.user.name} classTag={info.user.classTag ?? ""} onSaved={refreshInfo} submit="Save" />
           <div><button type="button" className="btn btn-quiet text-sm" onClick={onSignOut}>Sign out</button></div>
+          <DeleteAccount leadsClan={info.membership?.role === "leader" && info.membership.status === "active"} onDeleted={onSignOut} />
         </Group>
 
         <p className="text-center text-xs text-text-muted">{APP_NAME} {APP_VERSION}</p>

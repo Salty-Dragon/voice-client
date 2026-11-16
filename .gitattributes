@@ -1,0 +1,2 @@
+# The lock file is written on Windows by the build; keep one line ending everywhere.
+src-tauri/Cargo.lock text eol=lf
