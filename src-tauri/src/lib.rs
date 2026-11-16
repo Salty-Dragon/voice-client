@@ -28,6 +28,18 @@ fn restart_as_admin(app: tauri::AppHandle) -> Result<(), String> {
 }
 
 pub fn run() {
+    let mut context = tauri::generate_context!();
+    // WebView2 apps normally accept extra browser switches through this
+    // variable. Because this app sets switches of its own, the variable is
+    // otherwise ignored here, so add it explicitly. The automated test of the
+    // installed app depends on it (debugging link, generated microphone).
+    if let Ok(extra) = std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") {
+        for window in context.config_mut().app.windows.iter_mut() {
+            let own = window.additional_browser_args.clone().unwrap_or_default();
+            window.additional_browser_args = Some(format!("{own} {extra}").trim().to_string());
+        }
+    }
+
     tauri::Builder::default()
         // Must be registered first. A second launch (for example the browser
         // handing a sign-in link back) passes its arguments to the running
@@ -51,6 +63,6 @@ pub fn run() {
             capture_next,
             restart_as_admin
         ])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("failed to start the app");
 }

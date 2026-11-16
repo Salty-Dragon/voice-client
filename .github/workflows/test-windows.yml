@@ -14,6 +14,9 @@ on:
       tag:
         type: string
         default: ""
+      run_id:
+        type: string
+        default: ""
       backend_ref:
         type: string
         default: main
@@ -23,9 +26,13 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release to test, for example v0.5.0"
+        description: "Release to test, for example v0.5.1"
         type: string
-        required: true
+        default: ""
+      run_id:
+        description: "Or: a build run whose installer to test"
+        type: string
+        default: ""
       backend_ref:
         description: "Backend branch or commit"
         type: string
@@ -33,6 +40,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   test:
@@ -54,11 +62,18 @@ jobs:
         with:
           node-version: 24
       - name: Installer from this build
-        if: inputs.tag == ''
+        if: inputs.tag == '' && inputs.run_id == ''
         uses: actions/download-artifact@v4
         with:
           name: installer
           path: installer
+      - name: Installer from an earlier build
+        if: inputs.run_id != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: gh run download "$RUN_ID" -R "$GITHUB_REPOSITORY" -n installer -D installer
       - name: Installer from a release
         if: inputs.tag != ''
         shell: bash
