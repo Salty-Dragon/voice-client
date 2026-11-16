@@ -2,7 +2,9 @@
 
 # Warcryer
 
-Push-to-talk voice chat for large gaming alliances, where the event roster decides who hears whom. This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
+Push-to-talk voice chat for large gaming alliances, where the event roster decides who hears whom. Project page: <https://warcryer.github.io>.
+
+This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
 Voice follows the roster: the server tells the client which voice rooms ("nets") it belongs in, and the client connects to exactly those. Nobody picks a channel by hand. When an organiser moves you to another party, your audio follows within a couple of seconds.
 
