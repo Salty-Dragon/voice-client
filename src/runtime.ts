@@ -36,6 +36,8 @@ export const inputReady: Promise<InputBackend> = createInput(isDesktop).then((i)
   i.onPtt((e) => {
     if (e.net === "muteAll") {
       if (e.down) engine.toggleMuteAll();
+    } else if (e.net === "broadcastLock") {
+      if (e.down) engine.setBroadcastLock(!engine.broadcastLocked);
     } else {
       engine.ptt(e.net as NetKind, e.down);
     }

@@ -90,6 +90,7 @@ Click **Start operation** and confirm. Every participant with the app open is mo
 ### During the event
 
 - **Broadcast** is yours and your deputies'. Hold your Broadcast key for calls to everyone: push, fall back, target, regroup. While you speak, everyone's lower nets are made quieter for them.
+- **Briefings: lock Broadcast open.** As the event leader you can hold Broadcast open without a key. Click **Lock open** on your Broadcast card and talk; everyone in the operation hears you, and a red bar across the app reminds you that they do. Click **Release** when you are done. Pressing your Broadcast key or your Mute all key releases it too, as does ending the operation, and it releases by itself after ten minutes in case you forget. To switch it without leaving the game, bind a **Broadcast lock** key in **Settings → Keys**. Deputies speak on Broadcast with their key but cannot lock it.
 - **Command** links you with the clan leaders and party leaders. You are a senior voice there, so party leaders are made quieter while you speak.
 - **Moves take effect at once.** Drag a player to another party and they hear a cue, see where they went, and are talking to the new party within a second or two.
 - **Late arrivals** sit in Reserve, where they can talk to each other and to you. They still hear Broadcast and their Clan net.
@@ -108,7 +109,8 @@ Click **End operation** and confirm. Everyone returns to their lounge, the opera
 4. Ten minutes before: check the green dots. Chase anyone missing, and send clan leaders an invite link for anyone not in the app yet.
 5. Check that every party has the right leader and that leaders have bound their Command key.
 6. Start the operation.
-7. Afterwards, end it.
+7. Brief everyone with Broadcast locked open, then release it before the fight.
+8. Afterwards, end it.
 
 ## How access is enforced
 

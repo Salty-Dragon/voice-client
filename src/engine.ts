@@ -49,6 +49,9 @@ export type NetView = {
   speakers: Speaker[];
   /** Made quieter right now because a higher-priority net is live. */
   lowered: boolean;
+  /** Broadcast, for the event leader: may be locked open for a briefing, and whether it is now. */
+  canLock: boolean;
+  locked: boolean;
   members: Member[];
 };
 
@@ -62,6 +65,8 @@ const LIVE_HOLD_MS = 400;
 const VOLUME_TICK_MS = 50;
 /** Holding one of these sends your voice to that net only; voice activation pauses meanwhile. */
 const KEYED_ONLY: NetKind[] = ["broadcast", "command", "clan"];
+/** A Broadcast left locked open is released by itself after this long, in case it was forgotten. */
+export const BROADCAST_LOCK_MAX_MS = 10 * 60 * 1000;
 
 type Net = {
   grant: NetGrant;
@@ -117,6 +122,8 @@ export class VoiceEngine {
   /** Latest mic level in dBFS, about every 10 ms. */
   level = -100;
   muteAll = false;
+  /** When Broadcast was locked open for a briefing; 0 when it is not. */
+  private lockedSince = 0;
   micError = "";
 
   onChange: () => void = () => {};
@@ -409,6 +416,7 @@ export class VoiceEngine {
     await this.queue;
     await Promise.all([...this.nets.values()].map((n) => this.leave(n)));
     this.held.clear();
+    this.lockedSince = 0;
     this.onChange();
   }
 
@@ -418,13 +426,43 @@ export class VoiceEngine {
   ptt(kind: NetKind, down: boolean) {
     if (down) this.held.add(kind);
     else this.held.delete(kind);
+    // Taking the Broadcast key in hand again ends a briefing lock: from here it is push-to-talk as usual.
+    if (down && kind === "broadcast" && this.lockedSince) this.setBroadcastLock(false);
     this.update();
   }
 
   toggleMuteAll() {
     this.muteAll = !this.muteAll;
+    if (this.muteAll) this.lockedSince = 0;
     this.update();
     this.onChange();
+  }
+
+  // ---- Broadcast lock, for briefings ---------------------------------------
+
+  /** The Broadcast net, if this player may lock it open (the event leader, with a working mic on it). */
+  private lockable(): Net | undefined {
+    return [...this.nets.values()].find((n) => n.grant.net === "broadcast" && n.grant.lock === true && n.grant.speak && !!n.track);
+  }
+
+  get broadcastLocked(): boolean {
+    return this.lockedSince > 0;
+  }
+
+  /**
+   * Holds Broadcast open without a key, for a briefing, or releases it. It is
+   * also released by pressing the Broadcast key, by Mute all, when the
+   * operation's Broadcast net goes away, and by itself after
+   * BROADCAST_LOCK_MAX_MS. Returns whether it is locked afterwards.
+   */
+  setBroadcastLock(on: boolean): boolean {
+    const want = on && !this.muteAll && !!this.lockable();
+    if (want === this.broadcastLocked) return want;
+    this.lockedSince = want ? Date.now() : 0;
+    this.cue(want ? "locked" : "released");
+    this.update();
+    this.onChange();
+    return want;
   }
 
   /** The room the player talks in when in a lounge. */
@@ -455,7 +493,13 @@ export class VoiceEngine {
     const s = this.settings;
     const voiceMode = s.partyMode === "voice";
     if (voiceMode && this.level >= s.vadThresholdDb) this.voiceUntil = now + s.vadHoldMs;
-    const keyedHeld = KEYED_ONLY.some((k) => this.held.has(k));
+    if (this.lockedSince && (!this.lockable() || now - this.lockedSince > BROADCAST_LOCK_MAX_MS)) {
+      this.lockedSince = 0;
+      this.cue("released");
+      this.onChange();
+    }
+    const locked = this.lockedSince > 0;
+    const keyedHeld = locked || KEYED_ONLY.some((k) => this.held.has(k));
     const voiceRoom = voiceMode ? this.voiceRoom() : null;
     const loungeRoom = this.loungeRoom;
     let changed = false;
@@ -463,7 +507,10 @@ export class VoiceEngine {
     for (const net of this.nets.values()) {
       if (!net.track) continue;
       // A lounge is talked in with the Party key, and only the chosen one.
-      const byKey = net.grant.net === "lounge" ? net.grant.room === loungeRoom && this.held.has("party") : this.held.has(net.grant.net);
+      const byKey =
+        net.grant.net === "lounge"
+          ? net.grant.room === loungeRoom && this.held.has("party")
+          : this.held.has(net.grant.net) || (locked && net.grant.net === "broadcast" && net.grant.lock === true);
       const byVoice = net.grant.room === voiceRoom && !keyedHeld && now < this.voiceUntil;
       const want = !this.muteAll && (byKey || byVoice);
 
@@ -586,11 +633,11 @@ export class VoiceEngine {
   }
 
   /** A short two-note cue, generated here (no sound files, nothing borrowed). */
-  cue(kind: "moved") {
+  cue(kind: "moved" | "locked" | "released") {
     const s = this.settings;
     if (!s.cues || s.cueVolume <= 0) return;
     const ctx = (this.ctx ??= new AudioContext());
-    const notes = kind === "moved" ? [660, 880] : [440];
+    const notes = kind === "moved" ? [660, 880] : kind === "locked" ? [523, 659, 784] : [784, 523];
     notes.forEach((freq, i) => {
       const t = ctx.currentTime + i * 0.12;
       const osc = ctx.createOscillator();
@@ -649,6 +696,8 @@ export class VoiceEngine {
           live: net.live,
           speakers: net.speakers,
           lowered: net.lowered,
+          canLock: net.grant.net === "broadcast" && net.grant.lock === true && net.grant.speak,
+          locked: net.grant.net === "broadcast" && this.lockedSince > 0,
           members,
         };
       });

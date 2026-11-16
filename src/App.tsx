@@ -270,6 +270,16 @@ export default function App() {
           </div>
         )}
 
+        {eng.broadcastLocked && (
+          <div className="flex flex-wrap items-center gap-3 border-b border-net-broadcast bg-bg-2 px-4 py-2" role="alert">
+            <span className="pulse h-2 w-2 rounded-full bg-net-broadcast" />
+            <span>
+              <span className="font-semibold text-net-broadcast">Broadcast is locked open.</span> Everyone in the operation hears you.
+            </span>
+            <button type="button" className="btn text-sm" onClick={() => engine.setBroadcastLock(false)}>Release</button>
+            <span className="text-xs text-text-muted">Your Broadcast key releases it too. It releases by itself after ten minutes.</span>
+          </div>
+        )}
         {set?.operation && (set.leaderLost ?? []).map((lost) => <LeaderLostBar key={lost.partyId} opId={set.operation!.id} lost={lost} myId={info.user.id} />)}
 
         <div key={tab} className="rise min-h-0 flex-1 overflow-y-auto">

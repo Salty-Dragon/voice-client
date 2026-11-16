@@ -82,7 +82,9 @@ function NetCard({
   const s = useSettings();
   const key = s.bindings[bindTargetOf(net.net)];
   const voice = s.partyMode === "voice" && TALK.has(net.net);
-  const how = !net.speak
+  const how = net.locked
+    ? "Locked open: everyone hears you"
+    : !net.speak
     ? "Listen only"
     : net.net === "lounge" && !talkHere
       ? "Listening"
@@ -138,6 +140,14 @@ function NetCard({
         {onTalkHere && !talkHere && (
           <button type="button" className="ml-auto text-gold hover:text-gold-bright cursor-pointer" onClick={onTalkHere}>Talk here</button>
         )}
+        {net.canLock && net.state === "connected" && (
+          <span className="ml-auto flex items-center gap-1">
+            <button type="button" className={`cursor-pointer ${net.locked ? "font-semibold text-net-broadcast" : "text-gold hover:text-gold-bright"}`} onClick={() => engine.setBroadcastLock(!net.locked)}>
+              {net.locked ? "Release" : "Lock open"}
+            </button>
+            <Help text={"For a briefing. Lock open keeps your mic open on Broadcast without holding a key, so everyone in the operation hears you until you release it.\nIt ends when you click Release, press your Broadcast key or your Mute all key, when the operation ends, and by itself after ten minutes.\nYou can also bind a Broadcast lock key in Settings to switch it without leaving the game."} />
+          </span>
+        )}
       </div>
     </li>
   );
@@ -180,7 +190,7 @@ export function VoiceView() {
         .map((n) => bindTargetOf(n.net)),
     ),
   ];
-  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll">[];
+  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock">[];
 
   // What the footer says when it has no key to list for the nets on screen.
   const speakNets = nets.filter((n) => n.speak);

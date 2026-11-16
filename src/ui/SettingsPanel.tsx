@@ -16,6 +16,7 @@ const KEYS: { target: BindTarget; label: string; note: string }[] = [
   { target: "party", label: "Party", note: "Your party, and the lounge" },
   { target: "reserve", label: "Reserve", note: "While you have no party" },
   { target: "muteAll", label: "Mute all", note: "Press once to silence your mic everywhere, again to restore" },
+  { target: "broadcastLock", label: "Broadcast lock", note: "Event leader only: press once to hold Broadcast open for a briefing, again to release" },
 ];
 
 const SOURCES: { id: InputSource; label: string; note: string }[] = [
@@ -161,7 +162,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           <ul className="flex flex-col gap-2">
             {KEYS.map((k) => (
               <li key={k.target} className="flex items-center gap-3">
-                <span className={`w-24 font-medium ${k.target === "muteAll" ? "" : NET_TEXT[k.target]}`}>{k.label}</span>
+                <span className={`w-24 font-medium ${k.target === "muteAll" ? "" : NET_TEXT[k.target === "broadcastLock" ? "broadcast" : k.target]}`}>{k.label}</span>
                 <KeyBind target={k.target} label={k.label} />
                 <span className="text-xs text-text-muted">{k.note}</span>
               </li>

@@ -6,7 +6,8 @@ export type NetKind = "broadcast" | "command" | "clan" | "party" | "reserve" | "
 /** Highest priority first. */
 export const NET_ORDER: NetKind[] = ["broadcast", "command", "clan", "party", "reserve", "lounge"];
 /** What a key can be bound to. A lounge uses the Party key: both are "talk to the people around me". */
-export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll";
+/** "broadcastLock" is a toggle for the event leader: Broadcast stays open for a briefing without a key held. */
+export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll" | "broadcastLock";
 export const bindTargetOf = (net: NetKind): Exclude<NetKind, "lounge"> => (net === "lounge" ? "party" : net);
 export type InputSource = "poll" | "hook" | "raw";
 
@@ -51,7 +52,7 @@ const DEFAULTS: Settings = {
   echoCancellation: true,
   noiseSuppression: true,
   autoGainControl: true,
-  bindings: { broadcast: null, command: null, clan: null, party: null, reserve: null, muteAll: null },
+  bindings: { broadcast: null, command: null, clan: null, party: null, reserve: null, muteAll: null, broadcastLock: null },
   source: "poll",
   partyMode: "ptt",
   vadThresholdDb: -45,

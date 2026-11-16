@@ -3,7 +3,7 @@
 
 import type { NetKind } from "./settings";
 
-export type NetGrant = { net: NetKind; label: string; room: string; speak: boolean; token: string };
+export type NetGrant = { net: NetKind; label: string; room: string; speak: boolean; token: string; /** Broadcast only: this player (the event leader) may lock it open for a briefing. */ lock?: boolean };
 export type OpInfo = { id: number; name: string; state: "planned" | "live" | "ended" };
 export type NetSet = {
   url: string;
