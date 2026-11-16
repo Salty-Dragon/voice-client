@@ -122,7 +122,13 @@ function NetCard({
       ) : (
         <div className={`min-h-5 truncate transition-opacity duration-150 ${net.lowered ? "opacity-50" : ""}`}>
           {net.live && <span className={`font-semibold ${NET_TEXT[net.net]}`}>You </span>}
-          {net.speakers.join(", ")}
+          {net.speakers.map((sp, i) => (
+            <span key={sp.identity} className="mr-1 inline-flex items-center gap-1 align-middle">
+              {i > 0 && <span>,</span>}
+              {sp.name}
+              <span className="text-xs text-text-muted"><ClanMark clanId={sp.clanId} tag={sp.clanTag} size={14} /></span>
+            </span>
+          ))}
           {!net.live && net.speakers.length === 0 && <span className="text-text-muted">Quiet</span>}
         </div>
       )}

@@ -35,6 +35,8 @@ export type Member = {
   muted: boolean;
 };
 
+export type Speaker = { identity: string; name: string; clanId: number | null; clanTag: string | null };
+
 export type NetView = {
   net: NetKind;
   label: string;
@@ -43,8 +45,8 @@ export type NetView = {
   speak: boolean;
   /** Our mic is open on this net right now. */
   live: boolean;
-  /** Names of others speaking right now. */
-  speakers: string[];
+  /** Others speaking right now. */
+  speakers: Speaker[];
   /** Made quieter right now because a higher-priority net is live. */
   lowered: boolean;
   members: Member[];
@@ -70,7 +72,7 @@ type Net = {
   byKey: boolean;
   /** When to close after the reason to be open has gone; 0 = not closing. */
   closeAt: number;
-  speakers: string[];
+  speakers: Speaker[];
   /** We are leaving on purpose; ignore the disconnect that follows. */
   closing: boolean;
   failed: boolean;
@@ -306,8 +308,8 @@ export class VoiceEngine {
       .on(RoomEvent.AudioPlaybackStatusChanged, changed)
       .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
         net.speakers = speakers.filter((p) => !p.isLocal).map((p) => {
-          const tag = meta(p).clanTag;
-          return (p.name || p.identity) + (tag ? ` [${tag}]` : "");
+          const m = meta(p);
+          return { identity: p.identity, name: p.name || p.identity, clanId: m.clanId, clanTag: m.clanTag };
         });
         this.onChange();
       })
