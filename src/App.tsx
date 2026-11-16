@@ -172,6 +172,9 @@ export default function App() {
                 }`}
               >
                 {t.label}
+                {t.id === "roster" && info.joinRequests.length > 0 && (
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" title="Asking to join your party">{info.joinRequests.length}</span>
+                )}
                 {t.id === "clan" && info.pendingApprovals > 0 && (
                   <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" title="Waiting for approval">{info.pendingApprovals}</span>
                 )}

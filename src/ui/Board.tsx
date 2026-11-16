@@ -13,7 +13,7 @@ const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as cons
 const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text-text-muted" } as const;
 
 export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
-  const { info, set, select } = useApp();
+  const { info, set, select, refreshInfo } = useApp();
   const me = info.user.id;
   // Other organisers edit the same board, so reload often as well as on every change notice.
   const { data, error, reload } = useLoad(() => rpc<OpDetail>("op.get", { opId }), [opId], 5000);
@@ -39,7 +39,10 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const partyOf = (userId: number) => op.parties.find((p) => p.memberIds.includes(userId)) ?? null;
 
   const run = (method: string, params: Record<string, unknown>) => {
-    void act.run(() => rpc(method, { opId, ...params })).then(reload);
+    void act.run(() => rpc(method, { opId, ...params })).then(() => {
+      reload();
+      refreshInfo();
+    });
   };
 
   const overOwnClan = (p: Person) => p.clanId !== null && perms.leadClanIds.includes(p.clanId);
@@ -66,6 +69,12 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
     e.preventDefault();
     setOver(target);
   };
+
+  // Asking to join: for players who cannot simply place themselves.
+  const self = person.get(me);
+  const canAsk = open && !!self && !canPlace(self);
+  const myRequest = op.requests.find((r) => r.userId === me)?.partyId ?? null;
+  const canAnswer = (party: Party, p: Person) => open && (party.leaderId === me || perms.isOrganiser || overOwnClan(p));
 
   const sel = selected === null ? undefined : person.get(selected);
   const selParty = sel ? partyOf(sel.userId) : null;
@@ -169,7 +178,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       <div className="panel flex min-h-12 flex-wrap items-center gap-3 px-3 py-2" aria-live="polite">
         {!sel ? (
           <span className="text-text-muted">
-            {perms.canEditParties ? "Drag a player to a party, or select one to move them." : "Select a player to see their options."}
+            {perms.canEditParties
+              ? "Drag a player to a party, or select one to move them."
+              : canAsk
+                ? "Ask to join a party; its leader accepts or declines."
+                : "Select a player to see their options."}
           </span>
         ) : (
           <>
@@ -223,6 +236,40 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               onDrop={drop(party.id)}
               onRename={(name) => run("party.rename", { partyId: party.id, name })}
               onDelete={() => run("party.delete", { partyId: party.id })}
+              footer={
+                <>
+                  {op.requests
+                    .filter((r) => r.partyId === party.id)
+                    .map((r) => {
+                      const p = person.get(r.userId);
+                      if (!p) return null;
+                      return (
+                        <div key={r.userId} className="flex flex-wrap items-center gap-2 rounded-sm border border-dashed border-gold-dim px-2 py-1">
+                          <span className="truncate">
+                            <span className="font-medium">{p.name}</span>
+                            {p.classTag && <span className="ml-1 text-xs text-gold">{p.classTag}</span>}
+                            <span className="text-text-muted"> asks to join</span>
+                          </span>
+                          {canAnswer(party, p) ? (
+                            <span className="ml-auto flex gap-1">
+                              <button type="button" className="btn text-xs px-2 py-0.5" onClick={() => run("party.answerJoin", { partyId: party.id, userId: p.userId, accept: true })}>Accept</button>
+                              <button type="button" className="btn btn-quiet text-xs px-2 py-0.5" onClick={() => run("party.answerJoin", { partyId: party.id, userId: p.userId, accept: false })}>Decline</button>
+                            </span>
+                          ) : (
+                            p.userId === me && (
+                              <button type="button" className="ml-auto text-xs text-text-muted hover:text-danger cursor-pointer" onClick={() => run("party.cancelJoin", {})}>Cancel</button>
+                            )
+                          )}
+                        </div>
+                      );
+                    })}
+                  {canAsk && !party.memberIds.includes(me) && myRequest !== party.id && (
+                    <button type="button" className="btn btn-quiet text-xs self-start px-2 py-0.5" onClick={() => run("party.requestJoin", { partyId: party.id })}>
+                      Ask to join
+                    </button>
+                  )}
+                </>
+              }
             >
               {party.memberIds.map((id) => {
                 const p = person.get(id);
@@ -275,6 +322,7 @@ function PartyBlock({
   canRename,
   onRename,
   onDelete,
+  footer,
   ...dnd
 }: {
   party: Party;
@@ -284,6 +332,8 @@ function PartyBlock({
   canRename: boolean;
   onRename: (name: string) => void;
   onDelete: () => void;
+  /** Join requests and the ask-to-join button. */
+  footer?: React.ReactNode;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent) => void;
@@ -318,6 +368,7 @@ function PartyBlock({
       </div>
       {count > PARTY_SIZE && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
       {count === 0 ? <p className="py-3 text-center text-text-muted">Empty</p> : <ul className="flex flex-col gap-1">{children}</ul>}
+      {footer}
       {canEdit && (
         <div className="flex justify-end">
           <ConfirmButton className="text-xs text-text-muted hover:text-danger cursor-pointer" confirm="Delete party?" onConfirm={onDelete}>Delete</ConfirmButton>

@@ -50,7 +50,10 @@ export type Info = {
   membership: Membership | null;
   /** Join requests waiting on this player as a clan leader or officer. */
   pendingApprovals: number;
+  /** Players asking to join a party this player leads. */
+  joinRequests: JoinRequest[];
 };
+export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 export type ClanSummary = { id: number; name: string; tag: string; leaderName: string | null; members: number };
 export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active" };
 export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[] };
@@ -70,6 +73,8 @@ export type OpView = {
   parties: Party[];
   people: Person[];
   reserveIds: number[];
+  /** Players waiting for an answer to "may I join this party?". */
+  requests: { partyId: number; userId: number }[];
 };
 export type OpPerms = { isOrganiser: boolean; leadClanIds: number[]; canView: boolean; canEditParties: boolean };
 export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[] };

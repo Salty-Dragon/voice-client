@@ -4,7 +4,8 @@ import type { NetView } from "../engine";
 import { keyLabel } from "../keys";
 import { engine } from "../runtime";
 import { bindTargetOf, useSettings, type BindTarget } from "../settings";
-import { useApp } from "./app-context";
+import { rpc } from "../api";
+import { useAct, useApp } from "./app-context";
 import { KeyBind, NET_BORDER, NET_NAME, NET_TEXT, useEngine } from "./common";
 
 const STATE_TEXT: Record<NetView["state"], string> = {
@@ -56,7 +57,10 @@ function NetCard({ net, talkHere, onTalkHere }: { net: NetView; talkHere: boolea
 }
 
 export function VoiceView() {
-  const { info, set, select, go, notice } = useApp();
+  const { info, set, select, go, notice, refreshInfo } = useApp();
+  const act = useAct();
+  const answer = (r: { opId: number; partyId: number; userId: number }, accept: boolean) =>
+    void act.run(() => rpc("party.answerJoin", { ...r, accept })).then(refreshInfo);
   const eng = useEngine();
   const s = useSettings();
   const nets = eng.view();
@@ -138,6 +142,20 @@ export function VoiceView() {
           </div>
         )}
         {notice && <div className="panel px-3 py-2 text-gold-bright border-gold-bright" role="status">{notice}</div>}
+        {info.joinRequests.map((r) => (
+          <div key={`${r.opId}-${r.userId}`} className="panel flex flex-wrap items-center gap-3 px-3 py-2 border-gold" role="status">
+            <span>
+              <span className="font-semibold">{r.name}</span>
+              {r.classTag && <span className="ml-1 text-xs text-gold">{r.classTag}</span>} asks to join{" "}
+              <span className="font-semibold text-net-party">{r.partyName}</span>
+            </span>
+            <span className="ml-auto flex gap-2">
+              <button type="button" className="btn text-sm" disabled={act.busy} onClick={() => answer(r, true)}>Accept</button>
+              <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={() => answer(r, false)}>Decline</button>
+            </span>
+          </div>
+        ))}
+        {act.error && <div className="text-danger" role="alert">{act.error}</div>}
         {unbound.length > 0 && (
           <div className="panel flex flex-wrap items-center gap-x-5 gap-y-2 px-3 py-2">
             <span>You can speak here. Bind a key for each:</span>
