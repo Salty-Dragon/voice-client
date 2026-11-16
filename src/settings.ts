@@ -30,6 +30,14 @@ export type Settings = {
   cues: boolean;
   cueVolume: number;
   alwaysAdmin: boolean;
+  /** Lower nets get quieter while a higher one is live. */
+  ducking: boolean;
+  /** How loud a ducked net stays, 0 to 1. */
+  duckLevel: number;
+  /** Your own volume for individual players, by their id. Missing means 1. */
+  playerVolume: Record<string, number>;
+  /** Players you have muted for yourself. */
+  playerMuted: Record<string, boolean>;
 };
 
 const DEFAULTS: Settings = {
@@ -48,6 +56,10 @@ const DEFAULTS: Settings = {
   cues: true,
   cueVolume: 0.5,
   alwaysAdmin: false,
+  ducking: true,
+  duckLevel: 0.3,
+  playerVolume: {},
+  playerMuted: {},
 };
 
 const KEY = "settings.v1";

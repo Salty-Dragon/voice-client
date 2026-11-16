@@ -29,6 +29,9 @@ export type Member = {
   self: boolean;
   /** May speak on this net (holds a published track or is allowed to). */
   canSpeak: boolean;
+  /** Your own volume for this player (0 to 1) and whether you muted them. */
+  volume: number;
+  muted: boolean;
 };
 
 export type NetView = {
@@ -46,6 +49,12 @@ export type NetView = {
 
 /** How long the mic stays open after a push-to-talk key is released, so word endings are not clipped. */
 const RELEASE_TAIL_MS = 200;
+/** Lower number = higher priority. A live net lowers every net below it for the listener. */
+const PRIORITY: Record<NetKind, number> = { broadcast: 0, command: 1, clan: 2, party: 3, reserve: 3, lounge: 4 };
+/** A net counts as live for this long after its last speaker closes their mic, so gaps between words do not pump the volume. */
+const LIVE_HOLD_MS = 400;
+/** How often volumes are re-evaluated. */
+const VOLUME_TICK_MS = 50;
 /** Holding one of these sends your voice to that net only; voice activation pauses meanwhile. */
 const KEYED_ONLY: NetKind[] = ["broadcast", "command", "clan"];
 
@@ -62,14 +71,18 @@ type Net = {
   /** We are leaving on purpose; ignore the disconnect that follows. */
   closing: boolean;
   failed: boolean;
+  /** Someone else has their mic open here until at least this time. */
+  liveUntil: number;
+  /** The same, for a senior leader (Command only). */
+  seniorLiveUntil: number;
 };
 
-function meta(p: Participant): { classTag: string | null; clanTag: string | null } {
+function meta(p: Participant): { classTag: string | null; clanTag: string | null; senior: boolean } {
   try {
-    const m = JSON.parse(p.metadata || "{}") as { classTag?: string | null; clanTag?: string | null };
-    return { classTag: m.classTag ?? null, clanTag: m.clanTag ?? null };
+    const m = JSON.parse(p.metadata || "{}") as { classTag?: string | null; clanTag?: string | null; senior?: boolean };
+    return { classTag: m.classTag ?? null, clanTag: m.clanTag ?? null, senior: m.senior === true };
   } catch {
-    return { classTag: null, clanTag: null };
+    return { classTag: null, clanTag: null, senior: false };
   }
 }
 
@@ -90,6 +103,9 @@ export class VoiceEngine {
   private settings: Settings = getSettings();
   /** With more than one lounge, the one the player talks in. They hear all of them. */
   private talkLounge: string | null = null;
+  private lastVolumeTick = 0;
+  /** Volume last set per track, to avoid setting it again and again. */
+  private volumeSet = new WeakMap<object, number>();
 
   /** Latest mic level in dBFS, about every 10 ms. */
   level = -100;
@@ -270,7 +286,7 @@ export class VoiceEngine {
       publishDefaults: { dtx: true, red: true, audioPreset: AudioPresets.speech },
       audioOutput: this.settings.outputDeviceId ? { deviceId: this.settings.outputDeviceId } : undefined,
     });
-    const net: Net = { grant, room, live: false, byKey: false, closeAt: 0, speakers: [], closing: false, failed: false };
+    const net: Net = { grant, room, live: false, byKey: false, closeAt: 0, speakers: [], closing: false, failed: false, liveUntil: 0, seniorLiveUntil: 0 };
     this.nets.set(grant.room, net);
     const changed = () => this.onChange();
 
@@ -284,13 +300,18 @@ export class VoiceEngine {
       .on(RoomEvent.TrackUnpublished, changed)
       .on(RoomEvent.AudioPlaybackStatusChanged, changed)
       .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
-        net.speakers = speakers.filter((p) => !p.isLocal).map((p) => p.name || p.identity);
+        net.speakers = speakers.filter((p) => !p.isLocal).map((p) => {
+          const tag = meta(p).clanTag;
+          return (p.name || p.identity) + (tag ? ` [${tag}]` : "");
+        });
         this.onChange();
       })
       .on(RoomEvent.TrackSubscribed, (track) => {
         if (track.kind !== Track.Kind.Audio) return;
-        this.sink.appendChild(track.attach());
-        (track as RemoteAudioTrack).setVolume(this.settings.netVolume[net.grant.net]);
+        const el = track.attach();
+        el.dataset.room = net.grant.room;
+        this.sink.appendChild(el);
+        this.applyVolumes(true);
       })
       .on(RoomEvent.TrackUnsubscribed, (track) => {
         track.detach().forEach((el) => el.remove());
@@ -305,6 +326,7 @@ export class VoiceEngine {
         // control channel what our rooms should be now; apply() re-joins.
         net.track = undefined;
         net.live = false;
+        this.clearAudio(net.grant.room);
         this.needRefresh();
         this.onChange();
       });
@@ -355,6 +377,14 @@ export class VoiceEngine {
     this.nets.delete(net.grant.room);
     net.track?.stop();
     await net.room.disconnect().catch(() => {});
+    this.clearAudio(net.grant.room);
+  }
+
+  /** Removes a room's audio elements. A disconnect does not always report each track as unsubscribed. */
+  private clearAudio(room: string) {
+    this.sink.querySelectorAll<HTMLAudioElement>("audio").forEach((el) => {
+      if (el.dataset.room === room) el.remove();
+    });
   }
 
   /** Throttled: several rooms failing together produce one request. */
@@ -452,6 +482,58 @@ export class VoiceEngine {
       }
     }
     if (changed) this.onChange();
+    if (now - this.lastVolumeTick >= VOLUME_TICK_MS) {
+      this.lastVolumeTick = now;
+      this.applyVolumes();
+    }
+  }
+
+  // ---- Volume: per net, per player, and ducking ---------------------------
+
+  /**
+   * Sets every incoming track to: the net's volume, times the player's own
+   * setting for that speaker, times the ducking factor. Ducking: while a
+   * higher-priority net is live, lower nets drop to the duck level; and on
+   * Command, while a senior leader speaks, the party leaders drop the same way.
+   *
+   * "Live" is read from who has their mic open, which arrives sooner than
+   * the server's who-is-speaking detection, so the start of a call is not masked.
+   */
+  private applyVolumes(force = false) {
+    const now = Date.now();
+    const s = this.settings;
+    const nets = [...this.nets.values()];
+
+    for (const net of nets) {
+      for (const p of net.room.remoteParticipants.values()) {
+        let open = false;
+        p.audioTrackPublications.forEach((pub) => {
+          if (!pub.isMuted && pub.track) open = true;
+        });
+        if (!open || s.playerMuted[p.identity]) continue;
+        net.liveUntil = now + LIVE_HOLD_MS;
+        if (net.grant.net === "command" && meta(p).senior) net.seniorLiveUntil = now + LIVE_HOLD_MS;
+      }
+    }
+
+    for (const net of nets) {
+      const rank = PRIORITY[net.grant.net];
+      const ducked = s.ducking && nets.some((other) => PRIORITY[other.grant.net] < rank && other.liveUntil > now);
+      const seniorLive = s.ducking && net.grant.net === "command" && net.seniorLiveUntil > now;
+      const base = s.netVolume[net.grant.net];
+      for (const p of net.room.remoteParticipants.values()) {
+        const own = s.playerMuted[p.identity] ? 0 : (s.playerVolume[p.identity] ?? 1);
+        const duck = ducked || (seniorLive && !meta(p).senior) ? s.duckLevel : 1;
+        const volume = Math.max(0, Math.min(1, base * own * duck));
+        p.audioTrackPublications.forEach((pub) => {
+          const track = pub.track as RemoteAudioTrack | undefined;
+          if (!track) return;
+          if (!force && this.volumeSet.get(track) === volume) return;
+          this.volumeSet.set(track, volume);
+          track.setVolume(volume);
+        });
+      }
+    }
   }
 
   // ---- Settings -----------------------------------------------------------
@@ -470,14 +552,7 @@ export class VoiceEngine {
     if (prev.outputDeviceId !== next.outputDeviceId) {
       for (const net of this.nets.values()) void net.room.switchActiveDevice("audiooutput", next.outputDeviceId || "default").catch(() => {});
     }
-    if (prev.netVolume !== next.netVolume) {
-      for (const net of this.nets.values()) {
-        const volume = next.netVolume[net.grant.net];
-        net.room.remoteParticipants.forEach((p) =>
-          p.audioTrackPublications.forEach((pub) => (pub.track as RemoteAudioTrack | undefined)?.setVolume(volume)),
-        );
-      }
-    }
+    this.applyVolumes();
     this.update();
   }
 
@@ -536,6 +611,8 @@ export class VoiceEngine {
           speaking: self ? net.live : speaking.has(p.identity),
           self,
           canSpeak: self ? net.grant.speak : (p.permissions?.canPublish ?? false),
+          volume: this.settings.playerVolume[p.identity] ?? 1,
+          muted: this.settings.playerMuted[p.identity] === true,
         });
         const members = [...net.room.remoteParticipants.values()].map((p) => person(p, false));
         if (net.room.state === ConnectionState.Connected) members.push(person(net.room.localParticipant, true));

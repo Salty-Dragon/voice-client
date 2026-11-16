@@ -44,60 +44,63 @@ body {
   user-select: none;
 }
 
-.panel {
-  background: rgb(18 20 26 / 0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--color-gold-dim);
-  border-radius: 2px;
-}
+/* In the components layer so that utility classes on the same element (w-auto, text-xs, px-2) win. */
+@layer components {
+  .panel {
+    background: rgb(18 20 26 / 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-gold-dim);
+    border-radius: 2px;
+  }
 
-.field {
-  width: 100%;
-  background: var(--color-bg-2);
-  border: 1px solid var(--color-line);
-  border-radius: 2px;
-  padding: 0.4rem 0.6rem;
-  color: var(--color-text);
-  transition: border-color 150ms;
-}
-.field:focus {
-  outline: none;
-  border-color: var(--color-gold);
-}
+  .field {
+    width: 100%;
+    background: var(--color-bg-2);
+    border: 1px solid var(--color-line);
+    border-radius: 2px;
+    padding: 0.4rem 0.6rem;
+    color: var(--color-text);
+    transition: border-color 150ms;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-gold);
+  }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-gold);
-  border-radius: 2px;
-  padding: 0.4rem 1rem;
-  color: var(--color-gold-bright);
-  font-weight: 500;
-  transition: background-color 150ms, color 150ms, border-color 150ms;
-  cursor: pointer;
-}
-.btn:hover:not(:disabled) {
-  background: var(--color-gold);
-  color: var(--color-bg-0);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.btn-quiet {
-  border-color: var(--color-line);
-  color: var(--color-text-muted);
-}
-.btn-quiet:hover:not(:disabled) {
-  background: var(--color-bg-2);
-  color: var(--color-text);
-}
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-gold);
+    border-radius: 2px;
+    padding: 0.4rem 1rem;
+    color: var(--color-gold-bright);
+    font-weight: 500;
+    transition: background-color 150ms, color 150ms, border-color 150ms;
+    cursor: pointer;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--color-gold);
+    color: var(--color-bg-0);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .btn-quiet {
+    border-color: var(--color-line);
+    color: var(--color-text-muted);
+  }
+  .btn-quiet:hover:not(:disabled) {
+    background: var(--color-bg-2);
+    color: var(--color-text);
+  }
 
-.title {
-  font-family: var(--font-display);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  .title {
+    font-family: var(--font-display);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
 }
 
 /* A speaking player pulses in their net's colour. */

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { isDesktop } from "../config";
-import type { NetView } from "../engine";
+import type { Member, NetView } from "../engine";
 import { keyLabel } from "../keys";
 import { engine } from "../runtime";
-import { bindTargetOf, useSettings, type BindTarget } from "../settings";
+import { bindTargetOf, setSettings, useSettings, type BindTarget } from "../settings";
 import { rpc } from "../api";
 import { useAct, useApp } from "./app-context";
 import { KeyBind, NET_BORDER, NET_NAME, NET_TEXT, useEngine } from "./common";
@@ -17,7 +17,67 @@ const STATE_TEXT: Record<NetView["state"], string> = {
 
 const TALK = new Set(["party", "reserve", "lounge"]);
 
-function NetCard({ net, talkHere, onTalkHere }: { net: NetView; talkHere: boolean; onTalkHere?: () => void }) {
+/** One player on a net. Clicking someone else opens your own volume and mute for them. */
+function MemberCard({ m, colour, open, onToggle }: { m: Member; colour: string; open: boolean; onToggle: () => void }) {
+  const s = useSettings();
+  const quiet = m.muted || m.volume < 1;
+  return (
+    <li className={`flex flex-col rounded-sm border ${colour} ${m.speaking && !m.muted ? "speaking border-current" : "border-line"}`}>
+      <button
+        type="button"
+        disabled={m.self}
+        aria-expanded={m.self ? undefined : open}
+        onClick={onToggle}
+        className={`flex items-center gap-2 px-2 py-1.5 text-left ${m.self ? "cursor-default" : "cursor-pointer"}`}
+        title={m.self ? undefined : "Your volume for this player"}
+      >
+        <span className={`truncate font-medium ${m.self ? "text-gold-bright" : m.muted ? "text-text-muted line-through" : "text-text"}`}>{m.name}</span>
+        {m.classTag && <span className="text-xs text-gold">{m.classTag}</span>}
+        <span className="ml-auto flex items-center gap-2 text-xs text-text-muted">
+          {quiet && <span>{m.muted ? "muted" : `${Math.round(m.volume * 100)}%`}</span>}
+          {!m.canSpeak && <span title="Listening only">listening</span>}
+          {m.clanTag && <span>[{m.clanTag}]</span>}
+        </span>
+      </button>
+      {open && !m.self && (
+        <div className="flex items-center gap-2 border-t border-line px-2 py-1.5 text-xs text-text-muted">
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={m.volume}
+            disabled={m.muted}
+            aria-label={`Your volume for ${m.name}`}
+            className="min-w-0 flex-1"
+            onChange={(e) => setSettings({ playerVolume: { ...s.playerVolume, [m.identity]: Number(e.target.value) } })}
+          />
+          <button
+            type="button"
+            className={`btn px-2 py-0.5 text-xs ${m.muted ? "" : "btn-quiet"}`}
+            onClick={() => setSettings({ playerMuted: { ...s.playerMuted, [m.identity]: !m.muted } })}
+          >
+            {m.muted ? "Unmute" : "Mute"}
+          </button>
+        </div>
+      )}
+    </li>
+  );
+}
+
+function NetCard({
+  net,
+  talkHere,
+  onTalkHere,
+  shown,
+  onShow,
+}: {
+  net: NetView;
+  talkHere: boolean;
+  onTalkHere?: () => void;
+  shown: boolean;
+  onShow: () => void;
+}) {
   const s = useSettings();
   const key = s.bindings[bindTargetOf(net.net)];
   const voice = s.partyMode === "voice" && TALK.has(net.net);
@@ -31,12 +91,12 @@ function NetCard({ net, talkHere, onTalkHere }: { net: NetView; talkHere: boolea
           ? `Hold ${keyLabel(key)}${voice ? " or just speak" : ""}`
           : "No key bound";
   return (
-    <li className={`panel border-l-4 ${NET_BORDER[net.net]} px-3 py-2 flex flex-col gap-1 transition-colors duration-150 ${net.live ? "bg-bg-2" : ""}`}>
-      <div className="flex items-baseline gap-2">
+    <li className={`panel border-l-4 ${NET_BORDER[net.net]} px-3 py-2 flex flex-col gap-1 transition-colors duration-150 ${net.live || shown ? "bg-bg-2" : ""}`}>
+      <button type="button" className="flex items-baseline gap-2 text-left cursor-pointer" onClick={onShow} aria-pressed={shown} title="Show who is on this net">
         <span className={`title text-sm ${NET_TEXT[net.net]}`}>{net.label}</span>
         {net.label !== NET_NAME[net.net] && net.net !== "lounge" && <span className="text-xs text-text-muted">{NET_NAME[net.net]}</span>}
         <span className="ml-auto text-xs text-text-muted tabular-nums" title="Connected">{net.members.length}</span>
-      </div>
+      </button>
       {net.state !== "connected" ? (
         <span className="text-xs text-danger">{STATE_TEXT[net.state]}</span>
       ) : (
@@ -66,6 +126,9 @@ export function VoiceView() {
   const nets = eng.view();
   const op = set?.operation ?? null;
   const [, tick] = useState(0);
+  /** The net whose people fill the centre panel; null follows your party or lounge. */
+  const [shownRoom, setShownRoom] = useState<string | null>(null);
+  const [openMember, setOpenMember] = useState<string | null>(null);
 
   // Playback permission can change without an engine event.
   useEffect(() => {
@@ -78,6 +141,8 @@ export function VoiceView() {
   // The net you chat on: your party, Reserve while you have none, or the lounge you picked.
   const home =
     nets.find((n) => n.net === "party") ?? nets.find((n) => n.net === "reserve") ?? lounges.find((n) => n.room === loungeRoom) ?? lounges[0] ?? null;
+
+  const shown = nets.find((n) => n.room === shownRoom) ?? home;
 
   // Speaking nets with no key yet: a new leader is prompted to bind theirs.
   const voiceMode = s.partyMode === "voice";
@@ -199,33 +264,44 @@ export function VoiceView() {
               <NetCard
                 key={n.room}
                 net={n}
+                shown={shown?.room === n.room}
+                onShow={() => setShownRoom(n.room === home?.room ? null : n.room)}
                 talkHere={n.net !== "lounge" || n.room === loungeRoom}
                 onTalkHere={n.net === "lounge" && lounges.length > 1 ? () => engine.setLoungeRoom(n.room) : undefined}
               />
             ))}
           </ul>
           <section className="panel flex min-w-0 flex-1 flex-col gap-3 p-4 overflow-y-auto">
-            {home && (
+            {shown && (
               <>
-                <h1 className={`title ${NET_TEXT[home.net]}`}>{home.label}</h1>
-                <ul className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-2">
-                  {home.members.map((m) => (
-                    <li
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <h1 className={`title ${NET_TEXT[shown.net]}`}>{shown.label}</h1>
+                  <span className="text-text-muted">
+                    {shown.members.length} connected
+                    {shown.members.some((m) => !m.canSpeak) && ` · ${shown.members.filter((m) => m.canSpeak).length} can speak`}
+                  </span>
+                  {shown.room !== home?.room && (
+                    <button type="button" className="ml-auto text-text-muted hover:text-gold cursor-pointer" onClick={() => setShownRoom(null)}>
+                      Back to {home?.label ?? "your net"}
+                    </button>
+                  )}
+                </div>
+                <ul className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] items-start gap-2">
+                  {shown.members.map((m) => (
+                    <MemberCard
                       key={m.identity}
-                      className={`flex items-center gap-2 rounded-sm border px-2 py-1.5 ${home.net === "lounge" ? "text-net-party" : NET_TEXT[home.net]} ${
-                        m.speaking ? "speaking border-current" : "border-line"
-                      }`}
-                    >
-                      <span className={`truncate font-medium ${m.self ? "text-gold-bright" : "text-text"}`}>{m.name}</span>
-                      {m.classTag && <span className="text-xs text-gold">{m.classTag}</span>}
-                      {m.clanTag && <span className="ml-auto text-xs text-text-muted">[{m.clanTag}]</span>}
-                    </li>
+                      m={m}
+                      colour={shown.net === "lounge" ? "text-net-party" : NET_TEXT[shown.net]}
+                      open={openMember === m.identity}
+                      onToggle={() => setOpenMember(openMember === m.identity ? null : m.identity)}
+                    />
                   ))}
                 </ul>
-                {home.net === "reserve" && <p className="text-text-muted">You are in Reserve until an organiser places you in a party.</p>}
-                {home.net === "lounge" && home.members.length <= 1 && home.state === "connected" && (
+                {shown.net === "reserve" && shown.room === home?.room && <p className="text-text-muted">You are in Reserve until an organiser places you in a party.</p>}
+                {shown.net === "lounge" && shown.members.length <= 1 && shown.state === "connected" && (
                   <p className="text-text-muted">Nobody else is here yet. Anyone from the clan who opens the app lands in this room.</p>
                 )}
+                <p className="mt-auto pt-2 text-xs text-text-muted">Click a net to see who is on it. Click a player to set your own volume for them.</p>
               </>
             )}
           </section>

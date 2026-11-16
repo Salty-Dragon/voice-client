@@ -42,6 +42,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("voice");
   const [boardOp, setBoardOp] = useState<number | null>(null);
   const control = useRef<ControlClient | null>(null);
+  const retry = useRef<number | undefined>(undefined);
+  const refreshInfoRef = useRef<() => void>(() => {});
 
   const leave = useCallback((why: string) => {
     void engine.stop();
@@ -59,9 +61,13 @@ export default function App() {
     rpc<Info>("me")
       .then(setInfo)
       .catch((e) => {
-        if (e instanceof ApiError && e.status === 401) leave(isDesktop ? "You were signed out. Sign in again to continue." : "");
+        if (e instanceof ApiError && e.status === 401) return leave(isDesktop ? "You were signed out. Sign in again to continue." : "");
+        // The server could not be reached. Keep trying rather than sitting on "Connecting…" for good.
+        window.clearTimeout(retry.current);
+        retry.current = window.setTimeout(() => refreshInfoRef.current(), 4000);
       });
   }, [leave]);
+  refreshInfoRef.current = refreshInfo;
 
   useEffect(() => {
     if (phase !== "running") return;
@@ -96,6 +102,7 @@ export default function App() {
     c.start();
     return () => {
       window.clearTimeout(noticeTimer);
+      window.clearTimeout(retry.current);
       c.stop();
       control.current = null;
       void engine.stop();

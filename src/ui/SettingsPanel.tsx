@@ -109,6 +109,28 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           ))}
         </Group>
 
+        <Group title="Priority">
+          <Toggle label="Lower other nets while a higher one is live" checked={s.ducking} onChange={(v) => setSettings({ ducking: v })} />
+          <label className="flex items-center gap-3 text-text-muted">
+            Lowered nets stay at
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={s.duckLevel}
+              disabled={!s.ducking}
+              aria-label="Volume of lowered nets"
+              onChange={(e) => setSettings({ duckLevel: Number(e.target.value) })}
+            />
+            <span className="tabular-nums text-text w-10">{Math.round(s.duckLevel * 100)}%</span>
+          </label>
+          <p className="text-xs text-text-muted">
+            Order: Broadcast, Command, Clan, Party. On Command, the event leader, deputies and clan leaders also lower the party leaders.
+            Nothing is ever muted by this, only made quieter.
+          </p>
+        </Group>
+
         <Group title="Sounds">
           <Toggle label="Play a cue when you are moved to another party" checked={s.cues} onChange={(v) => setSettings({ cues: v })} />
           <label className="flex items-center gap-3 text-text-muted">
