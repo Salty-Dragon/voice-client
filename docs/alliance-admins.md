@@ -30,7 +30,7 @@ Alliance admins and the app admin see an extra tab, **Alliance**.
 
 ### Clans
 
-- **Create a clan:** enter a name and a tag, click **Create clan**. The tag is a short form of the name, 1 to 8 letters or digits (for example DRG). It is shown in brackets beside every member's name in voice and on roster boards, and in an operation with several clans it names each clan's own net ("Clan DRG").
+- **Create a clan:** enter a name and a tag, click **Create clan**. The tag is a short form of the name, 1 to 8 letters or digits (for example DRG). It is shown in brackets beside every member's name in voice and on roster boards until the clan's leader uploads a crest, which then takes its place; in an operation with several clans the tag also names each clan's own net ("Clan DRG").
 - **Appoint its leader:** use the selector beside the clan. The player must have signed in once. A player who belongs to another clan has to be removed from it first. The previous leader becomes an ordinary member.
 
 - **Remove a crest:** a clan's leader uploads its crest. If one is unsuitable, **Remove crest** beside the clan takes it down.

@@ -6,7 +6,7 @@ import { engine } from "../runtime";
 import { bindTargetOf, setSettings, useSettings, type BindTarget } from "../settings";
 import { rpc } from "../api";
 import { useAct, useApp } from "./app-context";
-import { ClanCrest, Initial, KeyBind, NET_BORDER, NET_NAME, NET_TEXT, NET_TIP, NET_VAR, useEngine } from "./common";
+import { ClanCrest, ClanMark, Initial, KeyBind, NET_BORDER, NET_NAME, NET_TEXT, NET_TIP, NET_VAR, useEngine } from "./common";
 import { Help } from "./tips";
 
 const STATE_TEXT: Record<NetView["state"], string> = {
@@ -37,8 +37,7 @@ function MemberCard({ m, colour, open, onToggle }: { m: Member; colour: string; 
         <span className="ml-auto flex items-center gap-2 text-xs text-text-muted">
           {quiet && <span>{m.muted ? "muted" : `${Math.round(m.volume * 100)}%`}</span>}
           {!m.canSpeak && <span>listening</span>}
-          <ClanCrest clanId={m.clanId} size={14} />
-          {m.clanTag && <span>[{m.clanTag}]</span>}
+          <ClanMark clanId={m.clanId} tag={m.clanTag} size={18} />
         </span>
       </button>
       {open && !m.self && (
@@ -99,7 +98,7 @@ function NetCard({
       : key === null && !voice
         ? "Bind a key in Settings to speak here."
         : "Change how you speak in Settings.";
-  const help = [NET_TIP[net.net], howTip, onTalkHere && !talkHere ? "Talk here makes this the lounge your key and voice go to. You keep hearing both." : ""].filter(Boolean).join("\n");
+  const help = [NET_TIP[net.net], howTip, net.lowered ? "Lowered: a higher net is live, so you hear this one quieter until it stops. Nothing is muted. Change this under Settings, Priority." : "", onTalkHere && !talkHere ? "Talk here makes this the lounge your key and voice go to. You keep hearing both." : ""].filter(Boolean).join("\n");
   // A clan's own rooms carry its crest.
   const clanRoom = /^lounge-clan-(\d+)$|^op-\d+-clan-(\d+)$/.exec(net.room);
   const clanId = clanRoom ? Number(clanRoom[1] ?? clanRoom[2]) : null;
@@ -121,7 +120,7 @@ function NetCard({
       {net.state !== "connected" ? (
         <span className="text-xs text-danger">{STATE_TEXT[net.state]}</span>
       ) : (
-        <div className="min-h-5 truncate">
+        <div className={`min-h-5 truncate transition-opacity duration-150 ${net.lowered ? "opacity-50" : ""}`}>
           {net.live && <span className={`font-semibold ${NET_TEXT[net.net]}`}>You </span>}
           {net.speakers.join(", ")}
           {!net.live && net.speakers.length === 0 && <span className="text-text-muted">Quiet</span>}
@@ -129,6 +128,7 @@ function NetCard({
       )}
       <div className="flex items-center text-xs text-text-muted">
         <span>{how}</span>
+        {net.lowered && <span className="ml-auto uppercase tracking-wider text-gold" aria-label="Lowered while a higher net is live">Lowered</span>}
         {onTalkHere && !talkHere && (
           <button type="button" className="ml-auto text-gold hover:text-gold-bright cursor-pointer" onClick={onTalkHere}>Talk here</button>
         )}

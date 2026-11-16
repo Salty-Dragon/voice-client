@@ -76,7 +76,7 @@ function CrestEditor({ clanId }: { clanId: number }) {
           Remove
         </ConfirmButton>
       )}
-      <Help text={"Your clan's crest is shown beside the clan wherever it appears: its lounge and Clan net, players' cards in voice, roster boards and the clan lists.\nPick any PNG, JPEG or WebP. It is shrunk to a small square, so a simple, bold image reads best. A transparent background works well on the dark screens.\nEveryone in the alliance can see it. Alliance admins can remove a crest."} />
+      <Help text={"Your clan's crest is shown beside the clan wherever it appears: its lounge and Clan net, roster boards and the clan lists. Beside your members' names it takes the place of the clan tag. Without a crest, the tag is shown.\nPick any PNG, JPEG or WebP. It is shrunk to a small square, so a simple, bold image reads best. A transparent background works well on the dark screens.\nEveryone in the alliance can see it. Alliance admins can remove a crest."} />
       {act.error && <span className="text-danger" role="alert">{act.error}</span>}
     </div>
   );

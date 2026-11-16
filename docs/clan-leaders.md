@@ -22,7 +22,7 @@ The leader can only be replaced by an alliance admin.
 
 The leader can give the clan a crest. Open **Clan** and click **Upload crest**, then pick a PNG, JPEG or WebP image. The app shrinks it to a small square, so a simple, bold image reads best, and a transparent background suits the dark screens.
 
-The crest then appears beside the clan wherever it shows: the clan's lounge and Clan net, your members' cards in voice, roster boards with more than one clan, and the clan lists. Everyone in the alliance can see it. **Change crest** replaces it and **Remove** takes it away; alliance admins can also remove a crest.
+The crest then appears beside the clan wherever it shows: the clan's lounge and Clan net, roster boards and the clan lists. Beside your members' names, in voice and on boards with more than one clan, it takes the place of the clan tag. A crest is optional: without one, the tag in brackets is shown as before. Everyone in the alliance can see it. **Change crest** replaces it and **Remove** takes it away; alliance admins can also remove a crest.
 
 ## Approving members
 

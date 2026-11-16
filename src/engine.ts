@@ -45,6 +45,8 @@ export type NetView = {
   live: boolean;
   /** Names of others speaking right now. */
   speakers: string[];
+  /** Made quieter right now because a higher-priority net is live. */
+  lowered: boolean;
   members: Member[];
 };
 
@@ -76,6 +78,8 @@ type Net = {
   liveUntil: number;
   /** The same, for a senior leader (Command only). */
   seniorLiveUntil: number;
+  /** This net is being played quieter right now. */
+  lowered: boolean;
 };
 
 function meta(p: Participant): { classTag: string | null; clanTag: string | null; clanId: number | null; senior: boolean } {
@@ -287,7 +291,7 @@ export class VoiceEngine {
       publishDefaults: { dtx: true, red: true, audioPreset: AudioPresets.speech },
       audioOutput: this.settings.outputDeviceId ? { deviceId: this.settings.outputDeviceId } : undefined,
     });
-    const net: Net = { grant, room, live: false, byKey: false, closeAt: 0, speakers: [], closing: false, failed: false, liveUntil: 0, seniorLiveUntil: 0 };
+    const net: Net = { grant, room, live: false, byKey: false, closeAt: 0, speakers: [], closing: false, failed: false, liveUntil: 0, seniorLiveUntil: 0, lowered: false };
     this.nets.set(grant.room, net);
     const changed = () => this.onChange();
 
@@ -517,10 +521,16 @@ export class VoiceEngine {
       }
     }
 
+    let shownChanged = false;
     for (const net of nets) {
       const rank = PRIORITY[net.grant.net];
       const ducked = s.ducking && nets.some((other) => PRIORITY[other.grant.net] < rank && other.liveUntil > now);
       const seniorLive = s.ducking && net.grant.net === "command" && net.seniorLiveUntil > now;
+      // Shown on the net's card, so a player can see why it went quiet.
+      if (net.lowered !== ducked) {
+        net.lowered = ducked;
+        shownChanged = true;
+      }
       const base = s.netVolume[net.grant.net];
       for (const p of net.room.remoteParticipants.values()) {
         const own = s.playerMuted[p.identity] ? 0 : (s.playerVolume[p.identity] ?? 1);
@@ -535,6 +545,7 @@ export class VoiceEngine {
         });
       }
     }
+    if (shownChanged) this.onChange();
   }
 
   // ---- Settings -----------------------------------------------------------
@@ -635,6 +646,7 @@ export class VoiceEngine {
           speak: net.grant.speak && !!net.track,
           live: net.live,
           speakers: net.speakers,
+          lowered: net.lowered,
           members,
         };
       });

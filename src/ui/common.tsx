@@ -69,6 +69,19 @@ export function ClanCrest({ clanId, size = 16, className = "" }: { clanId: numbe
   return <img src={crestUrl(clanId, version)} width={size} height={size} alt="" draggable={false} className={`shrink-0 rounded-sm object-contain ${className}`} style={{ width: size, height: size }} />;
 }
 
+/**
+ * Which clan a player is from, beside their name: the clan's crest if it has
+ * one, otherwise its tag in brackets.
+ */
+export function ClanMark({ clanId, tag, size = 16 }: { clanId: number | null | undefined; tag: string | null | undefined; size?: number }) {
+  const { crests } = useApp();
+  const version = clanId ? crests.get(clanId) : undefined;
+  if (clanId && version) {
+    return <img src={crestUrl(clanId, version)} width={size} height={size} alt={tag ? `[${tag}]` : "clan crest"} draggable={false} className="shrink-0 rounded-sm object-contain" style={{ width: size, height: size }} />;
+  }
+  return tag ? <span>[{tag}]</span> : null;
+}
+
 /** A small square with the player's initial, so a list of names is easier to scan. */
 export function Initial({ name, className = "" }: { name: string; className?: string }) {
   return (

@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
-import { ClanCrest } from "./common";
+import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
 
 function Section({ title, help, children }: { title: string; help?: string; children: React.ReactNode }) {
@@ -84,7 +84,7 @@ export function AllianceView() {
           <label className="flex flex-col gap-1 text-text-muted">
             <span className="flex items-center gap-1">
               Tag
-              <Help text={"A short form of the clan's name: 1 to 8 letters or digits, for example DRG for Dragons.\nIt is shown in brackets beside every member's name in voice and on roster boards, so callers can tell at a glance which clan a player is from.\nIn an operation with several clans it also names each clan's own net, for example \"Clan DRG\"."} />
+              <Help text={"A short form of the clan's name: 1 to 8 letters or digits, for example DRG for Dragons.\nIt is shown in brackets beside every member's name in voice and on roster boards, so callers can tell at a glance which clan a player is from. Once the clan's leader uploads a crest, the crest is shown there instead of the tag.\nIn an operation with several clans it also names each clan's own net, for example \"Clan DRG\"."} />
             </span>
             <input className="field w-28" value={tag} onChange={(e) => setTag(e.target.value)} maxLength={8} required />
           </label>
@@ -99,8 +99,7 @@ export function AllianceView() {
           {shown.map((u) => (
             <li key={u.id} className="flex flex-wrap items-center gap-3 py-2">
               <span className={u.banned ? "line-through text-text-muted" : "font-medium"}>{u.name}</span>
-              <ClanCrest clanId={u.clanId} size={16} />
-              {u.clanTag && <span className="text-text-muted">[{u.clanTag}]</span>}
+              <span className="text-text-muted"><ClanMark clanId={u.clanId} tag={u.clanTag} size={18} /></span>
               {u.isAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim">App admin</span>}
               {u.isAllianceAdmin && <span className="text-xs uppercase tracking-wider text-gold-dim">Alliance admin</span>}
               {u.banned && <span className="text-xs uppercase tracking-wider text-danger">Banned</span>}

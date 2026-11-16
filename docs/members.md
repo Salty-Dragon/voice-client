@@ -68,6 +68,8 @@ Change any of this in **Settings**.
 
 While someone speaks on a higher net, the nets below it get quieter for you (30% by default) and return when the higher net goes quiet. So a Broadcast call cuts through party chatter without silencing it. Turn this off or change the level in **Settings → Priority**.
 
+While a higher net is live, the nets below it show **Lowered** on the Voice tab, so you can see why they went quiet.
+
 ## Being moved, and asking to move
 
 - When an organiser moves you to another party, you hear a short cue, a line tells you where you went, and your voice switches within a second or two. You do nothing.

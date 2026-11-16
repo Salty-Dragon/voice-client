@@ -7,7 +7,7 @@ import { useState } from "react";
 import { rpc, type OpDetail, type Party, type Person } from "../api";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { when } from "./RosterView";
-import { ClanCrest } from "./common";
+import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
 
 const PARTY_SIZE = 9;
@@ -128,8 +128,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             {p.clanRole === "leader" && <span className="text-net-clan">⚑ Clan</span>}
             {p.clanRole === "officer" && <span className="text-net-clan">Officer</span>}
             {party?.leaderId === p.userId && <span className="text-net-command">» PL</span>}
-            {op.clans.length > 1 && <ClanCrest clanId={p.clanId} size={14} />}
-            {op.clans.length > 1 && p.clanTag && <span>[{p.clanTag}]</span>}
+            {op.clans.length > 1 && <ClanMark clanId={p.clanId} tag={p.clanTag} size={16} />}
           </span>
         </button>
       </li>
