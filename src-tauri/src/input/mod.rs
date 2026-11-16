@@ -84,7 +84,7 @@ fn state() -> &'static Mutex<State> {
     STATE.get_or_init(|| {
         Mutex::new(State {
             bindings: Vec::new(),
-            source: Source::Hook,
+            source: Source::Poll,
             capture: false,
             pressed_hook: HashSet::new(),
             pressed_raw: HashSet::new(),
@@ -166,7 +166,7 @@ pub fn set_source(source: Source) {
 
 #[allow(dead_code)]
 pub(crate) fn current_source() -> Source {
-    state().lock().map(|st| st.source).unwrap_or(Source::Hook)
+    state().lock().map(|st| st.source).unwrap_or(Source::Poll)
 }
 
 pub fn capture_next() {

@@ -2,34 +2,46 @@
 
 Windows voice client built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
-This is the **Phase 0 spike**: throwaway code that answers a few yes/no questions before the real client is built.
+Voice follows the roster: the server tells the client which voice rooms ("nets") it belongs in, and the client connects to exactly those. Nobody picks a channel by hand. When an organiser moves you to another party, your audio follows within a couple of seconds.
 
 ## What it does
 
-- Joins four voice rooms ("nets") at once from a single microphone capture.
-- Each net has its own push-to-talk key. Holding a key opens the mic on that net only.
-- Keys are captured system-wide, so they work while a game has focus. They are never swallowed: the game still receives them.
+- Holds several nets at once (Broadcast, Command, Clan, Party, Reserve) from a single microphone capture.
+- Each net you may speak on has its own push-to-talk key. Holding a key opens the mic on that net only.
+- Party and Reserve can use voice activation instead, with an adjustable sensitivity.
+- Keys work while a game has focus, including mouse side buttons. They are never swallowed: the game still receives them.
+- Signs in with Discord through your normal browser. The app never sees your Discord password.
 
 ## Key capture and privacy
 
-The app installs a low-level keyboard and mouse hook or a Raw Input listener, or polls key state, depending on the method chosen. Only keys you have bound to a net are ever passed on, plus the single key you press while binding. Nothing is logged or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
+To notice your push-to-talk keys while the game is in front, the app reads keyboard and mouse button state system-wide. Three methods are available in Settings; the default, Polling, asks Windows whether keys are down a few hundred times a second and needs no administrator rights.
 
-## Test checklist
+Only keys you have bound to a net are ever acted on, plus the single key you press while binding. Key presses are not logged, stored or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
 
-Install the latest build from [Releases](../../releases). It is unsigned, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
+Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, and your in-game name and class tag when you set them.
 
-1. Join, then bind a key to each net. Bind at least one mouse side button.
-2. **Game running normally.** With the game in front, hold each key and speak. Check on a second machine that the right net lights up, and that both capture counters climb.
-3. **Game running as administrator.** Tick **Always start as administrator**, restart the app and repeat step 2.
-4. Switch the method between **Low-level hook**, **Raw Input** and **Polling** and repeat step 2. Try **Polling** with the app running as a normal user too.
-5. **Latency.** Start talking, then press a key, twenty times or so. Note the "hook → audio leaving" median and max. Target: under 150 ms.
-6. **Reconnect.** Disable your network adapter for 10 seconds and re-enable it. Wait for the "all 4 rooms recovered" line, then use **Copy log**.
+## Install
+
+Download the latest installer from [Releases](../../releases). It is not code-signed yet, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
 
 ## Build
 
 ```
 npm ci
-npx tauri build
+npx tauri build     # Windows installer
+npm run build:web   # the same UI for the browser fallback, served under /voice/
 ```
 
 Requires Node 22 and stable Rust on Windows. GitHub Actions builds the installer on every push and attaches it to a release for every `v*` tag.
+
+The server address is set at build time with `VITE_SERVER`. The product name is `productName` in `src-tauri/tauri.conf.json`.
+
+## Layout
+
+| Path | What |
+| --- | --- |
+| `src/engine.ts` | Rooms, microphone, push-to-talk and voice activation |
+| `src/control.ts` | The control channel that delivers your nets |
+| `src/auth.ts` | Sign-in through the system browser |
+| `src/ui/` | Screens |
+| `src-tauri/src/input/` | System-wide key capture (Windows) |

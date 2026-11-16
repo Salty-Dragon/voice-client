@@ -1,249 +1,548 @@
 // Voice engine: one LiveKit room per net, one microphone capture shared by
-// all of them. Each room gets its own clone of the mic track, published muted;
-// holding a net's key unmutes only that room's clone.
+// all of them. Each room the player may speak in gets its own clone of the
+// mic track, published muted; a net's key (or voice activation, on Party and
+// Reserve) unmutes only that room's clone.
+//
+// Which rooms exist is not decided here. The control channel delivers a net
+// set and apply() makes the connections match it: new rooms are joined first,
+// old ones left afterwards, so a move has no silent gap.
 
 import {
   AudioPresets,
   ConnectionState,
   LocalAudioTrack,
-  RemoteAudioTrack,
+  type Participant,
+  type RemoteAudioTrack,
   Room,
   RoomEvent,
   Track,
 } from "livekit-client";
+import type { NetGrant, NetSet } from "./control";
+import { getSettings, onSettings, type NetKind, type Settings } from "./settings";
 
-export type NetId = "broadcast" | "command" | "clan" | "party";
-export const NET_ORDER: NetId[] = ["broadcast", "command", "clan", "party"];
-
-export type NetGrant = { net: NetId; room: string; token: string; canPublish: boolean };
-export type JoinResponse = { url: string; nets: NetGrant[] };
+export type Member = {
+  identity: string;
+  name: string;
+  classTag: string | null;
+  clanTag: string | null;
+  speaking: boolean;
+  self: boolean;
+  /** May speak on this net (holds a published track or is allowed to). */
+  canSpeak: boolean;
+};
 
 export type NetView = {
-  net: NetId;
-  state: ConnectionState | "idle";
-  canPublish: boolean;
-  live: boolean; // our key is held
+  net: NetKind;
+  label: string;
+  room: string;
+  state: "connecting" | "connected" | "reconnecting" | "disconnected";
+  speak: boolean;
+  /** Our mic is open on this net right now. */
+  live: boolean;
+  /** Names of others speaking right now. */
   speakers: string[];
-  listeners: number;
+  members: Member[];
 };
 
-export type LatencySample = {
-  net: NetId;
-  /** hook timestamp -> event handled in the WebView */
-  deliverMs: number;
-  /** hook timestamp -> track enabled */
-  enableMs: number;
-  /** hook timestamp -> speech-rate packets seen leaving; null if none (stay silent = no packets) */
-  audioMs: number | null;
-};
-
+/** How long the mic stays open after a push-to-talk key is released, so word endings are not clipped. */
 const RELEASE_TAIL_MS = 200;
+/** Holding one of these sends your voice to that net only; voice activation pauses meanwhile. */
+const KEYED_ONLY: NetKind[] = ["broadcast", "command", "clan"];
 
 type Net = {
   grant: NetGrant;
   room: Room;
   track?: LocalAudioTrack;
   live: boolean;
-  releaseTimer?: number;
+  /** Opened by a key (gets the release tail) rather than by voice. */
+  byKey: boolean;
+  /** When to close after the reason to be open has gone; 0 = not closing. */
+  closeAt: number;
   speakers: string[];
-  volume: number;
+  /** We are leaving on purpose; ignore the disconnect that follows. */
+  closing: boolean;
+  failed: boolean;
 };
 
+function meta(p: Participant): { classTag: string | null; clanTag: string | null } {
+  try {
+    const m = JSON.parse(p.metadata || "{}") as { classTag?: string | null; clanTag?: string | null };
+    return { classTag: m.classTag ?? null, clanTag: m.clanTag ?? null };
+  } catch {
+    return { classTag: null, clanTag: null };
+  }
+}
+
 export class VoiceEngine {
-  private nets = new Map<NetId, Net>();
+  private nets = new Map<string, Net>();
+  private url = "";
   private mic?: MediaStream;
+  private micTrack?: MediaStreamTrack;
+  private micPromise?: Promise<void>;
+  private ctx?: AudioContext;
+  private meterSource?: MediaStreamAudioSourceNode;
+  private meterNode?: AudioWorkletNode;
   private sink: HTMLElement;
-  private dropStartedAt: number | null = null;
+  private queue: Promise<void> = Promise.resolve();
+  private held = new Set<NetKind>();
+  private voiceUntil = 0;
+  private refreshTimer: number | undefined;
+  private settings: Settings = getSettings();
+
+  /** Latest mic level in dBFS, about every 10 ms. */
+  level = -100;
+  muteAll = false;
+  micError = "";
 
   onChange: () => void = () => {};
-  onLog: (line: string) => void = () => {};
-  onLatency: (s: LatencySample) => void = () => {};
+  /** A room could not get back in with the token it has; fresh ones are needed. */
+  onNeedRefresh: () => void = () => {};
+  private levelListeners = new Set<(db: number) => void>();
 
   constructor() {
     this.sink = document.createElement("div");
-    this.sink.style.display = "none";
+    this.sink.hidden = true;
     document.body.appendChild(this.sink);
+    onSettings(() => this.settingsChanged());
+    // Backup clock. The meter worklet is the main one, because timers are
+    // slowed while the window sits behind a game.
+    window.setInterval(() => this.update(), 100);
   }
 
-  view(): NetView[] {
-    return NET_ORDER.filter((n) => this.nets.has(n)).map((n) => {
-      const net = this.nets.get(n)!;
-      return {
-        net: n,
-        state: net.room.state,
-        canPublish: net.grant.canPublish,
-        live: net.live,
-        speakers: net.speakers,
-        listeners: net.room.remoteParticipants.size,
-      };
+  // ---- Microphone ---------------------------------------------------------
+
+  /** Captures the mic once and keeps it. Safe to call repeatedly. */
+  startMic(): Promise<void> {
+    this.micPromise ??= this.capture().catch((e) => {
+      this.micPromise = undefined;
+      this.micError = e instanceof Error ? e.message : String(e);
+      this.onChange();
+      throw e;
     });
+    return this.micPromise;
   }
 
-  async start(join: JoinResponse, audio: MediaTrackConstraints): Promise<void> {
-    this.mic = await navigator.mediaDevices.getUserMedia({
-      audio: { channelCount: 1, ...audio },
+  private async capture() {
+    const s = this.settings;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        deviceId: s.inputDeviceId ? { exact: s.inputDeviceId } : undefined,
+        echoCancellation: s.echoCancellation,
+        noiseSuppression: s.noiseSuppression,
+        autoGainControl: s.autoGainControl,
+      },
       video: false,
     });
-    const micTrack = this.mic.getAudioTracks()[0];
-    this.log(`mic: ${micTrack.label}`);
-
-    await Promise.all(join.nets.map((grant) => this.connect(join.url, grant, micTrack)));
+    this.mic = stream;
+    this.micTrack = stream.getAudioTracks()[0];
+    this.micError = "";
+    await this.startMeter(stream);
     this.onChange();
   }
 
-  private async connect(url: string, grant: NetGrant, micTrack: MediaStreamTrack) {
+  /** Level metering runs on the processed signal, so noise suppression acts before the voice gate. */
+  private async startMeter(stream: MediaStream) {
+    try {
+      if (!this.ctx) {
+        this.ctx = new AudioContext();
+        await this.ctx.audioWorklet.addModule(`${import.meta.env.BASE_URL}meter-worklet.js`);
+        this.meterNode = new AudioWorkletNode(this.ctx, "meter");
+        this.meterNode.port.onmessage = (e) => {
+          this.level = e.data as number;
+          this.levelListeners.forEach((l) => l(this.level));
+          this.update();
+        };
+        // The graph only runs if it reaches the output; a silent gain keeps it inaudible.
+        const silent = this.ctx.createGain();
+        silent.gain.value = 0;
+        this.meterNode.connect(silent).connect(this.ctx.destination);
+      }
+      this.meterSource?.disconnect();
+      this.meterSource = this.ctx.createMediaStreamSource(stream);
+      this.meterSource.connect(this.meterNode!);
+      void this.ctx.resume();
+    } catch (e) {
+      console.warn("level meter unavailable", e);
+    }
+  }
+
+  /** Re-captures after a device or processing change and swaps the new mic into every room. */
+  private async recapture() {
+    if (!this.mic) return;
+    const old = this.mic;
+    this.micPromise = this.capture();
+    try {
+      await this.micPromise;
+    } catch (e) {
+      this.mic = old; // keep the working mic
+      this.micTrack = old.getAudioTracks()[0];
+      this.micError = e instanceof Error ? e.message : String(e);
+      this.micPromise = Promise.resolve();
+      this.onChange();
+      return;
+    }
+    for (const net of this.nets.values()) {
+      if (!net.track || !this.micTrack) continue;
+      const clone = this.micTrack.clone();
+      clone.enabled = net.live;
+      await net.track.replaceTrack(clone, true).catch((e) => console.warn("replaceTrack", e));
+    }
+    old.getTracks().forEach((t) => t.stop());
+  }
+
+  onLevel(listener: (db: number) => void): () => void {
+    this.levelListeners.add(listener);
+    return () => this.levelListeners.delete(listener);
+  }
+
+  /** Listens to the room for a few seconds and returns a threshold just above its noise. */
+  async measureNoise(ms = 5000): Promise<number> {
+    const samples: number[] = [];
+    const stop = this.onLevel((db) => samples.push(db));
+    await new Promise((r) => setTimeout(r, ms));
+    stop();
+    if (!samples.length) return this.settings.vadThresholdDb;
+    samples.sort((a, b) => a - b);
+    const loud = samples[Math.floor(samples.length * 0.95)];
+    return Math.round(Math.min(-15, Math.max(-70, loud + 6)));
+  }
+
+  /** Records a few seconds of the mic and plays it back, so the player hears what others will. */
+  async micTest(ms = 3000): Promise<void> {
+    await this.startMic();
+    if (!this.mic) return;
+    const rec = new MediaRecorder(this.mic);
+    const chunks: Blob[] = [];
+    rec.ondataavailable = (e) => chunks.push(e.data);
+    const stopped = new Promise((r) => (rec.onstop = r));
+    rec.start();
+    await new Promise((r) => setTimeout(r, ms));
+    rec.stop();
+    await stopped;
+    const audio = new Audio(URL.createObjectURL(new Blob(chunks, { type: rec.mimeType })));
+    const out = this.settings.outputDeviceId;
+    if (out && "setSinkId" in audio) await (audio as HTMLAudioElement & { setSinkId(id: string): Promise<void> }).setSinkId(out).catch(() => {});
+    await audio.play();
+    await new Promise((r) => (audio.onended = r));
+    URL.revokeObjectURL(audio.src);
+  }
+
+  // ---- Rooms --------------------------------------------------------------
+
+  /** Makes the connections match the net set. Calls are applied one at a time, in order. */
+  apply(set: NetSet): Promise<void> {
+    this.queue = this.queue.then(() => this.reconcile(set)).catch((e) => console.error("apply failed", e));
+    return this.queue;
+  }
+
+  private async reconcile(set: NetSet) {
+    this.url = set.url;
+    const wanted = new Map(set.nets.map((g) => [g.room, g]));
+
+    // Join new rooms (and re-join dead ones) before leaving anything.
+    await Promise.all(
+      [...wanted.values()].map(async (grant) => {
+        const cur = this.nets.get(grant.room);
+        if (cur && cur.room.state !== ConnectionState.Disconnected && !cur.failed) {
+          cur.grant = grant;
+          if (grant.speak && !cur.track) await this.publish(cur);
+          else if (!grant.speak && cur.track) await this.unpublish(cur);
+          return;
+        }
+        if (cur) await this.leave(cur);
+        await this.join(grant);
+      }),
+    );
+
+    for (const net of [...this.nets.values()]) {
+      if (!wanted.has(net.grant.room)) await this.leave(net);
+    }
+    this.onChange();
+  }
+
+  private async join(grant: NetGrant) {
     const room = new Room({
       adaptiveStream: false,
       dynacast: false,
       publishDefaults: { dtx: true, red: true, audioPreset: AudioPresets.speech },
+      audioOutput: this.settings.outputDeviceId ? { deviceId: this.settings.outputDeviceId } : undefined,
     });
-    const net: Net = { grant, room, live: false, speakers: [], volume: 1 };
-    this.nets.set(grant.net, net);
-    const tag = grant.net;
+    const net: Net = { grant, room, live: false, byKey: false, closeAt: 0, speakers: [], closing: false, failed: false };
+    this.nets.set(grant.room, net);
+    const changed = () => this.onChange();
 
     room
-      .on(RoomEvent.ConnectionStateChanged, (s) => {
-        this.log(`${tag}: ${s}`);
-        this.trackRecovery();
-        this.onChange();
-      })
-      .on(RoomEvent.SignalReconnecting, () => this.log(`${tag}: signal reconnecting`))
-      .on(RoomEvent.Reconnecting, () => this.log(`${tag}: reconnecting`))
-      .on(RoomEvent.Reconnected, () => this.log(`${tag}: reconnected`))
-      .on(RoomEvent.Disconnected, (reason) => this.log(`${tag}: DISCONNECTED (reason ${reason})`))
-      .on(RoomEvent.ParticipantConnected, () => this.onChange())
-      .on(RoomEvent.ParticipantDisconnected, () => this.onChange())
+      .on(RoomEvent.ConnectionStateChanged, changed)
+      .on(RoomEvent.ParticipantConnected, changed)
+      .on(RoomEvent.ParticipantDisconnected, changed)
+      .on(RoomEvent.ParticipantMetadataChanged, changed)
+      .on(RoomEvent.ParticipantNameChanged, changed)
+      .on(RoomEvent.TrackPublished, changed)
+      .on(RoomEvent.TrackUnpublished, changed)
+      .on(RoomEvent.AudioPlaybackStatusChanged, changed)
       .on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
-        net.speakers = speakers.map((p) => p.name || p.identity);
+        net.speakers = speakers.filter((p) => !p.isLocal).map((p) => p.name || p.identity);
         this.onChange();
       })
       .on(RoomEvent.TrackSubscribed, (track) => {
         if (track.kind !== Track.Kind.Audio) return;
-        const el = track.attach();
-        this.sink.appendChild(el);
-        (track as RemoteAudioTrack).setVolume(net.volume);
+        this.sink.appendChild(track.attach());
+        (track as RemoteAudioTrack).setVolume(this.settings.netVolume[net.grant.net]);
       })
       .on(RoomEvent.TrackUnsubscribed, (track) => {
         track.detach().forEach((el) => el.remove());
-      });
-
-    await room.connect(url, grant.token);
-
-    if (grant.canPublish) {
-      const track = new LocalAudioTrack(micTrack.clone(), undefined, true);
-      await room.localParticipant.publishTrack(track, {
-        source: Track.Source.Microphone,
-        name: grant.net,
-      });
-      await track.mute();
-      net.track = track;
-    }
-  }
-
-  /** Key down / up for one net. `t` is the epoch-ms timestamp taken at the hook. */
-  ptt(netId: NetId, down: boolean, t: number) {
-    const net = this.nets.get(netId);
-    if (!net?.track) return;
-    window.clearTimeout(net.releaseTimer);
-
-    if (down) {
-      if (net.live) return;
-      const deliverMs = Date.now() - t;
-      net.live = true;
-      void net.track.unmute();
-      // LiveKit's unmute also signals the server; enabling the media track
-      // directly is what actually opens the mic, so do it without waiting.
-      net.track.mediaStreamTrack.enabled = true;
-      const enableMs = Date.now() - t;
-      void this.measure(net, t, deliverMs, enableMs);
-    } else {
-      net.releaseTimer = window.setTimeout(() => {
+      })
+      .on(RoomEvent.ParticipantPermissionsChanged, (_prev, participant) => {
+        // The server may grant speaking a moment after the net set says so.
+        if (participant.isLocal && net.grant.speak && !net.track) void this.publish(net).then(changed);
+      })
+      .on(RoomEvent.Disconnected, () => {
+        if (net.closing) return;
+        // LiveKit gave up reconnecting, or the server removed us. Ask the
+        // control channel what our rooms should be now; apply() re-joins.
+        net.track = undefined;
         net.live = false;
-        void net.track?.mute();
+        this.needRefresh();
         this.onChange();
-      }, RELEASE_TAIL_MS);
+      });
+
+    try {
+      await room.connect(this.url, grant.token);
+      if (grant.speak) await this.publish(net);
+    } catch (e) {
+      console.warn(`join ${grant.room} failed`, e);
+      net.failed = true;
+      this.needRefresh();
     }
     this.onChange();
   }
 
-  /**
-   * While muted with silence suppression the sender emits a packet roughly
-   * every 400 ms. Speech runs at 50 packets a second. Two packets inside
-   * 100 ms therefore means real audio is leaving.
-   */
-  private async measure(net: Net, t: number, deliverMs: number, enableMs: number) {
-    const sender = net.track?.sender;
-    let audioMs: number | null = null;
-    if (sender) {
-      let lastCount = -1;
-      let lastChange = 0;
-      const deadline = Date.now() + 600;
-      while (Date.now() < deadline && net.live) {
-        const stats = await sender.getStats();
-        let count = 0;
-        stats.forEach((r) => {
-          if (r.type === "outbound-rtp") count = r.packetsSent ?? 0;
-        });
-        const now = Date.now();
-        if (lastCount >= 0 && count > lastCount) {
-          if (lastChange && now - lastChange < 100) {
-            audioMs = lastChange - t;
-            break;
-          }
-          lastChange = now;
-        }
-        lastCount = count;
-        await new Promise((r) => setTimeout(r, 8));
-      }
+  private async publish(net: Net) {
+    if (net.track || net.room.state !== ConnectionState.Connected) return;
+    try {
+      await this.startMic();
+    } catch {
+      return; // no microphone: listen-only until it is fixed in Settings
     }
-    this.onLatency({ net: net.grant.net, deliverMs, enableMs, audioMs });
-  }
-
-  setVolume(netId: NetId, volume: number) {
-    const net = this.nets.get(netId);
-    if (!net) return;
-    net.volume = volume;
-    net.room.remoteParticipants.forEach((p) =>
-      p.audioTrackPublications.forEach((pub) => {
-        (pub.track as RemoteAudioTrack | undefined)?.setVolume(volume);
-      }),
-    );
-  }
-
-  /** LiveKit's built-in fault injection, applied to every room at once. */
-  async simulate(scenario: "signal-reconnect" | "full-reconnect") {
-    this.log(`--- simulating ${scenario} on all rooms ---`);
-    await Promise.all(
-      [...this.nets.values()].map((n) => n.room.simulateScenario(scenario).catch((e) => this.log(String(e)))),
-    );
-  }
-
-  /** Logs how long it takes for every room to be connected again after a drop. */
-  private trackRecovery() {
-    const states = [...this.nets.values()].map((n) => n.room.state);
-    const allUp = states.every((s) => s === ConnectionState.Connected);
-    if (!allUp && this.dropStartedAt === null && states.length === this.nets.size) {
-      this.dropStartedAt = Date.now();
-    } else if (allUp && this.dropStartedAt !== null) {
-      const secs = ((Date.now() - this.dropStartedAt) / 1000).toFixed(1);
-      this.dropStartedAt = null;
-      const muted = [...this.nets.values()].filter((n) => n.track && !n.live && !n.track.isMuted);
-      this.log(
-        `=== all ${this.nets.size} rooms recovered after ${secs} s` +
-          (muted.length ? ` (WARNING: ${muted.length} track(s) came back unmuted)` : "") +
-          " ===",
-      );
+    if (!this.micTrack || net.track) return;
+    const clone = this.micTrack.clone();
+    clone.enabled = false;
+    const track = new LocalAudioTrack(clone, undefined, true);
+    try {
+      await net.room.localParticipant.publishTrack(track, { source: Track.Source.Microphone, name: net.grant.net });
+      await track.mute();
+      net.track = track;
+    } catch (e) {
+      // Usually the speak permission has not arrived yet; ParticipantPermissionsChanged retries.
+      clone.stop();
+      console.warn(`publish on ${net.grant.room} failed`, e);
     }
+  }
+
+  private async unpublish(net: Net) {
+    const track = net.track;
+    if (!track) return;
+    net.track = undefined;
+    net.live = false;
+    await net.room.localParticipant.unpublishTrack(track, true).catch(() => {});
+  }
+
+  private async leave(net: Net) {
+    net.closing = true;
+    this.nets.delete(net.grant.room);
+    net.track?.stop();
+    await net.room.disconnect().catch(() => {});
+  }
+
+  /** Throttled: several rooms failing together produce one request. */
+  private needRefresh() {
+    if (this.refreshTimer !== undefined) return;
+    this.refreshTimer = window.setTimeout(() => {
+      this.refreshTimer = undefined;
+      this.onNeedRefresh();
+    }, 3000);
   }
 
   async stop() {
-    await Promise.all([...this.nets.values()].map((n) => n.room.disconnect()));
-    this.mic?.getTracks().forEach((t) => t.stop());
-    this.nets.clear();
+    window.clearTimeout(this.refreshTimer);
+    this.refreshTimer = undefined;
+    await this.queue;
+    await Promise.all([...this.nets.values()].map((n) => this.leave(n)));
+    this.held.clear();
     this.onChange();
   }
 
-  private log(line: string) {
-    this.onLog(`${new Date().toISOString().slice(11, 23)}  ${line}`);
+  // ---- Opening and closing the mic ---------------------------------------
+
+  /** Key down / up for one kind of net. */
+  ptt(kind: NetKind, down: boolean) {
+    if (down) this.held.add(kind);
+    else this.held.delete(kind);
+    this.update();
+  }
+
+  toggleMuteAll() {
+    this.muteAll = !this.muteAll;
+    this.update();
+    this.onChange();
+  }
+
+  /** The net voice activation applies to: the party, or Reserve for a player without one. */
+  private voiceRoom(): string | null {
+    let reserve: string | null = null;
+    for (const net of this.nets.values()) {
+      if (net.grant.net === "party") return net.grant.room;
+      if (net.grant.net === "reserve") reserve = net.grant.room;
+    }
+    return reserve;
+  }
+
+  /** Decides, for every net, whether the mic should be open now. Runs on every key event and meter tick. */
+  private update() {
+    const now = Date.now();
+    const s = this.settings;
+    const voiceMode = s.partyMode === "voice";
+    if (voiceMode && this.level >= s.vadThresholdDb) this.voiceUntil = now + s.vadHoldMs;
+    const keyedHeld = KEYED_ONLY.some((k) => this.held.has(k));
+    const voiceRoom = voiceMode ? this.voiceRoom() : null;
+    let changed = false;
+
+    for (const net of this.nets.values()) {
+      if (!net.track) continue;
+      const byKey = this.held.has(net.grant.net);
+      const byVoice = net.grant.room === voiceRoom && !keyedHeld && now < this.voiceUntil;
+      const want = !this.muteAll && (byKey || byVoice);
+
+      if (want) {
+        net.closeAt = 0;
+        net.byKey = byKey;
+        if (!net.live) {
+          net.live = true;
+          // Enabling the media track is what opens the mic; LiveKit's unmute also tells the server.
+          net.track.mediaStreamTrack.enabled = true;
+          void net.track.unmute();
+          changed = true;
+        }
+      } else if (net.live) {
+        // Voice activation already waited out its hold time; a released key gets a short tail.
+        if (!net.closeAt) net.closeAt = now + (net.byKey && !this.muteAll ? RELEASE_TAIL_MS : 0);
+        if (now >= net.closeAt) {
+          net.live = false;
+          net.closeAt = 0;
+          void net.track.mute();
+          changed = true;
+        }
+      }
+    }
+    if (changed) this.onChange();
+  }
+
+  // ---- Settings -----------------------------------------------------------
+
+  private settingsChanged() {
+    const prev = this.settings;
+    const next = (this.settings = getSettings());
+    if (
+      prev.inputDeviceId !== next.inputDeviceId ||
+      prev.echoCancellation !== next.echoCancellation ||
+      prev.noiseSuppression !== next.noiseSuppression ||
+      prev.autoGainControl !== next.autoGainControl
+    ) {
+      this.queue = this.queue.then(() => this.recapture()).catch(() => {});
+    }
+    if (prev.outputDeviceId !== next.outputDeviceId) {
+      for (const net of this.nets.values()) void net.room.switchActiveDevice("audiooutput", next.outputDeviceId || "default").catch(() => {});
+    }
+    if (prev.netVolume !== next.netVolume) {
+      for (const net of this.nets.values()) {
+        const volume = next.netVolume[net.grant.net];
+        net.room.remoteParticipants.forEach((p) =>
+          p.audioTrackPublications.forEach((pub) => (pub.track as RemoteAudioTrack | undefined)?.setVolume(volume)),
+        );
+      }
+    }
+    this.update();
+  }
+
+  // ---- Playback permission and cues ---------------------------------------
+
+  /** True when the browser is holding audio back until the player clicks something. */
+  get audioBlocked(): boolean {
+    if (this.ctx && this.ctx.state === "suspended") return true;
+    for (const net of this.nets.values()) if (net.room.state === ConnectionState.Connected && !net.room.canPlaybackAudio) return true;
+    return false;
+  }
+
+  async unlockAudio() {
+    await this.ctx?.resume().catch(() => {});
+    await Promise.all([...this.nets.values()].map((n) => n.room.startAudio().catch(() => {})));
+    this.onChange();
+  }
+
+  /** A short two-note cue, generated here (no sound files, nothing borrowed). */
+  cue(kind: "moved") {
+    const s = this.settings;
+    if (!s.cues || s.cueVolume <= 0) return;
+    const ctx = (this.ctx ??= new AudioContext());
+    const notes = kind === "moved" ? [660, 880] : [440];
+    notes.forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.12;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.25 * s.cueVolume, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.2);
+    });
+  }
+
+  // ---- For the UI ---------------------------------------------------------
+
+  get hasMic(): boolean {
+    return !!this.micTrack;
+  }
+
+  view(): NetView[] {
+    const order: NetKind[] = ["broadcast", "command", "clan", "party", "reserve"];
+    return [...this.nets.values()]
+      .sort((a, b) => order.indexOf(a.grant.net) - order.indexOf(b.grant.net))
+      .map((net) => {
+        const speaking = new Set(net.room.activeSpeakers.map((p) => p.identity));
+        const person = (p: Participant, self: boolean): Member => ({
+          identity: p.identity,
+          name: p.name || p.identity,
+          ...meta(p),
+          speaking: self ? net.live : speaking.has(p.identity),
+          self,
+          canSpeak: self ? net.grant.speak : (p.permissions?.canPublish ?? false),
+        });
+        const members = [...net.room.remoteParticipants.values()].map((p) => person(p, false));
+        if (net.room.state === ConnectionState.Connected) members.push(person(net.room.localParticipant, true));
+        members.sort((a, b) => a.name.localeCompare(b.name));
+        const state: NetView["state"] = net.failed
+          ? "disconnected"
+          : net.room.state === ConnectionState.Connected
+            ? "connected"
+            : net.room.state === ConnectionState.Connecting
+              ? "connecting"
+              : net.room.state === ConnectionState.Disconnected
+                ? "disconnected"
+                : "reconnecting";
+        return {
+          net: net.grant.net,
+          label: net.grant.label,
+          room: net.grant.room,
+          state,
+          speak: net.grant.speak && !!net.track,
+          live: net.live,
+          speakers: net.speakers,
+          members,
+        };
+      });
   }
 }

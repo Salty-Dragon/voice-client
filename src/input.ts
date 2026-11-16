@@ -1,22 +1,19 @@
-// Push-to-talk input. In the desktop app the Rust side owns a system-wide
-// hook and only reports keys that are bound to a net. In a browser the same
-// interface is backed by window key events, which only fire while the tab has
-// focus.
+// Push-to-talk input. In the desktop app the Rust side reads keys system-wide
+// and only reports those that are bound. In a browser the same interface is
+// backed by window key events, which only fire while the tab has focus.
 
-import type { NetId } from "./engine";
 import { mouseButtonToVk } from "./keys";
+import type { InputSource } from "./settings";
 
-export type Binding = { net: NetId; code: number };
-export type InputSource = "hook" | "raw" | "poll";
-
-export type PttEvent = { net: NetId; down: boolean; /** epoch ms at capture */ t: number };
+/** `target` is a net kind or "muteAll". */
+export type Binding = { net: string; code: number };
+export type PttEvent = { net: string; down: boolean; /** epoch ms at capture */ t: number };
 export type Foreground = {
   selfElevated: boolean;
   /** null = could not be read, which from a normal process usually means elevated */
   elevated: boolean | null;
   exe: string;
 };
-export type InputDiag = { hook: number; raw: number; poll: number };
 
 export interface InputBackend {
   readonly desktop: boolean;
@@ -26,11 +23,8 @@ export interface InputBackend {
   capture(): Promise<number>;
   onPtt(cb: (e: PttEvent) => void): void;
   onForeground(cb: (f: Foreground) => void): void;
-  onDiag(cb: (d: InputDiag) => void): void;
   restartAsAdmin(): Promise<void>;
 }
-
-export const isDesktop = "__TAURI_INTERNALS__" in window;
 
 async function desktopBackend(): Promise<InputBackend> {
   const { invoke } = await import("@tauri-apps/api/core");
@@ -47,7 +41,6 @@ async function desktopBackend(): Promise<InputBackend> {
       }),
     onPtt: (cb) => void listen<PttEvent>("ptt", (e) => cb(e.payload)),
     onForeground: (cb) => void listen<Foreground>("foreground", (e) => cb(e.payload)),
-    onDiag: (cb) => void listen<InputDiag>("input-diag", (e) => cb(e.payload)),
     restartAsAdmin: () => invoke("restart_as_admin"),
   };
 }
@@ -76,7 +69,7 @@ function browserBackend(): InputBackend {
 
   const typing = (e: Event) => {
     const el = e.target as HTMLElement | null;
-    return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA");
+    return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT");
   };
 
   window.addEventListener("keydown", (e) => {
@@ -107,11 +100,10 @@ function browserBackend(): InputBackend {
       pttCb = cb;
     },
     onForeground: () => {},
-    onDiag: () => {},
     restartAsAdmin: async () => {},
   };
 }
 
-export function createInput(): Promise<InputBackend> {
-  return isDesktop ? desktopBackend() : Promise.resolve(browserBackend());
+export function createInput(desktop: boolean): Promise<InputBackend> {
+  return desktop ? desktopBackend() : Promise.resolve(browserBackend());
 }

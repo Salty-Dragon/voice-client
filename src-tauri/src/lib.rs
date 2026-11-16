@@ -29,6 +29,18 @@ fn restart_as_admin(app: tauri::AppHandle) -> Result<(), String> {
 
 pub fn run() {
     tauri::Builder::default()
+        // Must be registered first. A second launch (for example the browser
+        // handing a sign-in link back) passes its arguments to the running
+        // app and exits; the deep-link plugin then delivers the link.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            use tauri::Manager;
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
+        .plugin(tauri_plugin_deep_link::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             input::start(app.handle().clone());
             Ok(())

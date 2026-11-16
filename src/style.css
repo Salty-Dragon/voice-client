@@ -1,31 +1,124 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/cinzel/500.css";
+@import "@fontsource/cinzel/700.css";
+
+@theme {
+  --color-bg-0: #0b0c0f;
+  --color-bg-1: #12141a;
+  --color-bg-2: #1a1d25;
+  --color-line: #2a2e38;
+  --color-gold: #c8a45a;
+  --color-gold-bright: #e6c77a;
+  --color-gold-dim: #7a6638;
+  --color-text: #e8e4da;
+  --color-text-muted: #9a968c;
+  --color-net-party: #5fd35f;
+  --color-net-clan: #8c86ff;
+  --color-net-command: #e6c77a;
+  --color-net-broadcast: #e2553f;
+  --color-net-reserve: #9a968c;
+  --color-danger: #e2553f;
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --font-display: "Cinzel", Georgia, serif;
+  --radius-sm: 2px;
+}
+
 :root {
-  --bg-0: #0b0c0f; --bg-1: #12141a; --bg-2: #1a1d25; --line: #2a2e38;
-  --gold: #c8a45a; --gold-bright: #e6c77a; --text: #e8e4da; --muted: #9a968c;
-  --party: #5fd35f; --clan: #8c86ff; --command: #e6c77a; --broadcast: #e2553f;
   color-scheme: dark;
 }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg-0); color: var(--text); font: 14px/1.5 Inter, "Segoe UI", system-ui, sans-serif; }
-main { max-width: 920px; margin: 0 auto; padding: 16px; }
-main.join { max-width: 360px; padding-top: 12vh; display: grid; gap: 12px; }
-h1 { margin: 0; color: var(--gold-bright); letter-spacing: 0.08em; text-transform: uppercase; font-size: 22px; }
-h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
-section { background: var(--bg-1); border: 1px solid var(--line); border-radius: 2px; padding: 12px; margin-bottom: 12px; }
-section.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-label { display: grid; gap: 4px; color: var(--muted); }
-label.inline { display: inline; color: var(--text); }
-input:not([type]), input[type="password"] { background: var(--bg-2); border: 1px solid var(--line); border-radius: 2px; color: var(--text); padding: 8px; font: inherit; }
-button { background: var(--bg-2); border: 1px solid var(--gold); border-radius: 2px; color: var(--gold-bright); padding: 6px 12px; font: inherit; cursor: pointer; }
-button:disabled { opacity: 0.5; cursor: default; }
-table { width: 100%; border-collapse: collapse; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-th { color: var(--muted); font-weight: 500; }
-td.net { font-weight: 600; }
-tr.party td.net { color: var(--party); } tr.clan td.net { color: var(--clan); }
-tr.command td.net { color: var(--command); } tr.broadcast td.net { color: var(--broadcast); }
-tr.live { background: var(--bg-2); }
-.ok { color: var(--party); } .bad, .error { color: var(--broadcast); }
-.muted { color: var(--muted); margin: 4px 0; }
-.mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
-.warn { background: #3a1712; border: 1px solid var(--broadcast); border-radius: 2px; padding: 12px; margin-bottom: 12px; display: grid; gap: 8px; }
-.log { background: var(--bg-0); border: 1px solid var(--line); padding: 8px; height: 220px; overflow: auto; font-size: 12px; margin: 8px 0 0; white-space: pre-wrap; }
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at center, #0f1116 0%, #0b0c0f 70%) #0b0c0f;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.panel {
+  background: rgb(18 20 26 / 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-gold-dim);
+  border-radius: 2px;
+}
+
+.field {
+  width: 100%;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-line);
+  border-radius: 2px;
+  padding: 0.4rem 0.6rem;
+  color: var(--color-text);
+  transition: border-color 150ms;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-gold);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-gold);
+  border-radius: 2px;
+  padding: 0.4rem 1rem;
+  color: var(--color-gold-bright);
+  font-weight: 500;
+  transition: background-color 150ms, color 150ms, border-color 150ms;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) {
+  background: var(--color-gold);
+  color: var(--color-bg-0);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.btn-quiet {
+  border-color: var(--color-line);
+  color: var(--color-text-muted);
+}
+.btn-quiet:hover:not(:disabled) {
+  background: var(--color-bg-2);
+  color: var(--color-text);
+}
+
+.title {
+  font-family: var(--font-display);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* A speaking player pulses in their net's colour. */
+@keyframes ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+.speaking {
+  animation: ring 900ms ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .speaking {
+    animation: none;
+    outline: 2px solid currentColor;
+  }
+}
+
+input[type="range"] {
+  accent-color: var(--color-gold);
+}
