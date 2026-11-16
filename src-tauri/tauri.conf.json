@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Alliance Voice",
-  "version": "0.6.2",
-  "identifier": "com.v1rtopia.ignite.voice",
+  "productName": "Warcryer",
+  "version": "0.7.0",
+  "identifier": "org.warcryer.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Alliance Voice",
+        "title": "Warcryer",
         "width": 1100,
         "height": 720,
         "minWidth": 820,
@@ -42,7 +42,7 @@
     "deep-link": {
       "desktop": {
         "schemes": [
-          "ignite-voice"
+          "warcryer"
         ]
       }
     }

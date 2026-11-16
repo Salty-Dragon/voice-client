@@ -1,11 +1,11 @@
 [package]
-name = "voice-client"
-version = "0.6.2"
+name = "warcryer"
+version = "0.7.0"
 edition = "2021"
 license = "MIT"
 
 [lib]
-name = "voice_client_lib"
+name = "warcryer_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

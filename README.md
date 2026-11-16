@@ -1,6 +1,8 @@
-# Voice client
+<img src="app-icon.png" width="96" align="right" alt="">
 
-Windows voice client built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
+# Warcryer
+
+Push-to-talk voice chat for large gaming alliances, where the event roster decides who hears whom. This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
 Voice follows the roster: the server tells the client which voice rooms ("nets") it belongs in, and the client connects to exactly those. Nobody picks a channel by hand. When an organiser moves you to another party, your audio follows within a couple of seconds.
 
@@ -42,7 +44,7 @@ npm run build:web   # the same UI for the browser fallback, served under /voice/
 
 Requires Node 22 and stable Rust on Windows. GitHub Actions builds the installer on every push and attaches it to a release for every `v*` tag.
 
-The server address is set at build time with `VITE_SERVER`. The product name is `productName` in `src-tauri/tauri.conf.json`.
+The server address is set at build time with `VITE_SERVER`.
 
 ## Layout
 
@@ -54,3 +56,7 @@ The server address is set at build time with `VITE_SERVER`. The product name is 
 | `src/api.ts` | Calls to the backend for clans, operations and the roster |
 | `src/ui/` | Screens: voice, operations and roster board, clan, settings |
 | `src-tauri/src/input/` | System-wide key capture (Windows) |
+
+## Name and artwork
+
+Warcryer is a community project. It is not affiliated with or endorsed by NCSOFT or any game publisher, and it contains no game artwork: the emblem in [`art/`](art) and every drawing in the app were made for this project.
