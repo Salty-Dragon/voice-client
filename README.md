@@ -34,11 +34,11 @@ Step-by-step guides for [members](docs/members.md), [clan leaders and officers](
 
 Download the latest installer from [Releases](../../releases) and run it. It installs for the current Windows user only and needs no administrator rights.
 
-Releases up to v0.6.2 are not code-signed, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
+Releases so far are not code-signed, so Windows SmartScreen warns: choose **More info**, then **Run anyway**.
 
 ## Uninstall
 
-Open **Windows Settings → Apps → Installed apps**, find the app and choose **Uninstall**. This removes the program, its Start menu entry and the sign-in link it registered. Tick "Delete the application data" in the uninstaller to also remove your saved key bindings and settings.
+Open **Windows Settings → Apps → Installed apps**, find **Warcryer** and choose **Uninstall**. This removes the program, its Start menu entry and the sign-in link it registered. Tick "Delete the application data" in the uninstaller to also remove your saved key bindings and settings.
 
 ## Code signing policy
 

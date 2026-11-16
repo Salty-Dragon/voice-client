@@ -1,6 +1,6 @@
 # Privacy policy
 
-This covers the Windows app built from this repository and the server the released installer connects to, `ignite.v1rtopia.com`. If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
+This covers Warcryer, the Windows app built from this repository, and the server the released installer connects to, `ignite.v1rtopia.com`. If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
 
 ## Before you sign in
 
