@@ -1,0 +1,82 @@
+name: Test Windows app
+
+# Installs the app from its installer on a clean Windows machine and uses it
+# the way a player would: sign-in link, first-run wizard, push-to-talk while
+# another window has focus, a second player talking, the roster board, closing
+# and reopening. The app talks to a private copy of the backend started on the
+# same machine, so the live server is never involved.
+#
+# Runs after every build (called from build.yml), or by hand against a release.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        default: ""
+      backend_ref:
+        type: string
+        default: main
+    secrets:
+      BACKEND_DEPLOY_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release to test, for example v0.5.0"
+        type: string
+        required: true
+      backend_ref:
+        description: "Backend branch or commit"
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: client
+          ref: ${{ inputs.tag || github.sha }}
+      # The backend is private; this key can only read it.
+      - uses: actions/checkout@v4
+        with:
+          repository: Salty-Dragon/voice-backend
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
+          ref: ${{ inputs.backend_ref }}
+          path: backend
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Installer from this build
+        if: inputs.tag == ''
+        uses: actions/download-artifact@v4
+        with:
+          name: installer
+          path: installer
+      - name: Installer from a release
+        if: inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "*.exe" -D installer
+      - name: Install and test
+        shell: pwsh
+        run: |
+          $installer = (Get-ChildItem installer -Filter *.exe | Select-Object -First 1).FullName
+          ./backend/e2e/desktop/ci.ps1 -Installer $installer -Client "$PWD\client"
+      - name: Keep screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-test
+          path: |
+            C:/vt/run/shots
+            C:/vt/run/stack/logs
+          if-no-files-found: ignore
