@@ -15,6 +15,9 @@ A clan leader is appointed by an alliance admin. The leader appoints officers. O
 | On the **Command** net | Yes | No |
 | Build and edit parties of your clan's members in an operation | Yes | Yes |
 | Set or change the clan crest | Yes | No |
+| Create and revoke invite links | Yes | Yes |
+| Create, change and delete constant parties | Yes | Yes |
+| Asked to choose a new leader when one of your members drops out as party leader | Yes | Yes |
 
 The leader can only be replaced by an alliance admin.
 
@@ -49,7 +52,7 @@ A link is a secret. Anyone who gets hold of it can use it until its uses run out
 
 ## Removing a member
 
-Click **Remove** beside their name and confirm. They are dropped from the lounge, from any party in an operation that has not ended, and from every net, at once. They can request to join again, and you can decline.
+Click **Remove** beside their name and confirm. They are dropped from the lounge, from any party in an operation that has not ended, from the clan's constant parties, and from every net, at once. They can request to join again, and you can decline.
 
 ## Officers
 
@@ -97,6 +100,7 @@ Until the operation is started, everyone stays in their lounge while you build t
 ## Before an event
 
 - Approve the waiting requests, so nobody is locked out when it starts.
+- Check your constant parties are current: new members added, people who left taken out, the right leader. Then one click puts them on the board.
 - Ask members to open the app early and check the green dots on the board.
 - Make sure every party has the leader you want; the leader is marked **» PL**.
 - Remind new officers to bind a Clan key, and party leaders a Command key.

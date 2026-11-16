@@ -10,7 +10,7 @@ Voice follows the roster: the server tells the client which voice rooms ("nets")
 
 Between events you sit in your clan's lounge. When an operation you belong to goes live you are pulled into it, and returned to the lounge when it ends.
 
-The app is also where the alliance is run: joining a clan, approving members, creating operations and building the roster on a drag-and-drop board. Each screen offers only what your role allows, and the server checks every action again.
+The app is also where the alliance is run: joining a clan (by request or by invite link), approving members, keeping constant parties, creating operations and building the roster on a drag-and-drop board. Each screen offers only what your role allows, and the server checks every action again.
 
 ## What it does
 
@@ -19,6 +19,10 @@ The app is also where the alliance is run: joining a clan, approving members, cr
 - Party and Reserve can use voice activation instead, with an adjustable sensitivity.
 - Keys work while a game has focus, including mouse side buttons. They are never swallowed: the game still receives them.
 - Signs in with Discord through your normal browser. The app never sees your Discord password.
+- Lowers the nets below while a higher one is live, so a leader's call cuts through without muting anyone.
+- Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
+- Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
+- Updates itself, with every update signed. Sits in the Windows tray; can keep running there when the window is closed.
 
 ## Key capture and privacy
 
@@ -84,9 +88,13 @@ The server address is set at build time with `VITE_SERVER`.
 | `src/engine.ts` | Rooms, microphone, push-to-talk and voice activation |
 | `src/control.ts` | The control channel that delivers your nets |
 | `src/auth.ts` | Sign-in through the system browser |
+| `src/update.ts` | Checking for, verifying and installing updates |
+| `src/invite.ts` | Clan invite links opened in the app |
 | `src/api.ts` | Calls to the backend for clans, operations and the roster |
 | `src/ui/` | Screens: voice, operations and roster board, clan, settings |
 | `src-tauri/src/input/` | System-wide key capture (Windows) |
+| `src-tauri/src/lib.rs` | The desktop shell: tray icon, close-to-tray, updater plugin |
+| `docs/` | The guides, also shown inside the app |
 
 ## Name and artwork
 

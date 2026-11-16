@@ -14,7 +14,8 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | --- | --- | --- |
 | Your Discord account ID and Discord name | At sign-in, from Discord to the server | To know who you are. Only Discord's `identify` permission is requested: no email address, no server list, no messages. The app never sees your Discord password. |
 | In-game name and class tag | When you type them | Shown to other members beside your voice. |
-| Clan membership, join requests, roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
+| Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
+| Which leader or officer let you in | When you are approved, or use an invite link that lets you straight in | So a clan knows who vouched for each member. |
 | Your voice | While you hold a push-to-talk key, or while voice activation is open | Relayed live to the members of that room. It is not recorded or stored. |
 | Times you joined and left voice rooms | Automatically while connected | So organisers can see who is present. |
 | Changes made by leaders and admins (moves, approvals, bans) | When made | An audit log of who did what. |
@@ -39,7 +40,7 @@ Sign-in sessions expire and are deleted. Account, clan, roster, voice-room times
 
 ## Removing your data
 
-Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name and class tag, your clan membership, your places on rosters, your join requests and the record of when you were in voice.
+Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name and class tag, your clan membership, your places in constant parties and on rosters, your join requests and the record of when you were in voice.
 
 What stays, without you:
 

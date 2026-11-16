@@ -4,7 +4,7 @@ You never pick a voice channel in this app. Your place in the roster decides wha
 
 ## Getting started
 
-1. **Install.** Download the newest installer from the [Releases page](../../../releases). It is not code-signed yet, so Windows shows a blue SmartScreen warning: click **More info**, then **Run anyway**.
+1. **Install.** Download the newest installer from the [Releases page](../../../releases). It is not code-signed yet, so Windows shows a blue SmartScreen warning: click **More info**, then **Run anyway**. You only do this once: after that the app [updates itself](#updates-and-the-tray-icon).
 2. **Sign in.** Click **Sign in with Discord**. Your browser opens, you approve, and the app continues by itself. The app receives your Discord account ID and name only: no email, no server list, never your password.
    - If the app does not continue, the browser page has a section called **The app did not open** with a code. In the app, open **Enter code instead** and paste it.
 3. **Your name.** Enter your in-game name exactly as it appears in game (letters and digits, no spaces), and optionally a class tag such as BP, OL or SWS so callers can find healers and buffers.
@@ -28,6 +28,8 @@ The **Voice** tab always shows where you are and who is there.
 | No operation is live | Your clan's **lounge**: everyone in the clan who has the app open |
 | An operation you belong to goes live | Pulled into the operation automatically |
 | The operation ends | Back in the lounge automatically |
+
+If the alliance has switched on the **alliance lounge**, you hear two lounges between events: your clan's and one shared by every clan. Your key and voice go to one of them at a time; click **Talk here** on the other to switch.
 
 When there are operations, a **You are in** picker appears at the top. Use it to sit a live operation out in the lounge, or to join a planned operation early. If you choose the lounge during a live operation, you stay there for that operation; the next one that starts pulls you in again.
 
@@ -82,6 +84,7 @@ The first player placed in a party leads it. A party leader:
 
 - Is on **Command** as well as their party, and should bind a Command key.
 - Sees join requests on the Voice tab ("X asks to join Party 1") and answers with **Accept** or **Decline**.
+- Is told so when it happens ("You now lead Vanguard"), for example after the previous leader dropped out.
 - Can send one of their own members to Reserve from the roster board, rename the party, and hand leadership to another member.
 
 If you are moved out of your party, leadership passes to the next member automatically.
@@ -126,9 +129,14 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | "Server link lost, retrying…" | Your voice keeps working. The app reconnects by itself; only roster changes wait until it does. |
 | A net shows "Disconnected, retrying…" | It rejoins by itself within a few seconds. If your network blocks voice traffic entirely, tell an admin. |
 | You were signed out | Someone signed in with your account elsewhere, or you were removed. Sign in again. |
+| An invite link's **Open in Warcryer** button does nothing | The app is not installed yet, or the browser blocked the link. Install the app, or copy the invite page's address and paste it on the **Clan** tab under **Have an invite link?** |
+| An invite link "no longer works" | It expired, ran out of uses or was withdrawn. Ask your clan's leader or an officer for a new one. |
+| You closed the window but others still see you in voice | **Keep running in the tray** is on. Click the horn icon beside the Windows clock to bring the window back, or right-click it and choose **Quit**. |
+| The app does not update | **Settings → Window and updates → Check for updates** says where it stands. If it reports a problem, download the newest installer from the Releases page and run it over the top; your settings are kept. |
+| A bar says your party leader has dropped out | Click **I will** or a member's name. See [If your party leader drops out](#if-your-party-leader-drops-out). |
 
 ## What is stored about you
 
-On the server: your Discord account ID and name, your in-game name and class tag, your clan membership, your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
+On the server: your Discord account ID and name, your in-game name and class tag, your clan membership and who approved you, your constant party, your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
 
 To remove all of it, open **Settings → Account → Delete my account**. It asks once more before deleting, and cannot be undone. The full details are in the [privacy policy](../PRIVACY.md).

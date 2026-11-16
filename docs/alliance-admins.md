@@ -18,9 +18,11 @@ Read the [members guide](members.md) first, and the [clan leaders guide](clan-le
 | Ban and unban players | Yes | Yes, except admins | | |
 | Start and end the operation, name deputies | Yes | Yes | Yes | |
 | Move anyone in the operation, edit parties | Yes | Yes | Yes | Yes |
+| Add any clan's constant parties to the board | Yes | Yes | Yes | Yes |
 | Speak on Broadcast and Command | If also leading it | If also leading it | Yes | Yes |
 | Appoint alliance admins | Yes | | | |
 | Alliance lounge switch | Yes | | | |
+| Delete another player's account | Yes | | | |
 
 Being an admin does not by itself put you on any net. What you hear and where you speak comes from your clan and from your role in the operation.
 
@@ -71,7 +73,7 @@ Only players who are still approved members of the clans you tick are carried ov
 
 Every approved member of the participating clans appears in **Reserve**, with a green dot if they have the app open.
 
-- **Constant parties** set up by the clans are offered on the board. Click one to add it as a ready party, or **Add all** to add every one: for most events this builds most of the roster in one click. Parties made this way are marked **Constant**.
+- **Constant parties** set up by the clans are offered on the board. Click one to add it as a ready party, or **Add all** to add every one: for most events this builds most of the roster in one click. Parties made this way are marked **Constant**. The clans keep their own constant parties up to date on their Clan tab; as an admin you can add them to a board, but you change them only in a clan you belong to and lead.
 - **+ New party** adds a party. Click its name to rename it.
 - **Drag** a card onto a party or back to Reserve. Or click a card and use **Move to…**, which does the same thing without dragging.
 - The first player in a party leads it. To change that, click a member and choose **Make party leader**.
@@ -91,6 +93,7 @@ Click **Start operation** and confirm. Every participant with the app open is mo
 - **Command** links you with the clan leaders and party leaders. You are a senior voice there, so party leaders are made quieter while you speak.
 - **Moves take effect at once.** Drag a player to another party and they hear a cue, see where they went, and are talking to the new party within a second or two.
 - **Late arrivals** sit in Reserve, where they can talk to each other and to you. They still hear Broadcast and their Clan net.
+- **A party that loses its leader** is not cut off from Command for long. After about 30 seconds the party and the leader's clan officers are asked who leads now, and after 30 seconds more the next member in voice is promoted. You can also set a party's leader from the board at any time.
 - **Click a net** on the Voice tab to see exactly who is connected to it.
 
 ### Ending
@@ -102,7 +105,7 @@ Click **End operation** and confirm. Everyone returns to their lounge, the opera
 1. Create the operation ahead of time and tell the clans.
 2. Let clan leaders fill their parties; check the board.
 3. Name your deputies.
-4. Ten minutes before: check the green dots. Chase anyone missing.
+4. Ten minutes before: check the green dots. Chase anyone missing, and send clan leaders an invite link for anyone not in the app yet.
 5. Check that every party has the right leader and that leaders have bound their Command key.
 6. Start the operation.
 7. Afterwards, end it.
