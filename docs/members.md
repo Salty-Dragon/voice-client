@@ -128,6 +128,25 @@ While the app runs, its horn icon sits in the Windows tray beside the clock. Cli
 
 Closing the window quits the app and takes you out of voice. If you would rather it kept running, tick **Keep running in the tray when I close the window** in **Settings → Window and updates**. Then closing only hides the window, you stay in voice, and you leave with the tray icon's **Quit**.
 
+## Settings at a glance
+
+**Settings** is the button at the top right. Each switch has a scroll icon that explains it; this is the map.
+
+| Group | What is there |
+| --- | --- |
+| **Devices** | Your microphone and headset, the three-second test, and three clean-up switches: echo cancellation, noise suppression and auto gain. Leave them on unless something sounds wrong. |
+| **Party, Reserve and lounge** | Push-to-talk or voice activation for the nets you chat on, with the sensitivity marker and how long the mic stays open after you stop. |
+| **Keys** | One key per net you may speak on, plus **Mute all**. Mouse side buttons work. **Broadcast lock** is for event leaders only. |
+| **Volume** | Your own level for each net. |
+| **Priority** | Whether lower nets get quieter while a higher one is live, and how quiet. |
+| **Sounds** | The cue you hear when you are moved, and its volume. |
+| **Key capture** | How keys are read while the game is in front. Leave it on **Polling** unless told otherwise. |
+| **Window and updates** | The compact strip, keeping the app running in the tray, automatic updates, and **Check for updates**. |
+| **Help** | Opens these guides. |
+| **Account** | Your in-game name and class tag, **Sign out**, and **Delete my account**. |
+
+Everything here is kept on your computer, except your name and class tag.
+
 ## Troubleshooting
 
 | Problem | What to do |

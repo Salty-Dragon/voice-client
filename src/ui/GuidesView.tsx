@@ -12,9 +12,9 @@ import { useApp } from "./app-context";
 import { openInBrowser } from "./common";
 
 const GUIDES = [
-  { file: "members.md", label: "Members", who: "Everyone: signing in, invite links, talking, keys, being moved, leading a party, updates", text: members },
-  { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties", text: leaders },
-  { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, operations, reusing a roster, the roster board, bans", text: admins },
+  { file: "members.md", label: "Members", who: "Everyone: signing in, invite links, talking, keys, the compact strip, updates, settings", text: members },
+  { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties, the clan log", text: leaders },
+  { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, operations, reusing a roster, the roster board, briefings, bans, the log", text: admins },
 ] as const;
 
 const slug = (text: string) => text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, "-");
