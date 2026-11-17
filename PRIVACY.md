@@ -34,7 +34,7 @@ To notice push-to-talk keys while a game has focus, the app reads keyboard and m
 
 ## Who can see what
 
-Other signed-in members see your in-game name, class, level, clan and which voice room you are in. Clan leaders, event leaders and alliance admins also see join requests and rosters. Alliance admins can read the log of changes (who moved, approved, removed or banned whom, and when); a clan's leader can read the part of it that concerns their own clan. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
+The members of your alliance see your in-game name, class, level, clan and which voice room you are in. Players of other alliances see nothing of you, and you nothing of them: each alliance's clans, players, operations, voice and log are its own. Clan leaders, event leaders and alliance admins also see join requests and rosters. Alliance admins can read the log of changes (who moved, approved, removed or banned whom, and when); a clan's leader can read the part of it that concerns their own clan. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
 
 ## How long it is kept
 
@@ -59,10 +59,11 @@ What stays, without you:
 - A clan you led stays, without a leader, until an alliance admin appoints one.
 - An operation you led that has ended stays in the list, shown as led by "Deleted player". You cannot delete your account while you lead an operation that has not ended; end it first.
 - Entries in the audit log about changes you made or that were made to you stay, but they hold only your account's number, which no longer leads to a name or a Discord account.
-- If you were banned, your Discord account ID and the ban are kept, and nothing else, so that the ban still holds.
+- If an alliance banned you, or the service did, your Discord account ID and the ban are kept, and nothing else, so that the ban still holds. An alliance's ban is removed when it is lifted or when that alliance is deleted.
+- An alliance you own must be handed to another player or deleted before you can delete your account.
 - Backups of the database are kept on the server for 14 days, so a deleted account can remain in a backup for that long. A copy of each backup may also be kept with a storage provider (Backblaze), encrypted before it leaves the server so that the provider cannot read it, and removed there after a set number of days.
 
-If you cannot sign in, ask an alliance admin to pass your request to the app admin, who can delete an account from the admin page.
+If you cannot sign in, ask an alliance admin to pass your request to whoever runs the service, who can delete an account from the admin page.
 
 ## Other services involved
 

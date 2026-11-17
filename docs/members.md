@@ -7,10 +7,11 @@ You never pick a voice channel in this app. Your place in the roster decides wha
 1. **Install.** Download the newest installer from the [Releases page](../../../releases). It is not code-signed yet, so Windows shows a blue SmartScreen warning: click **More info**, then **Run anyway**. You only do this once: after that the app [updates itself](#updates-and-the-tray-icon).
 2. **Sign in.** Click **Sign in with Discord**. Your browser opens, you approve, and the app continues by itself. The app receives your Discord account ID and name only: no email, no server list, never your password.
    - If the app does not continue, the browser page has a section called **The app did not open** with a code. In the app, open **Enter code instead** and paste it.
-3. **Your name, class and level.** Enter your in-game name exactly as it appears in game (letters A to Z and digits, no spaces). A name belongs to one account here, as it does in the game: if yours is already taken, tell your clan leader. Then pick your main character's **class** and **level** from the lists. They are your alliance's own lists, set up for the game you play; an alliance that does not use levels will not ask for one. Both are shown beside your name on rosters, so organisers can see which parties still need a buffer or a healer. Change them any time in **Settings**, at the bottom; move the level up when you reach the next band.
+3. **Your name, class and level.** Enter your in-game name exactly as it appears in game (letters A to Z and digits, no spaces). Within an alliance a name belongs to one account, as it does in the game: if yours is already taken, tell your clan leader. Then pick your main character's **class** and **level** from the lists. They are your alliance's own lists, set up for the game you play; an alliance that does not use levels will not ask for one. Both are shown beside your name on rosters, so organisers can see which parties still need a buffer or a healer. Change them any time in **Settings**, at the bottom; move the level up when you reach the next band.
 4. **Setup wizard.** Three short steps: choose your microphone and headset, record three seconds and hear them back, then choose how you talk (see [Talking](#talking)).
-5. **Join your clan.** Open the **Clan** tab, find your clan and click **Request to join**. A clan leader or officer has to approve you. Until then you cannot hear anything.
-   - **If you were sent an invite link,** you do not need to find your clan. Open the link and click **Open in Warcryer**; the app names the clan and asks before it joins you. Or paste the link on the **Clan** tab under **Have an invite link?**. Depending on how the link was made, you are let in at once or added to the clan's waiting list.
+5. **Join your alliance and clan.** An alliance is the group of clans that plays together; everything in the app (clans, operations, voice) belongs to one alliance and is seen by nobody outside it. You come in with an **invite link** from your clan's leader or an officer. Open the link and click **Open in Warcryer**; the app names the clan and its alliance and asks before it joins you. Or paste the link on the **Clan** tab under **Have an invite link?**. Depending on how the link was made, you are let in at once or wait for a leader or officer to approve you. Until then you cannot hear anything.
+   - **No link, and your alliance does not use the app yet?** Start it yourself: on the **Clan** tab, under **Or start your own**, give it a name and pick the game. You become its owner. The [alliance admins guide](alliance-admins.md#your-alliance) takes it from there.
+   - You are in one alliance at a time.
 
 Once approved you land in your clan's lounge automatically.
 
@@ -108,6 +109,10 @@ On the **Clan** tab, **Leave clan** takes you out of your clan: its lounge and C
 If you are moving to another clan of the same alliance, ask an alliance admin instead. They can move you across in one step, already approved, and your voice follows you to the new clan's lounge at once.
 
 A clan's leader cannot leave until an alliance admin has appointed another leader.
+
+### Leaving the alliance
+
+Once you are in no clan, the **Clan** tab also offers **Leave this alliance**. It takes you out altogether; your account, name and settings stay. You can then join another alliance with an invite link from one of its clans, or start your own.
 
 ## Constant parties
 

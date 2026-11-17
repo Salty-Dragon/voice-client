@@ -6,16 +6,16 @@ Read the [members guide](members.md) first, and the [clan leaders guide](clan-le
 
 | Role | Scope | How you get it |
 | --- | --- | --- |
-| **App admin** | Everything. Runs the install. | Claimed once with a code from the server |
-| **Alliance admin** | Clans, clan leaders, every operation, bans | Appointed by the app admin |
+| **Owner** | The alliance: everything an alliance admin can do, and the alliance itself | By starting the alliance, or by being handed it |
+| **Alliance admin** | Clans, clan leaders, every operation, bans | Appointed by the owner |
 | **Event leader** | One operation | Chosen when the operation is created |
 | **Deputy** | One operation | Named by the event leader on the roster board |
 
-| | App admin | Alliance admin | Event leader | Deputy |
+| | Owner | Alliance admin | Event leader | Deputy |
 | --- | --- | --- | --- | --- |
 | Create clans, appoint clan leaders | Yes | Yes | | |
 | Create operations | Yes | Yes | | |
-| Ban and unban players | Yes | Yes, except admins | | |
+| Ban players and lift bans | Yes | Yes, except admins | | |
 | Start and end the operation, name deputies | Yes | Yes | Yes | |
 | Rename it, move its start, delete it before it starts | Yes | Yes | Yes | |
 | Change its event leader or its clans, delete it after it ended | Yes | Yes | | |
@@ -23,15 +23,36 @@ Read the [members guide](members.md) first, and the [clan leaders guide](clan-le
 | Add any clan's constant parties to the board | Yes | Yes | Yes | Yes |
 | See who attended an operation | Yes | Yes | Yes | Yes |
 | Speak on Broadcast and Command | If also leading it | If also leading it | Yes | Yes |
+| Rename the alliance, shared lounge switch, game setup | Yes | Yes | | |
 | Appoint alliance admins | Yes | | | |
-| Alliance lounge switch | Yes | | | |
-| Delete another player's account | Yes | | | |
+| Hand the alliance to another player, delete it | Yes | | | |
+
+Everything here is inside one alliance. Another alliance's owner, admins and players see none of yours: not its clans, players, operations or log, and they cannot reach its voice.
 
 Being an admin does not by itself put you on any net. What you hear and where you speak comes from your clan and from your role in the operation.
 
 ## The Alliance tab
 
-Alliance admins and the app admin see an extra tab, **Alliance**.
+The owner and the alliance admins see an extra tab, **Alliance**.
+
+### Your alliance
+
+**Starting one.** A player who is in no alliance starts one on the **Clan** tab, under **Or start your own**: a name, and the game it plays. The game only fills in a starting point (classes, party size, kinds of event) that you can change later under **Game setup**. Whoever starts it owns it. Then, in this order:
+
+1. Create your clans (below).
+2. Open each clan on the **Clan** tab and make an **invite link** for it. Send it to that clan's leader.
+3. When they have come in, appoint them leader of their clan. From then on they make their own invite links for their members.
+
+An invite link is the only way into an alliance. Nobody can find or ask to join it from outside.
+
+The first section of the tab carries the alliance's name and its own switches:
+
+- **Rename** changes the name players see in the app's header and on invite links.
+- **Shared lounge:** one extra lounge shared by every clan of the alliance. It is off by default, because it lets every approved member of any clan hear whoever is talking there. Turn it on if the clans should mix between events.
+- **Hand it to…** (owner only) makes another player of the alliance its owner, after you confirm. You stay as an alliance admin.
+- **Delete alliance** (owner only) removes the alliance with its clans, operations, attendance, bans and log, for good. Its players keep their accounts and are left in no alliance. It cannot be deleted while one of its operations is running.
+
+The owner cannot leave the alliance or delete their account while they own it: hand it on or delete it first.
 
 ### Clans
 
@@ -48,11 +69,12 @@ A clan with no leader cannot approve anyone, so appoint the leader straight away
 
 Every player who has signed in and confirmed a name. Use **Find a player** to filter.
 
-- **Ban:** click **Ban** and confirm. The player is signed out everywhere and removed from every room at once. The ban follows their Discord account, so signing in again does not lift it.
-- **Lift ban** reverses it. Their clan membership is as it was.
+- **Make admin / Remove admin** (owner only): an alliance admin can do everything on this tab except appoint admins, hand the alliance on and delete it.
+- **Ban:** click **Ban** and confirm. The player is put out of the alliance at once: out of their clan, their parties and every voice room. The ban follows their Discord account, so an invite link does not bring them back, under this name or another. It is a ban from your alliance only; their account still works elsewhere.
+- **Banned:** the players you have banned are listed under the others. **Lift ban** takes one off the list. It does not put them back: they come in again with an invite link, like anyone else.
 - **Move to clan:** choose a clan beside the player and confirm. They become an approved member of it at once, with no request and no invite. This is how a transfer between clans is done, and how you put a player with no clan into one. In the clan they leave they lose their constant parties and their party places in operations still to come; place them again on the board. A clan's leader cannot be moved until you have appointed another leader there.
 
-An alliance admin cannot ban the app admin or another alliance admin.
+An alliance admin cannot ban the owner or another alliance admin; the owner can ban an admin.
 
 ## Operations
 
@@ -209,16 +231,12 @@ This matters for trust, so it is worth knowing.
 
 No voice tool can stop a trusted member from relaying what they hear. The design limits how much any one person hears and keeps a record of who was listening.
 
-## App admin only
+## The service's operator
 
-These are on the website, at `https://ignite.v1rtopia.com/admin`, and nowhere in the app.
+Warcryer is run as one service for many alliances. Whoever runs it has a page on the website, `/admin`, and no way into an alliance they are not a member of. In the one alliance they are in, they have its owner's tools.
 
-- **Alliance admins:** appoint or remove them. The player must have signed in once.
-- **Alliance lounge:** one extra lounge shared by every clan. It is off by default, because it lets every approved member of any clan hear whoever is talking there. Turn it on if the clans should mix between events.
-- The same clan and ban tools as the Alliance tab.
-
-The first app admin claims the role on the website with the one-time code stored on the server. Once there is an app admin, that option disappears.
+That page lists every alliance with its owner, its size and when something last changed in it, and nothing of what is inside. From there the operator can delete an alliance (for example an abandoned one, or at its owner's request), ban an account from the whole service, and delete a player's account for them.
 
 ### Deleting a player's account
 
-Players can delete their own account in the app (**Settings → Account → Delete my account**). If someone asks you to do it for them, for example because they can no longer sign in, the app admin deletes it on the website's admin page under **Players**. Deleting removes the account and everything that belongs to it; a banned player stays banned. What is kept and why is set out in the [privacy policy](../PRIVACY.md).
+Players can delete their own account in the app (**Settings → Account → Delete my account**). If someone asks you to do it for them, for example because they can no longer sign in, the service's operator deletes it on the website's admin page under **Players**. Deleting removes the account and everything that belongs to it; a banned player stays banned. What is kept and why is set out in the [privacy policy](../PRIVACY.md).

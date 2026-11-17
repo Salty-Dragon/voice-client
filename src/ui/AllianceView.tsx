@@ -1,6 +1,5 @@
-// For alliance admins and the app admin: the clans, who leads them, and bans.
-// Appointing alliance admins and the alliance lounge switch stay on the site's
-// admin panel, with the app admin.
+// For the alliance's owner and its admins: the alliance itself, its clans and
+// who leads them, its players, admins and bans.
 
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
@@ -219,7 +218,7 @@ export function AllianceView() {
         <p className="text-xs text-text-muted">The new leader must have signed in once. A player in another clan has to be moved out of it first (Players, below). A clan can be deleted once only its leader is left in it.</p>
       </Section>
 
-      <Section title={`Players (${data.users.length})`} help={"Everyone who has signed in and confirmed a name.\nApp admin: runs this install and has full access.\nAlliance admin: manages clans, clan leaders, operations and bans. The app admin appoints them on the site's admin page.\nMove to clan: puts the player straight into another clan as an approved member, without a request or an invite. Use it for a transfer. In the clan they leave, they lose their constant parties and their party places in operations still to come. A clan's leader has to be replaced before they can be moved.\nA ban signs the player out everywhere, removes them from every room at once, and follows their Discord account."}>
+      <Section title={`Players (${data.users.length})`} help={"Everyone in the alliance who has confirmed a name.\nOwner: started the alliance or was handed it; appoints its admins.\nAlliance admin: manages clans, clan leaders, operations and bans.\nMove to clan: puts the player straight into another clan as an approved member, without a request or an invite. Use it for a transfer. In the clan they leave, they lose their constant parties and their party places in operations still to come. A clan's leader has to be replaced before they can be moved.\nA ban puts the player out of the alliance at once, voice included. It follows their Discord account, so an invite link does not bring them back. Lift it from the list of bans below the players."}>
         <input className="field max-w-xs" placeholder="Find a player" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Find a player" />
         <ul className="flex flex-col divide-y divide-line">
           {shown.map((u) => (

@@ -51,10 +51,10 @@ export type Info = {
     /** Class and level band chosen from the alliance's lists; null until chosen. */
     className: string | null;
     levelBand: string | null;
-    /** App admin: runs the install. */
+    /** Runs the service itself. Inside an alliance it counts only in the one they are a member of. */
     isAdmin: boolean;
     isAllianceAdmin: boolean;
-    /** App admin or alliance admin: may manage clans, operations and bans. */
+    /** Owner or admin of the alliance they are in: may manage its clans, operations and bans. */
     runsAlliance: boolean;
   };
   membership: Membership | null;
