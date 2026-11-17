@@ -22,11 +22,18 @@ const SORTS = {
   party: { label: "Party", by: (a: AttendanceRow, b: AttendanceRow) => Number(a.party === null) - Number(b.party === null) || (a.party ?? "").localeCompare(b.party ?? "") || a.name.localeCompare(b.name) },
 } as const;
 
+/**
+ * One cell of the copied table. A party's name is whatever its leader typed, and a spreadsheet runs a
+ * cell that starts with = + - or @ as a formula, so such text is given a leading apostrophe, which
+ * spreadsheets show as plain text. Tabs and line breaks would shift the columns, so they become spaces.
+ */
+const cell = (v: string | number) => (typeof v === "number" ? String(v) : (/^[=+\-@]/.test(v) ? "'" : "") + v.replace(/[\t\r\n]+/g, " "));
+
 /** The table as text a spreadsheet takes: one line per player, columns separated by tabs. */
 function asText(a: Attendance, rows: AttendanceRow[]): string {
   const head = ["Name", "Usual name", "Class", "Level", "Clan", "Party", "Minutes in voice", "Percent of operation", "Joined", "Left", "Signed up"];
   const lines = rows.map((r) =>
-    [r.name, r.usualName ?? "", r.className ?? "", r.levelBand ?? "", r.clanTag ?? "", r.party ?? "", Math.round(r.seconds / 60), share(r, a.seconds), clock(r.firstAt), clock(r.lastAt), r.signup === "coming" ? "Coming" : r.signup === "out" ? "Can't come" : ""].join("\t"),
+    [r.name, r.usualName ?? "", r.className ?? "", r.levelBand ?? "", r.clanTag ?? "", r.party ?? "", Math.round(r.seconds / 60), share(r, a.seconds), clock(r.firstAt), clock(r.lastAt), r.signup === "coming" ? "Coming" : r.signup === "out" ? "Can't come" : ""].map(cell).join("\t"),
   );
   return [head.join("\t"), ...lines].join("\n");
 }
