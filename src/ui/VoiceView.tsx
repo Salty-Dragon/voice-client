@@ -296,6 +296,12 @@ export function VoiceView() {
                   A leader or officer of {info.membership.name} has to approve you. You will land in the clan lounge as soon as they do.
                 </p>
               </>
+            ) : info.alliance === null ? (
+              <>
+                <h1 className="title text-gold">Join an alliance</h1>
+                <p className="text-text-muted">Voice follows your clan. Come in with an invite link from your clan&apos;s leader, or start an alliance of your own.</p>
+                <div><button type="button" className="btn" onClick={() => go("clan")}>Get started</button></div>
+              </>
             ) : (
               <>
                 <h1 className="title text-gold">Join your clan</h1>

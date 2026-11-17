@@ -140,7 +140,9 @@ function JoinAClan() {
     <Section title={info.alliance ? `Join your clan in ${info.alliance.name}` : "Join your clan"}>
       <p className="text-text-muted">Pick the clan you are in. Its leader or an officer then approves you, and you get its lounge and its operations.</p>
       {error && <p className="text-danger">{error}</p>}
-      {clans && clans.length === 0 && <p className="text-text-muted">No clans have been created yet. An alliance admin does that.</p>}
+      {clans && clans.length === 0 && (
+        <p className="text-text-muted">{info.alliance?.role ? "No clans yet. Create the first one on the Alliance tab." : "No clans have been created yet. An alliance admin does that."}</p>
+      )}
       <ul className="flex flex-col divide-y divide-line">
         {clans?.map((c) => (
           <li key={c.id} className="flex flex-wrap items-center gap-4 py-2">
