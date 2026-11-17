@@ -92,6 +92,8 @@ export type GameOptions = {
 /** The whole setup, for the editor on the Alliance screen. */
 export type GameProfile = { words: Words; preset: string; classes: GameClass[]; roles: string[]; partySize: number; partyNeeds: string[]; groupTypes: string[]; levelLabel: string; levelBands: string[]; eventTypes: string[]; nameRule: string };
 export type GameProfileEdit = { profile: GameProfile; presets: { id: string; label: string; profile: GameProfile }[]; nameRules: { id: string; label: string }[] };
+/** Where an alliance stands against its plan: approved members against the limit, and whether its operations are paused. */
+export type PlanState = { plan: string; label: string; members: number; cap: number; clans: number; clansCap: number | null; suspended: boolean; over: boolean };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
@@ -181,7 +183,7 @@ export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: strin
 export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean; isOwner?: boolean };
 /** A player banned from the alliance. `id` names the ban for lifting it. */
 export type Ban = { id: string; name: string; at: string };
-export type AllianceView = { alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean };
+export type AllianceView = { plan?: PlanState | null; alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean };
 
 /** One player's time in voice during an operation. `seconds` is 0 when they never joined. */
 export type AttendanceRow = {

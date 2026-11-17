@@ -92,8 +92,13 @@ function NoAlliance() {
   const { refreshInfo, go } = useApp();
   const { data: presets } = useLoad(() => rpc<{ id: string; label: string }[]>("alliance.presets"), [], 600_000);
   const act = useAct();
+  // How a new alliance can be started just now: by a code from the service, freely, or not at all.
+  // (A server from before there was a door does not say: then anyone may.)
+  const { data: door } = useLoad(() => rpc<{ mode: "closed" | "code" | "open" }>("alliance.door").catch(() => ({ mode: "open" as const })), [], 600_000);
   const [name, setName] = useState("");
   const [preset, setPreset] = useState("");
+  const [code, setCode] = useState("");
+  const mode = door?.mode ?? "open";
   return (
     <>
       <Section title={t("Join an alliance")} help={t("You come into an alliance through one of its clans, by an invite link from that clan's leader or an officer.\nAsk them for a link, then open it, or paste it here.")}>
@@ -104,11 +109,13 @@ function NoAlliance() {
         title="Or start your own"
         help={t("Creates an alliance with you as its owner. You then make its clans on the Alliance tab, send each clan's invite link to its leader, and appoint them.\nThe game you choose only fills in a starting list of classes and party size; you can change all of it afterwards under Game setup.")}
       >
+        {mode === "closed" && <p className="text-text-muted" data-door-closed>{t("New alliances cannot be started for now. If your clan's alliance already uses the app, ask its leader for an invite link.")}</p>}
         <form
+          hidden={mode === "closed"}
           className="flex flex-wrap items-end gap-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            if (await act.run(() => rpc("alliance.create", { name, preset }))) {
+            if (await act.run(() => rpc("alliance.create", { name, preset, code: mode === "code" ? code : undefined }))) {
               refreshInfo();
               go("alliance");
             }
@@ -125,7 +132,16 @@ function NoAlliance() {
               {presets?.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </label>
-          <button className="btn" disabled={act.busy || name.trim().length < 2 || !preset}>{t("Create alliance")}</button>
+          {mode === "code" && (
+            <label className="flex flex-col gap-1 text-text-muted">
+              <span className="flex items-center gap-1">
+                Beta code
+                <Help text={t("During the beta, starting an alliance needs a code from the service. One code starts one alliance; players who join it need no code, only its invite links.")} />
+              </span>
+              <input className="field w-36 uppercase" value={code} onChange={(e) => setCode(e.target.value)} maxLength={20} required autoComplete="off" spellCheck={false} aria-label="Beta code" placeholder="XXXX-XXXX" />
+            </label>
+          )}
+          <button className="btn" disabled={act.busy || name.trim().length < 2 || !preset || (mode === "code" && code.trim().length < 8)}>{t("Create alliance")}</button>
         </form>
         {act.error && <p className="text-danger" role="alert">{act.error}</p>}
       </Section>

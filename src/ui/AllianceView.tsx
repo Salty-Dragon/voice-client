@@ -3,7 +3,7 @@
 
 import { d, t } from "../words";
 import { useState } from "react";
-import { rpc, type AllianceView as AllianceData } from "../api";
+import { rpc, type AllianceView as AllianceData, type PlanState } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
@@ -27,6 +27,7 @@ function Section({ title, help, children }: { title: string; help?: string; chil
 /** The alliance itself: its name, its shared lounge, and for its owner, handing it on and deleting it. */
 function AllianceSelf({
   alliance,
+  plan,
   loungeOn,
   users,
   owner,
@@ -34,6 +35,7 @@ function AllianceSelf({
   call,
 }: {
   alliance: { id: number; name: string };
+  plan: PlanState | null;
   loungeOn: boolean;
   users: { id: number; name: string; isOwner?: boolean }[];
   owner: boolean;
@@ -102,6 +104,17 @@ function AllianceSelf({
             </ConfirmButton>
           </span>
         )}
+        {plan && (
+          <p className="flex w-full flex-wrap items-center gap-x-2 text-sm text-text-muted" data-plan>
+            <span>
+              {plan.label} plan: <span className={plan.members >= plan.cap ? "font-medium text-danger" : "text-text"}>{plan.members}</span> of {plan.cap} approved members
+            </span>
+            <Help text={t("How many approved members the alliance may have. At the limit nobody new can be approved, let straight in or moved in; nobody is removed and no voice is cut. During the beta every alliance is on the Beta plan and nothing is charged. For a larger limit, ask the service.")} />
+            {plan.suspended && <span className="text-danger">{t("The service has paused this alliance's operations: none can be created or started. Members and lounges are untouched.")}</span>}
+            {!plan.suspended && plan.over && <span className="text-danger">{t("Over the limit: no operation can be created or started until that is put right.")}</span>}
+            {!plan.suspended && !plan.over && plan.members >= plan.cap && <span className="text-danger">At the limit: nobody new can be approved.</span>}
+          </p>
+        )}
         {handTo && (
           <span className="flex w-full flex-wrap items-center justify-end gap-2" role="status">
             <span className="text-gold">Make {handTo.name} the owner of {alliance.name}?</span>
@@ -142,7 +155,7 @@ export function AllianceView() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
 
-      {data.alliance && <AllianceSelf alliance={data.alliance} loungeOn={!!data.loungeOn} users={data.users} owner={owner} busy={act.busy} call={call} />}
+      {data.alliance && <AllianceSelf alliance={data.alliance} loungeOn={!!data.loungeOn} users={data.users} owner={owner} busy={act.busy} call={call} plan={data.plan ?? null} />}
 
       <Section title={t("Clans")} help={t("Every player belongs to one clan, and voice follows it: a clan has its own lounge between operations and its own Clan net during them.\nRename changes a clan's name and tag; its members, constant parties, crest and invite links stay. Delete is offered once a clan is empty or has only its leader left.\nCreate the clan here, then appoint its leader. The leader approves members and appoints officers. Appointing a new leader makes the previous one an ordinary member.")}>
         {data.clans.length === 0 && <p className="text-text-muted">{t("No clans yet. Create the first one below, then appoint its leader.")}</p>}
