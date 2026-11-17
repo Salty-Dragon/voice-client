@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
+import { ClassAsk } from "./ui/ClassAsk";
 import { ControlClient, type ControlState, type NetSet } from "./control";
 import { refreshGame, useGame } from "./game";
 import { usePendingInvite } from "./invite";
@@ -332,6 +333,8 @@ export default function App() {
             </button>
           </div>
         )}
+
+        <ClassAsk />
 
         {eng.broadcastLocked && (
           <div className="flex flex-wrap items-center gap-3 border-b border-net-broadcast bg-bg-2 px-4 py-2" role="alert">
