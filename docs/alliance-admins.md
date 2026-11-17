@@ -115,6 +115,7 @@ Nothing about any one game is built into the app. On the **Alliance** tab, **Gam
 - **Group types:** what a party can be marked as on the board. Leave empty to have none.
 - **Bands:** level or gear-score ranges players choose from, and what to call them. Leave empty and players are not asked.
 - **In-game names may have:** which characters a name can contain, to match your game.
+- **Your words:** what your players call the five things the app is built around. In the app's own words those are `alliance`, `clan`, `party`, `constant party` and `operation`. Give each your word for one and for several, for example guild and guilds for a `clan`, raid and raids for an `operation`. The whole app, these guides, the invite page and the Discord announcements then say it your way, and names that you or your players typed are never changed. Leave a row as it is to keep the app's own word.
 
 The server checks what you save and says in words what is wrong, for example a class with a role that is not on your list of roles. Every player's app has the new lists as soon as you save.
 

@@ -29,7 +29,7 @@ const NET_TIP: Record<NetKind, string> = {
   lounge: "Lounge: your clan's room between operations. Everyone in it can talk.",
 };
 /** What a net is for, in the alliance's words. */
-export const netTip = (net: NetKind): string => t(netTip(net));
+export const netTip = (net: NetKind): string => t(NET_TIP[net]);
 /** The net colours as CSS values, for glows and shadows. */
 export const NET_VAR: Record<NetKind, string> = {
   broadcast: "var(--color-net-broadcast)",

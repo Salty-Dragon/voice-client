@@ -91,6 +91,9 @@ const WORD_OK = /^[\p{L}\p{N}](?:[\p{L}\p{N} '-]{0,22}[\p{L}\p{N}])?$/u;
 const LABEL: Record<keyof Words, string> = { alliance: "alliance", clan: "clan", party: "party", constantParty: "constant party", operation: "operation" };
 
 /**
+ * The messages name the five in the app's own words, marked so that they stay that way: an admin
+ * who is choosing what a clan is called must be told about "clan", not about their new word for it.
+ *
  * Checks the words an admin sent. Returns them in the form that is stored, or throws an Error whose
  * message says what is wrong. Nothing sent, or a word left empty, means the app's own word.
  */
@@ -102,9 +105,9 @@ export function cleanWords(input: unknown): Words {
     const tidy = (x: unknown) => (typeof x === "string" ? x.trim().replace(/\s+/g, " ") : "");
     const one = tidy(pair.one) || DEFAULT_WORDS[key].one;
     const many = tidy(pair.many) || (one === DEFAULT_WORDS[key].one ? DEFAULT_WORDS[key].many : "");
-    if (!many) throw new Error(`Words: give the word for more than one ${LABEL[key]} too.`);
+    if (!many) throw new Error(`Words: give the word for more than one ${d(LABEL[key])} too.`);
     for (const w of [one, many]) {
-      if (!WORD_OK.test(w)) throw new Error(`Words: "${w.slice(0, 30)}" should be 1 to 24 letters, digits, spaces, hyphens or apostrophes.`);
+      if (!WORD_OK.test(w)) throw new Error(`Words: "${d(w.slice(0, 30))}" should be 1 to 24 letters, digits, spaces, hyphens or apostrophes.`);
     }
     out[key] = { one, many };
   }
@@ -113,7 +116,7 @@ export function cleanWords(input: unknown): Words {
   for (const key of WORD_KEYS) {
     for (const w of new Set([out[key].one.toLowerCase(), out[key].many.toLowerCase()])) {
       const other = seen.get(w);
-      if (other && other !== key) throw new Error(`Words: "${w}" is used for both ${LABEL[other]} and ${LABEL[key]}.`);
+      if (other && other !== key) throw new Error(`Words: "${d(w)}" is used for both ${d(LABEL[other])} and ${d(LABEL[key])}.`);
       seen.set(w, key);
     }
   }
