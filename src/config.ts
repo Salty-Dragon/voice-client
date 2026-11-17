@@ -18,3 +18,6 @@ export const DOCS_URL = "https://github.com/Warcryer/client/blob/main/docs";
 
 /** Link scheme that brings a browser sign-in back to the desktop app. */
 export const LINK_SCHEME = "warcryer";
+
+/** Where to reach whoever runs the service: its Discord. The only contact there is. */
+export const SUPPORT_URL = "https://discord.gg/qf4meEMfhp";

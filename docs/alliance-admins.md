@@ -37,7 +37,7 @@ The owner and the alliance admins see an extra tab, **Alliance**.
 
 ### Your alliance
 
-**Starting one.** A player who is in no alliance starts one on the **Clan** tab, under **Or start your own**: a name, and the game it plays. The game only fills in a starting point (classes, party size, kinds of event) that you can change later under **Game setup**. Whoever starts it owns it. Then, in this order:
+**Starting one.** A player who is in no alliance starts one on the **Clan** tab, under **Or start your own**: a name, and the game it plays. While Warcryer is in beta you also need a **beta code** from the service: ask for one on the [Warcryer Discord](https://discord.gg/qf4meEMfhp). One code starts one alliance; the players who join it need no code. The game only fills in a starting point (classes, party size, kinds of event) that you can change later under **Game setup**. Whoever starts it owns it. Then, in this order:
 
 1. Create your clans (below).
 2. Beside each clan, open **Invite links**, make a link and send it to that clan's leader. Tick **Let people who use it straight in** if you know them; one use is enough.
@@ -53,6 +53,12 @@ The first section of the tab carries the alliance's name and its own switches:
 - **Delete alliance** (owner only) removes the alliance with its clans, operations, attendance, bans and log, for good. Its players keep their accounts and are left in no alliance. It cannot be deleted while one of its operations is running.
 
 The owner cannot leave the alliance or delete their account while they own it: hand it on or delete it first.
+
+**The plan.** Under the switches the section says which plan the alliance is on and how many approved members it has against the plan's limit. During the beta every alliance is on the Beta plan, with room for 300 approved members, and nothing is charged.
+
+- A limit only stops growth. At the limit nobody new can be approved or moved into a clan, and an invite link that normally lets people straight in puts them on the waiting list instead. Nobody is removed and no voice is cut.
+- If the alliance needs more room, ask on the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
+- An alliance that is over its limit, or whose operations the service has paused, keeps its members and lounges and cannot create or start an operation until that is put right. A running operation can always be ended.
 
 ### Clans
 

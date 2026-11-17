@@ -5,7 +5,8 @@ import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { partySizeOf, useGame } from "../game";
 import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
-import { ClanCrest, Initial } from "./common";
+import { SUPPORT_URL } from "../config";
+import { ClanCrest, Initial, openInBrowser } from "./common";
 import { Help } from "./tips";
 import { AuditLog } from "./AuditLog";
 
@@ -110,6 +111,12 @@ function NoAlliance() {
         help={t("Creates an alliance with you as its owner. You then make its clans on the Alliance tab, send each clan's invite link to its leader, and appoint them.\nThe game you choose only fills in a starting list of classes and party size; you can change all of it afterwards under Game setup.")}
       >
         {mode === "closed" && <p className="text-text-muted" data-door-closed>{t("New alliances cannot be started for now. If your clan's alliance already uses the app, ask its leader for an invite link.")}</p>}
+        {mode === "code" && (
+          <p className="text-sm text-text-muted">
+            {t("Warcryer is in beta, and free. To start an alliance you need a code:")}{" "}
+            <button type="button" className="text-gold-bright underline-offset-2 hover:underline cursor-pointer" onClick={() => void openInBrowser(SUPPORT_URL)}>ask for one on the Warcryer Discord</button>.
+          </p>
+        )}
         <form
           hidden={mode === "closed"}
           className="flex flex-wrap items-end gap-3"

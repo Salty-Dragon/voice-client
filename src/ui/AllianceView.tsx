@@ -8,7 +8,8 @@ import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { InviteLinks } from "./ClanView";
-import { ClanCrest, ClanMark } from "./common";
+import { SUPPORT_URL } from "../config";
+import { ClanCrest, ClanMark, openInBrowser } from "./common";
 import { Help } from "./tips";
 import { AuditLog } from "./AuditLog";
 
@@ -110,6 +111,7 @@ function AllianceSelf({
               {plan.label} plan: <span className={plan.members >= plan.cap ? "font-medium text-danger" : "text-text"}>{plan.members}</span> of {plan.cap} approved members
             </span>
             <Help text={t("How many approved members the alliance may have. At the limit nobody new can be approved, let straight in or moved in; nobody is removed and no voice is cut. During the beta every alliance is on the Beta plan and nothing is charged. For a larger limit, ask the service.")} />
+            <button type="button" className="text-gold-bright underline-offset-2 hover:underline cursor-pointer" onClick={() => void openInBrowser(SUPPORT_URL)}>Ask on the Warcryer Discord</button>
             {plan.suspended && <span className="text-danger">{t("The service has paused this alliance's operations: none can be created or started. Members and lounges are untouched.")}</span>}
             {!plan.suspended && plan.over && <span className="text-danger">{t("Over the limit: no operation can be created or started until that is put right.")}</span>}
             {!plan.suspended && !plan.over && plan.members >= plan.cap && <span className="text-danger">At the limit: nobody new can be approved.</span>}
