@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
+import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
@@ -119,6 +120,12 @@ export function AllianceView() {
         </ul>
         <p className="text-xs text-text-muted">A ban signs the player out everywhere and removes them from every room at once. It follows their Discord account.</p>
       </Section>
+
+      {data.discord !== undefined && (
+        <Section title="Discord announcements" help={DISCORD_HELP("any operation of the alliance") + "\nEach clan's leader can also set up a channel of their own on the Clan screen, for the operations that clan takes part in."}>
+          <DiscordSetup clanId={null} connected={data.discord} onChange={reload} />
+        </Section>
+      )}
 
       <AuditLog
         scope="alliance"

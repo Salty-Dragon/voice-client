@@ -79,6 +79,17 @@ Plans change. On the operation's board, **Edit** opens a form:
 
 A running operation cannot be deleted: end it first. An operation that has ended can no longer be changed, and only an alliance admin can delete it, from its board; that also removes its attendance. The log keeps a line for every change and for a deletion.
 
+### Telling players on Discord
+
+The app asks everyone in the participating clans whether they are coming, but only those who open it see the question. On the **Alliance** tab, **Discord announcements** connects a Discord channel that is told about every operation: when one is created, changed, started, or cancelled before it starts.
+
+1. In Discord, open the channel's settings (the cog beside its name), then **Integrations**, **Webhooks**, **New Webhook**, and **Copy Webhook URL**. You need the Manage Webhooks permission on that Discord server.
+2. In the app, paste the address under **Discord announcements** and click **Connect**. A first message is posted at once, so you can see it arrive.
+
+A message names the operation, its start (shown to each reader in their own time zone), the clans and the event leader, and pings nobody. **Send a test message** checks the channel; **Disconnect** stops the messages. The address is a secret and is never shown again.
+
+Each clan's leader can connect a channel of their own on the Clan tab, for the operations that clan takes part in. If a clan uses the same channel as the alliance, it gets each message once.
+
 ### Starting from an earlier operation
 
 You do not have to rebuild the roster for every event. **Start from** lists your recent operations with their size. Pick one and the new operation begins with the same parties in the same order, with the same leaders, members and deputies. The clans and event leader are filled in to match; change them if you need to.
@@ -148,7 +159,7 @@ You and the other organisers see everyone. Clan leaders and officers see their o
 
 ### A checklist for event night
 
-1. Create the operation ahead of time and tell the clans. Everyone in them is asked whether they are coming.
+1. Create the operation ahead of time. Everyone in its clans is asked in the app whether they are coming, and the Discord channels you have connected are told.
 2. Watch the answers come in on the board's top line. Ask clan leaders to chase the players under **No answer yet**, and members to set their class and level.
 3. Add the constant parties, then place the rest, or let clan leaders fill their own parties. Give each party its group type.
 4. Work through **Needs**: click a missing role on a party to list the unplaced players who can fill it. Aim for every party **Full**.

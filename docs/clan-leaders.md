@@ -100,6 +100,21 @@ The first player placed in a party leads it, and party leaders are on Command. I
 
 Until the operation is started, everyone stays in their lounge while you build the roster. Starting it moves every player into their party at once.
 
+## Discord announcements
+
+Players who do not have the app open do not see that an event has been planned. The clan's leader can have the app say so in a Discord channel: on the **Clan** tab, under **Discord announcements**.
+
+1. In Discord, open the channel's settings (the cog beside its name), then **Integrations**, **Webhooks**, **New Webhook**, and **Copy Webhook URL**. You need the Manage Webhooks permission on that Discord server.
+2. In the app, paste the address under **Discord announcements** and click **Connect**. A first message is posted at once, so you can see it arrive.
+
+From then on the channel gets a message when an operation your clan takes part in is created, when its name, start time, leader or clans change, when it starts, and when one that had not started is cancelled. A message names the operation, its start (Discord shows it to each reader in their own time zone), the clans and the event leader. Nobody is pinged.
+
+- **Send a test message** checks the channel still works.
+- **Disconnect** stops the messages. Deleting the webhook in Discord does too.
+- The address is a secret: anyone who has it can post in that channel. The app stores it and never shows it again, so if you need it elsewhere, copy it from Discord.
+
+Alliance admins can set up one channel for the whole alliance in the same way; a channel used for both gets each message once.
+
 ## Attendance
 
 After an operation has ended, open it under **Operations**. For you and your officers the board shows **Attendance**: each of your members, how long they were in voice while the operation ran, when they joined, and whether they had said they were coming. **No show** marks a member who said they were coming and never joined. **Copy for a spreadsheet** puts the table on your clipboard, ready to paste into a sheet. While an operation is running, **Attendance so far** shows the same up to now.
@@ -114,6 +129,7 @@ The leader has a **Clan log** at the bottom of the **Clan** tab: who changed wha
 
 - Approve the waiting requests, so nobody is locked out when it starts.
 - Check your constant parties are current: new members added, people who left taken out, the right leader. Then one click puts them on the board.
+- Set up **Discord announcements** once, so that planning an event tells your clan's Discord by itself.
 - Chase the answers. The board shows who is **Coming**, who has not answered and who cannot come. The leader of each constant party can sign the whole party up with one click on the board; you and your officers can do it for them.
 - Ask members to set their class and level in **Settings**, so the organiser can see what each party lacks.
 - Ask members to open the app early and check the green dots on the board.

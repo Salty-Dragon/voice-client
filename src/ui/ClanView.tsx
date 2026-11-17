@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList, type Invite } from "../api";
+import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, Initial } from "./common";
@@ -454,6 +455,11 @@ function Members({ clanId }: { clanId: number }) {
       </Section>
       {leads && <InviteLinks clanId={clanId} />}
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />
+      {data.myRole === "leader" && data.discord !== undefined && (
+        <Section title="Discord announcements" help={DISCORD_HELP("an operation your clan takes part in")}>
+          <DiscordSetup clanId={clanId} connected={data.discord} onChange={reload} />
+        </Section>
+      )}
       {data.myRole === "leader" && (
         <AuditLog
           scope="clan"

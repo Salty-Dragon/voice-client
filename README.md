@@ -22,6 +22,7 @@ The app is also where the alliance is run: joining a clan (by request or by invi
 - Lowers the nets below while a higher one is live, so a leader's call cuts through without muting anyone.
 - Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
+- Can announce operations in a Discord channel (a webhook the clan's leader pastes; no bot), for players who do not have the app open.
 - Plans the event as well as carrying it: players set their class and level and answer "are you coming?", the board shows what each party still needs, and afterwards it lists who was in voice and for how long.
 - Updates itself, with every update signed. Sits in the Windows tray; can keep running there when the window is closed.
 - An optional compact strip: a small always-on-top window showing who is speaking on which net. It is an ordinary window, never drawn into the game.
