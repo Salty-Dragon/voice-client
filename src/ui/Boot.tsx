@@ -1,36 +1,93 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isDesktop } from "../config";
 import { getSettings } from "../settings";
 import { updateAtStart, useUpdate } from "../update";
+import { SwordLoader } from "./SwordLoader";
 import { Wordmark } from "./common";
 
+/** How long the opening lasts when the app is first opened. The sword fills over this time. */
+const OPENING_MS = 3000;
+const FADE_MS = 400;
+
+const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
 /**
- * The first screen of the desktop app: installs a waiting update before the
- * player joins voice, then hands over to the app. With no update (or a slow
- * server) it passes straight through.
+ * The opening of the desktop app: a sword that fills while the app gets ready.
+ *
+ * First a waiting update is installed, before the player joins voice (the
+ * sword then shows the download). Otherwise the app starts connecting behind
+ * the opening, so the three seconds are not wasted, and the opening lifts when
+ * the sword is full. It plays once per start of the app: reconnecting, or
+ * coming back from the tray, never shows it. The browser version has none.
  */
 export function Boot({ children }: { children: React.ReactNode }) {
-  // Nothing to wait for in the browser, or with automatic updates switched off.
-  const [ready, setReady] = useState(() => !isDesktop || !getSettings().autoUpdate);
+  // Players who ask their system for less motion get no opening, only the update check.
+  const calm = useRef(typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches).current;
+  const [checking, setChecking] = useState(() => isDesktop && getSettings().autoUpdate);
+  const [fill, setFill] = useState(0);
+  const [gone, setGone] = useState(() => !isDesktop);
+  const [fading, setFading] = useState(false);
   const u = useUpdate();
+  const born = useRef(performance.now());
 
   useEffect(() => {
-    void updateAtStart().finally(() => setReady(true));
-  }, []);
+    if (!checking) return;
+    void updateAtStart().finally(() => setChecking(false));
+  }, [checking]);
 
-  if (ready) return <>{children}</>;
+  // The sword fills with time. While the update check is still out it stops just short, so it cannot finish early.
+  useEffect(() => {
+    if (gone) return;
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = calm ? 1 : Math.min(1, (now - born.current) / OPENING_MS);
+      setFill(Math.min(ease(t), checking ? 0.92 : 1));
+      if (t < 1 || checking) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [gone, checking, calm]);
+
+  // Full, and nothing left to wait for: lift the opening.
+  const downloading = u.phase === "downloading" || u.phase === "ready" || u.phase === "installing";
+  useEffect(() => {
+    if (gone || checking || fill < 1) return;
+    setFading(true);
+    const timer = window.setTimeout(() => setGone(true), calm ? 0 : FADE_MS);
+    return () => window.clearTimeout(timer);
+  }, [gone, checking, fill, calm]);
+
+  // An update being fetched takes over the sword: it shows the real download.
+  const shown = downloading ? (u.phase === "downloading" ? (u.percent ?? 0) / 100 : 1) : fill;
+  const caption =
+    u.phase === "downloading"
+      ? `Downloading version ${u.version}${u.percent === null ? "…" : `: ${u.percent}%`}`
+      : u.phase === "ready" || u.phase === "installing"
+        ? `Installing version ${u.version}. The app will restart by itself.`
+        : checking
+          ? "Checking for updates…"
+          : fill < 1
+            ? "Connecting…"
+            : "Ready";
+
   return (
-    <main className="flex h-full items-center justify-center p-6">
-      <div className="flex flex-col items-center gap-3 text-center" role="status">
-        <Wordmark className="text-lg" />
-        <p className="text-text-muted">
-          {u.phase === "downloading"
-            ? `Downloading version ${u.version}${u.percent === null ? "…" : `: ${u.percent}%`}`
-            : u.phase === "ready" || u.phase === "installing"
-              ? `Installing version ${u.version}. The app will restart by itself.`
-              : "Checking for updates…"}
-        </p>
-      </div>
-    </main>
+    <>
+      {/* The app starts underneath as soon as there is no update to install first. */}
+      {!checking && children}
+      {!gone && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-bg-0 p-6 transition-opacity"
+          style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms`, background: "radial-gradient(ellipse 80% 70% at 50% 45%, #161922 0%, #0b0c0f 75%) #0b0c0f" }}
+          role="status"
+          aria-label="Starting"
+        >
+          <div className="flex w-full max-w-2xl flex-col items-center gap-4 text-center">
+            <Wordmark className="text-xl" />
+            <SwordLoader progress={shown} />
+            <p className="min-h-6 tabular-nums text-text-muted">{caption}</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

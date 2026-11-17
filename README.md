@@ -100,4 +100,4 @@ The server address is set at build time with `VITE_SERVER`.
 
 ## Name and artwork
 
-Warcryer is a community project. It is not affiliated with or endorsed by NCSOFT or any game publisher, and it contains no game artwork: the emblem in [`art/`](art) and every drawing in the app were made for this project.
+Warcryer is a community project. It is not affiliated with or endorsed by NCSOFT or any game publisher, and it contains no game artwork: the emblem in [`art/`](art) and every drawing in the app, including the sword on the opening screen ([`src/ui/SwordLoader.tsx`](src/ui/SwordLoader.tsx)), were made for this project.

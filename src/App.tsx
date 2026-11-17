@@ -19,6 +19,7 @@ import { NameStep } from "./ui/NameStep";
 import { RosterView } from "./ui/RosterView";
 import { SettingsPanel } from "./ui/SettingsPanel";
 import { SignIn } from "./ui/SignIn";
+import { SwordLoader } from "./ui/SwordLoader";
 import { VoiceView } from "./ui/VoiceView";
 import { Wizard } from "./ui/Wizard";
 
@@ -205,8 +206,11 @@ export default function App() {
 
   if (!info) {
     return (
-      <main className="flex h-full items-center justify-center">
-        <p className="text-text-muted">Connecting…</p>
+      <main className="flex h-full items-center justify-center p-6">
+        <div className="flex w-full max-w-md flex-col items-center gap-3 text-center" role="status">
+          <SwordLoader progress={null} />
+          <p className="text-text-muted">Connecting…</p>
+        </div>
       </main>
     );
   }
