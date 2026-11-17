@@ -38,7 +38,11 @@ export const crestUrl = (clanId: number, version: number) => `${API}/api/clan-cr
 
 export type ClanRole = "leader" | "officer" | "member";
 export type Membership = { clanId: number; name: string; tag: string; role: ClanRole; status: "pending" | "active" | "removed" };
+/** The alliance a player is in, with their role in it. */
+export type AllianceInfo = { id: number; name: string; role: "owner" | "admin" | null };
 export type Info = {
+  /** The player's alliance; null when in none. Missing on a server older than 0.18, where there is only one. */
+  alliance?: AllianceInfo | null;
   user: {
     id: number;
     name: string;
@@ -171,8 +175,10 @@ export type OpDetail = {
 /** An earlier operation whose roster a new one can start from. */
 export type PreviousOp = { id: number; name: string; state: OpState; startsAt: string | null; eventLeaderId: number; clanIds: number[]; parties: number; players: number };
 export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[]; previous: PreviousOp[] };
-export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
-export type AllianceView = { clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean };
+export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean; isOwner?: boolean };
+/** A player banned from the alliance. `id` names the ban for lifting it. */
+export type Ban = { id: string; name: string; at: string };
+export type AllianceView = { alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean };
 
 /** One player's time in voice during an operation. `seconds` is 0 when they never joined. */
 export type AttendanceRow = {

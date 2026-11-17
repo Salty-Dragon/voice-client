@@ -86,12 +86,58 @@ function CrestEditor({ clanId }: { clanId: number }) {
   );
 }
 
+/** For a player in no alliance: start one, or come into one by an invite link. Other people's alliances are not listed. */
+function NoAlliance() {
+  const { refreshInfo, go } = useApp();
+  const { data: presets } = useLoad(() => rpc<{ id: string; label: string }[]>("alliance.presets"), [], 600_000);
+  const act = useAct();
+  const [name, setName] = useState("");
+  const [preset, setPreset] = useState("");
+  return (
+    <>
+      <Section title="Join an alliance" help={"You come into an alliance through one of its clans, by an invite link from that clan's leader or an officer.\nAsk them for a link, then open it, or paste it here."}>
+        <p className="text-text-muted">You are not in an alliance yet. If your clan already uses the app, ask its leader for an invite link.</p>
+        <PasteInvite />
+      </Section>
+      <Section
+        title="Or start your own"
+        help={"Creates an alliance with you as its owner. You then make its clans on the Alliance tab, send each clan's invite link to its leader, and appoint them.\nThe game you choose only fills in a starting list of classes and party size; you can change all of it afterwards under Game setup."}
+      >
+        <form
+          className="flex flex-wrap items-end gap-3"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (await act.run(() => rpc("alliance.create", { name, preset }))) {
+              refreshInfo();
+              go("alliance");
+            }
+          }}
+        >
+          <label className="flex flex-col gap-1 text-text-muted">
+            Alliance name
+            <input className="field w-64" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required aria-label="Alliance name" />
+          </label>
+          <label className="flex flex-col gap-1 text-text-muted">
+            Game
+            <select className="field" value={preset} onChange={(e) => setPreset(e.target.value)} required aria-label="Game">
+              <option value="" disabled>Choose…</option>
+              {presets?.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+          </label>
+          <button className="btn" disabled={act.busy || name.trim().length < 2 || !preset}>Create alliance</button>
+        </form>
+        {act.error && <p className="text-danger" role="alert">{act.error}</p>}
+      </Section>
+    </>
+  );
+}
+
 function JoinAClan() {
-  const { refreshInfo } = useApp();
+  const { info, refreshInfo } = useApp();
   const { data: clans, error } = useLoad(() => rpc<ClanSummary[]>("clans.list"), []);
   const act = useAct();
   return (
-    <Section title="Join your clan">
+    <Section title={info.alliance ? `Join your clan in ${info.alliance.name}` : "Join your clan"}>
       <p className="text-text-muted">Pick the clan you are in. Its leader or an officer then approves you, and you get its lounge and its operations.</p>
       {error && <p className="text-danger">{error}</p>}
       {clans && clans.length === 0 && <p className="text-text-muted">No clans have been created yet. An alliance admin does that.</p>}
@@ -118,6 +164,21 @@ function JoinAClan() {
       </ul>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
       <PasteInvite />
+      {info.alliance && info.alliance.role !== "owner" && (
+        <div className="flex items-center justify-end gap-1 border-t border-line pt-3">
+          <ConfirmButton
+            confirm={`Leave ${info.alliance.name}?`}
+            disabled={act.busy}
+            onConfirm={async () => {
+              await act.run(() => rpc("alliance.leave"));
+              refreshInfo();
+            }}
+          >
+            Leave this alliance
+          </ConfirmButton>
+          <Help text={"Takes you out of this alliance altogether. You can then join another by an invite link, or start your own.\nA player is in one alliance at a time."} />
+        </div>
+      )}
     </Section>
   );
 }
@@ -492,7 +553,8 @@ export function ClanView() {
           <button type="button" className="btn btn-quiet text-sm" onClick={clearInviteOutcome}>OK</button>
         </div>
       )}
-      {!m && <JoinAClan />}
+      {/* In no alliance: nothing to browse. (A server from before alliances does not say; it has just the one.) */}
+      {!m && (info.alliance === null ? <NoAlliance /> : <JoinAClan />)}
       {m?.status === "pending" && (
         <Section title="Waiting for approval">
           <p>

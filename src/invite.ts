@@ -58,7 +58,7 @@ export async function redeemInvite(text: string): Promise<string> {
 }
 
 /** What the server says about the invite that arrived by link: which clan it is for. Throws if it no longer works. */
-export type InvitePeek = { clanId: number; clanName: string; clanTag: string; crest: number; autoApprove: boolean };
+export type InvitePeek = { clanId: number; clanName: string; clanTag: string; crest: number; autoApprove: boolean; allianceName?: string };
 export const peekPending = (): Promise<InvitePeek> => rpc<InvitePeek>("clan.peekInvite", { code: pending ?? "" });
 
 /** Forgets the invite that arrived by link without using it. With `why`, the Clan screen says so. */

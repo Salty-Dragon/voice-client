@@ -295,6 +295,7 @@ export default function App() {
                 <Help text="Your Mute all key is on. Press it again to speak." />
               </span>
             )}
+            {info.alliance && <span className="hidden text-text-muted md:inline" data-alliance-name>{info.alliance.name}</span>}
             <span className="text-text-muted">
               {info.user.name}
               {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}

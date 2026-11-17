@@ -40,6 +40,7 @@ export function InviteAsk({ onDone }: { onDone: () => void }) {
           You are invited to join {clan}
           {inv && <span className="font-sans text-sm font-normal text-text-muted">[{inv.clanTag}]</span>}
         </h2>
+        {inv?.allianceName && <p className="-mt-2 text-text-muted">A clan of the alliance <span className="text-text">{inv.allianceName}</span>.</p>}
         <p className="text-text-muted">
           {inv === null
             ? "A link you opened asks to add you to a clan. Only accept if you were expecting it."
