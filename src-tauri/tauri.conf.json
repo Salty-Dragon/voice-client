@@ -71,7 +71,8 @@
     "createUpdaterArtifacts": true,
     "windows": {
       "nsis": {
-        "installerIcon": "icons/icon.ico"
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/uninstall.ico"
       }
     }
   },
