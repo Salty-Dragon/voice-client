@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
+import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
@@ -169,6 +170,10 @@ export function AllianceView() {
           ))}
         </ul>
         <p className="text-xs text-text-muted">A ban signs the player out everywhere and removes them from every room at once. It follows their Discord account.</p>
+      </Section>
+
+      <Section title="Game setup" help={GAME_SETUP_HELP}>
+        <GameSetup />
       </Section>
 
       {data.discord !== undefined && (

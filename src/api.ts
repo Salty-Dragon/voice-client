@@ -63,8 +63,28 @@ export type Info = {
 };
 /** The alliance's own classes, roles and level bands, served by the server. */
 export type GameClass = { name: string; tag: string; role: string | null };
-/** `groupTypes` and `partyNeeds` are missing on a server older than 0.11. */
-export type GameOptions = { roles: string[]; classes: GameClass[]; levelBands: string[]; groupTypes?: string[]; partyNeeds?: string[] };
+/**
+ * The alliance's own game setup, as its admins have it. `groupTypes` and `partyNeeds` are missing on a
+ * server older than 0.11; `partySize`, `levelLabel`, `eventTypes` and `nameRule` on one older than 0.17.
+ */
+export type GameOptions = {
+  roles: string[];
+  classes: GameClass[];
+  levelBands: string[];
+  groupTypes?: string[];
+  partyNeeds?: string[];
+  /** How many players make a full party. */
+  partySize?: number;
+  /** What the bands measure: "Level", "Gear score". */
+  levelLabel?: string;
+  /** The alliance's own kinds of event. */
+  eventTypes?: string[];
+  /** Which characters an in-game name may have, in words. */
+  nameRule?: string;
+};
+/** The whole setup, for the editor on the Alliance screen. */
+export type GameProfile = { preset: string; classes: GameClass[]; roles: string[]; partySize: number; partyNeeds: string[]; groupTypes: string[]; levelLabel: string; levelBands: string[]; eventTypes: string[]; nameRule: string };
+export type GameProfileEdit = { profile: GameProfile; presets: { id: string; label: string; profile: GameProfile }[]; nameRules: { id: string; label: string }[] };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
@@ -77,6 +97,8 @@ export type OpState = "planned" | "live" | "ended";
 export type OpSummary = {
   id: number;
   name: string;
+  /** The alliance's own kind of event, if the operation has one. */
+  eventType?: string | null;
   startsAt: string | null;
   state: OpState;
   leaderName: string;
@@ -122,6 +144,7 @@ export type CpPlaced = { parties: number; players: number; skipped: string[] };
 export type OpView = {
   id: number;
   name: string;
+  eventType?: string | null;
   startsAt: string | null;
   state: OpState;
   eventLeaderId: number;

@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../api";
-import { roleOf, useGame } from "../game";
+import { partySizeOf, roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { AttendancePanel } from "./Attendance";
 import { EditOperation } from "./EditOperation";
@@ -14,10 +14,8 @@ import { ClanCrest, ClanMark } from "./common";
 import { SignupControl } from "./Signup";
 import { Help } from "./tips";
 
-const PARTY_SIZE = 9;
-
 /** What the marks on a player's card mean, shown behind the board's help icon. */
-const LEGEND = [
+const legend = (PARTY_SIZE: number, needs: string[]) => [
   "Green dot: the player has the app open.",
   "✓: the player has said they are coming. Out: they have said they cannot come. Neither: no answer yet.",
   "Beside the name: class and level. A second name in brackets is the player's usual name, when they bring another character to this event.",
@@ -28,10 +26,10 @@ const LEGEND = [
   "» PL: the party's leader. On Command for this party, and answers requests to join it.",
   `The usual party size is ${PARTY_SIZE}. Going over is allowed.`,
   `Full: the party has ${PARTY_SIZE} players who have not said they cannot come. Not ready: it has fewer.`,
-  "Needs: the support roles the party has nobody for yet (buffer, bard, recharger, healer), worked out from its players' classes. A player who cannot come is not counted.",
+  needs.length ? `Needs: the roles the party has nobody for yet (${needs.join(", ").toLowerCase()}), worked out from its players' classes. A player who cannot come is not counted.` : "",
   "Group type: what the party is for, such as a mage or a stopper group.",
   "Ask to join: the party's leader gets your request and accepts or declines.",
-].join("\n");
+].filter(Boolean).join("\n");
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
 const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text-text-muted" } as const;
 
@@ -46,6 +44,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const [over, setOver] = useState<number | "reserve" | null>(null);
   const [placed, setPlaced] = useState("");
   const game = useGame();
+  const PARTY_SIZE = partySizeOf(game);
+  const LEGEND = legend(PARTY_SIZE, game?.partyNeeds ?? []);
   const [editing, setEditing] = useState(false);
   /** Reserve shows only this role when set. */
   const [role, setRole] = useState("");
@@ -230,6 +230,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <button type="button" className="btn btn-quiet text-sm" onClick={onBack}>← Operations</button>
         <h1 className="title text-gold-bright">{op.name}</h1>
+        {op.eventType && <span className="rounded-sm border border-gold-dim px-1.5 text-xs text-gold" data-event-type>{op.eventType}</span>}
         <span className={`text-xs uppercase tracking-wider ${STATE_CLASS[op.state]}`}>{STATE_LABEL[op.state]}</span>
         <span className="text-text-muted">{when(op.startsAt)}</span>
         <span className="flex items-center gap-1.5 text-text-muted">
@@ -296,7 +297,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       </div>
       {editing && canRunOp && open && (
         <EditOperation
-          key={`${op.name}|${op.startsAt}|${op.eventLeaderId}|${op.clans.map((c) => c.id).join()}`}
+          key={`${op.name}|${op.eventType}|${op.startsAt}|${op.eventLeaderId}|${op.clans.map((c) => c.id).join()}`}
           op={op}
           onClose={() => setEditing(false)}
           onSaved={() => {
@@ -408,6 +409,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               canEdit={perms.canEditParties}
               canRename={(perms.canEditParties && ours(party)) || (open && party.leaderId === me)}
               kinds={game?.groupTypes ?? []}
+              size={PARTY_SIZE}
               state={open && game ? stateOf(party) : null}
               onKind={(kind) => run("party.setKind", { partyId: party.id, kind })}
               onNeed={perms.canEditParties ? setRole : undefined}
@@ -553,6 +555,7 @@ function PartyBlock({
   canEdit,
   canRename,
   kinds,
+  size: PARTY_SIZE,
   state,
   onRename,
   onKind,
@@ -569,6 +572,8 @@ function PartyBlock({
   canRename: boolean;
   /** The group types on offer; empty while the lists load or on an older server. */
   kinds: string[];
+  /** How many players make this alliance's party full. */
+  size: number;
   /** How full the party is and what it lacks; null once the operation has ended. */
   state: { able: number; noClass: number; missing: string[] } | null;
   onRename: (name: string) => void;

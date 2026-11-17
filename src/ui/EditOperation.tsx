@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { rpc, type OpOptions, type OpView } from "../api";
+import { useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest } from "./common";
 import { Help } from "./tips";
@@ -23,6 +24,10 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
   // The lists of clans and players are an alliance admin's to see, as when creating one.
   const { data } = useLoad(() => (admin ? rpc<OpOptions>("op.options") : Promise.resolve(null)), [admin], 600_000);
   const [name, setName] = useState(op.name);
+  const [eventType, setEventType] = useState(op.eventType ?? "");
+  const game = useGame();
+  // The kind it has stays on offer even if the alliance has since taken it off its list.
+  const kinds = [...new Set([...(game?.eventTypes ?? []), ...(op.eventType ? [op.eventType] : [])])];
   const [starts, setStarts] = useState(() => localValue(op.startsAt));
   const [leader, setLeader] = useState(op.eventLeaderId);
   const [clanIds, setClanIds] = useState(() => op.clans.map((c) => c.id));
@@ -39,6 +44,7 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
           rpc("op.update", {
             opId: op.id,
             name,
+            eventType,
             startsAt: starts ? new Date(starts).toISOString() : "",
             ...(admin && data ? { eventLeaderId: leader, ...(planned ? { clanIds } : {}) } : {}),
           }),
@@ -51,6 +57,15 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
           Name
           <input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required />
         </label>
+        {kinds.length > 0 && (
+          <label className="flex flex-col gap-1 text-text-muted">
+            Kind of event
+            <select className="field" value={eventType} onChange={(e) => setEventType(e.target.value)} aria-label="Kind of event">
+              <option value="">Not said</option>
+              {kinds.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </label>
+        )}
         <label className="flex flex-col gap-1 text-text-muted">
           <span className="flex items-center gap-1">
             Starts (your local time)

@@ -3,6 +3,7 @@ import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
+import { refreshGame } from "./game";
 import { usePendingInvite } from "./invite";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
@@ -181,6 +182,10 @@ export default function App() {
       .then((list) => setCrests(new Map(list.filter((c) => c.crest > 0).map((c) => [c.id, c.crest]))))
       .catch(() => {});
   }, [phase, named, wideTick]);
+  // The game setup too: an admin may have changed the classes or the party size.
+  useEffect(() => {
+    if (wideTick > 0) refreshGame();
+  }, [wideTick]);
 
   if (phase === "signin") {
     return (

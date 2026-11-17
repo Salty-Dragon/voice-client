@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList, type Invite } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
+import { partySizeOf, useGame } from "../game";
 import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { ClanCrest, Initial } from "./common";
@@ -230,7 +231,6 @@ function InviteLinks({ clanId }: { clanId: number }) {
   );
 }
 
-const PARTY_SIZE = 9;
 const CP_HELP = [
   "A constant party is a standing group in your clan: the players who always fight together, in a fixed order, with a leader.",
   "On an operation's roster board it is dropped in with one click as a ready party, so the roster does not have to be rebuilt for every event.",
@@ -299,6 +299,7 @@ function CpCard({
   const [renaming, setRenaming] = useState(false);
   const inside = new Set(cp.members.map((m) => m.userId));
   const mine = inside.has(me);
+  const PARTY_SIZE = partySizeOf(useGame());
   const over = cp.members.length > PARTY_SIZE;
   return (
     <li data-cp={cp.id} className={`flex flex-col gap-2 border p-3 ${mine ? "border-gold-dim" : "border-line"}`}>

@@ -20,7 +20,7 @@ export function CharacterFields({
   const loose = game.classes.filter((c) => c.role === null);
   return (
     <div className="flex flex-wrap gap-3">
-      <label className="flex flex-col gap-1 text-text-muted">
+      {game.classes.length > 0 && <label className="flex flex-col gap-1 text-text-muted">
         Class
         <select className="field" value={className} onChange={(e) => onClass(e.target.value)}>
           <option value="">{none}</option>
@@ -31,14 +31,15 @@ export function CharacterFields({
           ))}
           {loose.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
         </select>
-      </label>
-      <label className="flex flex-col gap-1 text-text-muted">
-        Level
-        <select className="field" value={levelBand} onChange={(e) => onLevel(e.target.value)}>
+      </label>}
+      {/* An alliance that keeps no bands is not asked for one. */}
+      {game.levelBands.length > 0 && <label className="flex flex-col gap-1 text-text-muted">
+        {game.levelLabel ?? "Level"}
+        <select className="field" value={levelBand} onChange={(e) => onLevel(e.target.value)} aria-label={game.levelLabel ?? "Level"}>
           <option value="">{none}</option>
           {game.levelBands.map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
-      </label>
+      </label>}
     </div>
   );
 }

@@ -29,9 +29,9 @@ export function ProfileForm({ name, className, levelBand, onSaved, submit }: { n
       <label className="flex flex-col gap-1 text-text-muted">
         In-game name
         <input className="field" value={n} onChange={(e) => setN(e.target.value)} maxLength={24} required autoComplete="off" />
-        <span className="text-xs">Exactly as it appears in game, so callers can find you.</span>
+        <span className="text-xs">Exactly as it appears in game, so callers can find you.{game?.nameRule ? ` ${game.nameRule[0].toUpperCase()}${game.nameRule.slice(1)}.` : ""}</span>
       </label>
-      {game && (
+      {game && (game.classes.length > 0 || game.levelBands.length > 0) && (
         <div className="flex flex-col gap-1">
           <CharacterFields game={game} className={cls} levelBand={band} onClass={setCls} onLevel={setBand} />
           <span className="flex items-center gap-1 text-xs text-text-muted">

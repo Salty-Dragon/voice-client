@@ -1,3 +1,4 @@
+import { useGame } from "../game";
 import { useState } from "react";
 import { rpc, type OpOptions, type OpSummary } from "../api";
 import { useAct, useApp, useLoad } from "./app-context";
@@ -30,6 +31,8 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
   const [leader, setLeader] = useState(info.user.id);
   const [picked, setPicked] = useState<number[] | null>(null);
   const [copyFrom, setCopyFrom] = useState<number | null>(null);
+  const [eventType, setEventType] = useState("");
+  const game = useGame();
   const act = useAct();
   if (!data) return null;
   if (data.clans.length === 0) return <p className="text-text-muted">Create a clan on the Alliance screen first.</p>;
@@ -43,7 +46,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         let id = 0;
         const ok = await act.run(async () => {
           const startsAt = starts ? new Date(starts).toISOString() : null;
-          id = (await rpc<{ id: number }>("op.create", { name, startsAt, eventLeaderId: leader, clanIds, copyFrom })).id;
+          id = (await rpc<{ id: number }>("op.create", { name, eventType, startsAt, eventLeaderId: leader, clanIds, copyFrom })).id;
         });
         if (ok) onCreated(id);
       }}
@@ -52,6 +55,18 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         Name
         <input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Aden siege" required />
       </label>
+      {(game?.eventTypes?.length ?? 0) > 0 && (
+        <label className="flex flex-col gap-1 text-text-muted">
+          <span className="flex items-center gap-1">
+            Kind of event
+            <Help text={"What this operation is, from your alliance's own list. It is shown beside the name, here and in Discord announcements.\nAn alliance admin keeps the list on the Alliance screen, under Game setup."} />
+          </span>
+          <select className="field" value={eventType} onChange={(e) => setEventType(e.target.value)} aria-label="Kind of event">
+            <option value="">Not said</option>
+            {game?.eventTypes?.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+      )}
       {data.previous.length > 0 && (
         <label className="flex flex-col gap-1 text-text-muted">
           <span className="flex items-center gap-1">
@@ -154,6 +169,7 @@ export function RosterView() {
             <li key={o.id} className="flex flex-col gap-1 py-1">
               <button type="button" className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 py-1 text-left cursor-pointer hover:bg-bg-2/60" onClick={() => go("roster", o.id)}>
                 <span className="font-medium text-gold-bright">{o.name}</span>
+                {o.eventType && <span className="rounded-sm border border-gold-dim px-1.5 text-xs text-gold">{o.eventType}</span>}
                 <span className={`text-xs uppercase tracking-wider ${STATE_CLASS[o.state]}`}>{STATE_LABEL[o.state]}</span>
                 {set?.operation?.id === o.id && <span className="text-xs text-net-party">your voice is here</span>}
                 <span className="text-text-muted">{when(o.startsAt)}</span>

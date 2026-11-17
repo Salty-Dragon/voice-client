@@ -1,37 +1,46 @@
-// The alliance's classes, roles and level bands. They live on the server, so
-// the lists can change without a new version of the app; they are fetched once
-// per run and kept.
+// The alliance's game setup: its classes, roles, party size, level bands and
+// event types. It lives on the server, where the alliance's admins edit it,
+// so it can change without a new version of the app. It is fetched once and
+// kept, and fetched again when the server says something wider than one
+// operation has changed (an admin saving the setup is such a change).
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { rpc, type GameOptions } from "./api";
 
 let cached: GameOptions | null = null;
-let loading: Promise<GameOptions> | null = null;
+let loading: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  if (!cached) void load();
+  return () => listeners.delete(l);
+};
 
-function load(): Promise<GameOptions> {
+function load(): Promise<void> {
   loading ??= rpc<GameOptions>("game.options")
-    .then((g) => (cached = g))
-    .catch((e) => {
-      loading = null; // try again next time something asks
-      throw e;
+    .then((g) => {
+      // The same lists again are not a change: do not redraw every screen for nothing.
+      if (JSON.stringify(g) !== JSON.stringify(cached)) {
+        cached = g;
+        listeners.forEach((l) => l());
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      loading = null;
     });
   return loading;
 }
 
-/** The lists, or null while they load (or if the server is too old to have them). */
-export function useGame(): GameOptions | null {
-  const [game, setGame] = useState(cached);
-  useEffect(() => {
-    if (cached) return;
-    let live = true;
-    load().then((g) => live && setGame(g)).catch(() => {});
-    return () => {
-      live = false;
-    };
-  }, []);
-  return game;
-}
+/** Fetches the setup again. Called when the server reports a wide change. */
+export const refreshGame = (): void => void load();
+
+/** The setup, or null while it loads (or if the server is too old to have it). */
+export const useGame = (): GameOptions | null => useSyncExternalStore(subscribe, () => cached);
 
 /** What a class does in a party ("Buffer", "Healer", ...), or null if unknown. */
 export const roleOf = (game: GameOptions | null, className: string | null | undefined): string | null =>
   (className && game?.classes.find((c) => c.name === className)?.role) || null;
+
+/** How many players make a full party; nine until the server says otherwise. */
+export const partySizeOf = (game: GameOptions | null): number => game?.partySize ?? 9;

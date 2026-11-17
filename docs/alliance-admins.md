@@ -63,7 +63,7 @@ The app covers the whole event: create it, see who is coming and as which class,
 ### Creating one
 
 1. Open **Operations** and click **New operation**.
-2. Give it a name and, if you like, a start time in your own time zone.
+2. Give it a name and, if you like, a start time in your own time zone. If your alliance has kinds of event (see Game setup), choose one.
 3. To reuse an earlier roster, pick that operation under **Start from** (see below). Otherwise leave it on "An empty roster".
 4. Choose the **event leader**. It defaults to you.
 5. Tick the **clans taking part**.
@@ -81,6 +81,22 @@ Plans change. On the operation's board, **Edit** opens a form:
 - **Delete operation**: for one created by mistake. It removes the operation with its parties and answers, and cannot be undone. The event leader or an alliance admin can delete an operation that has not started.
 
 A running operation cannot be deleted: end it first. An operation that has ended can no longer be changed, and only an alliance admin can delete it, from its board; that also removes its attendance. The log keeps a line for every change and for a deletion.
+
+### Game setup: making the app fit your game
+
+Nothing about any one game is built into the app. On the **Alliance** tab, **Game setup** holds how your game works, and you change it to fit. Click **Change the setup**.
+
+- **Start again from a preset** fills in the lists for a game we have a starting point for, or leaves them empty. Nothing changes for players until you save.
+- **Roles and classes.** A role is what a class does in a party. Type one class to a line as name, tag, role, for example `Bishop, BP, Healer`. The tag is the short form shown beside a player's name. If your game has no classes, list whatever players are known by, such as their weapon.
+- **Party size**, and **A party needs one of each:** tick the roles every party should have. The roster board then lists, for each party, the ones it has nobody for.
+- **Kinds of event:** your own list, for example your sieges and bosses. An operation can then be marked as one of them, which shows beside its name and in Discord announcements.
+- **Group types:** what a party can be marked as on the board. Leave empty to have none.
+- **Bands:** level or gear-score ranges players choose from, and what to call them. Leave empty and players are not asked.
+- **In-game names may have:** which characters a name can contain, to match your game.
+
+The server checks what you save and says in words what is wrong, for example a class with a role that is not on your list of roles. Every player's app has the new lists as soon as you save.
+
+Changing a list does not change what players have already chosen. Someone with a class you remove keeps it until they choose again, and an operation keeps a kind of event you later take off the list.
 
 ### Telling players on Discord
 
