@@ -17,6 +17,8 @@ Read the [members guide](members.md) first, and the [clan leaders guide](clan-le
 | Create operations | Yes | Yes | | |
 | Ban and unban players | Yes | Yes, except admins | | |
 | Start and end the operation, name deputies | Yes | Yes | Yes | |
+| Rename it, move its start, delete it before it starts | Yes | Yes | Yes | |
+| Change its event leader or its clans, delete it after it ended | Yes | Yes | | |
 | Move anyone in the operation, edit parties | Yes | Yes | Yes | Yes |
 | Add any clan's constant parties to the board | Yes | Yes | Yes | Yes |
 | See who attended an operation | Yes | Yes | Yes | Yes |
@@ -65,6 +67,17 @@ The app covers the whole event: create it, see who is coming and as which class,
 6. Click **Create operation**. Its roster board opens.
 
 The operation is **Planned**. Nobody is pulled into it yet: players stay in their lounge while you build the roster.
+
+### Changing or deleting an operation
+
+Plans change. On the operation's board, **Edit** opens a form:
+
+- **Name** and **Starts**: the event leader or an alliance admin can change these at any time before the operation ends. Players with the app open see the new name and time at once.
+- **Event leader**: an alliance admin can hand the operation to someone else, before or during it.
+- **Clans taking part**: an alliance admin can add or take out a clan, but only before the operation starts. A clan you add is asked whether it is coming. A clan you take out leaves the operation: its members come out of the parties and their answers are dropped. Your deputies stay whatever their clan.
+- **Delete operation**: for one created by mistake. It removes the operation with its parties and answers, and cannot be undone. The event leader or an alliance admin can delete an operation that has not started.
+
+A running operation cannot be deleted: end it first. An operation that has ended can no longer be changed, and only an alliance admin can delete it, from its board; that also removes its attendance. The log keeps a line for every change and for a deletion.
 
 ### Starting from an earlier operation
 

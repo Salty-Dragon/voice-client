@@ -8,6 +8,7 @@ import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../a
 import { roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { AttendancePanel } from "./Attendance";
+import { EditOperation } from "./EditOperation";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
 import { SignupControl } from "./Signup";
@@ -45,6 +46,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const [over, setOver] = useState<number | "reserve" | null>(null);
   const [placed, setPlaced] = useState("");
   const game = useGame();
+  const [editing, setEditing] = useState(false);
   /** Reserve shows only this role when set. */
   const [role, setRole] = useState("");
 
@@ -275,14 +277,39 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         </span>
         {canRunOp && open && (
           <span className="ml-auto flex items-center gap-2">
+            <button type="button" className="btn btn-quiet text-sm" aria-pressed={editing} onClick={() => setEditing(!editing)}>Edit</button>
             {op.state === "planned" && (
               <ConfirmButton className="btn text-sm" confirm="Go live now?" onConfirm={() => run("op.setState", { state: "live" })}>Start operation</ConfirmButton>
             )}
             <ConfirmButton confirm="End for everyone?" onConfirm={() => run("op.setState", { state: "ended" })}>End operation</ConfirmButton>
-            <Help text={"Start operation moves every player on the roster from their lounge onto their party and nets.\nEnd operation returns everyone to their lounge and locks this roster. It cannot be reopened.\nBoth ask you to click a second time to confirm."} />
+            <Help text={"Edit: change the name or the start time. An alliance admin can also change the event leader and, before it starts, the clans taking part; an operation created by mistake is deleted from there.\nStart operation moves every player on the roster from their lounge onto their party and nets.\nEnd operation returns everyone to their lounge and locks this roster. It cannot be reopened.\nStart and End ask you to click a second time to confirm."} />
+          </span>
+        )}
+        {!open && info.user.runsAlliance && (
+          <span className="ml-auto flex items-center gap-1">
+            <ConfirmButton confirm="Delete it for good?" disabled={act.busy} onConfirm={() => void act.run(() => rpc("op.delete", { opId })).then((ok) => { if (ok) { refreshInfo(); onBack(); } })}>
+              Delete operation
+            </ConfirmButton>
+            <Help text={"Removes this ended operation for good, with its roster and its attendance. The log keeps a line saying it was deleted. Only alliance admins can do this."} />
           </span>
         )}
       </div>
+      {editing && canRunOp && open && (
+        <EditOperation
+          key={`${op.name}|${op.startsAt}|${op.eventLeaderId}|${op.clans.map((c) => c.id).join()}`}
+          op={op}
+          onClose={() => setEditing(false)}
+          onSaved={() => {
+            setEditing(false);
+            reload();
+            refreshInfo();
+          }}
+          onDeleted={() => {
+            refreshInfo();
+            onBack();
+          }}
+        />
+      )}
       {op.state === "planned" && (
         <p className="text-xs text-text-muted -mt-2">
           Players stay in their lounge until you start the operation; starting it pulls everyone into their party automatically.
