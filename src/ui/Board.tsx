@@ -7,6 +7,7 @@ import { useState } from "react";
 import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../api";
 import { roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
+import { AttendancePanel } from "./Attendance";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
 import { SignupControl } from "./Signup";
@@ -280,6 +281,9 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           Players stay in their lounge until you start the operation; starting it pulls everyone into their party automatically.
         </p>
       )}
+
+      {/* Who was in voice, once it has started: for the organisers, and clan leadership about their own */}
+      {op.state !== "planned" && (perms.isOrganiser || perms.leadClanIds.length > 0) && <AttendancePanel key={op.state} opId={opId} live={op.state === "live"} />}
 
       {/* My own answer, and for the leader of a constant party, the party's */}
       {open && self && (

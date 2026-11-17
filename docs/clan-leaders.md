@@ -99,6 +99,12 @@ The first player placed in a party leads it, and party leaders are on Command. I
 
 Until the operation is started, everyone stays in their lounge while you build the roster. Starting it moves every player into their party at once.
 
+## Attendance
+
+After an operation has ended, open it under **Operations**. For you and your officers the board shows **Attendance**: each of your members, how long they were in voice while the operation ran, when they joined, and whether they had said they were coming. **No show** marks a member who said they were coming and never joined. **Copy for a spreadsheet** puts the table on your clipboard, ready to paste into a sheet. While an operation is running, **Attendance so far** shows the same up to now.
+
+You see your own clan only; the organisers see everyone.
+
 ## The clan log
 
 The leader has a **Clan log** at the bottom of the **Clan** tab: who changed what in the clan, newest first. It covers requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations (moves, party leadership, bans). Click **Show the log**; use **Filter** to find a name. A line that starts with **The server** was done automatically. Alliance admins can read the whole alliance's log.

@@ -18,7 +18,7 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
 | Which leader or officer let you in | When you are approved, or use an invite link that lets you straight in | So a clan knows who vouched for each member. |
 | Your voice | While you hold a push-to-talk key, or while voice activation is open | Relayed live to the members of that room. It is not recorded or stored. |
-| Times you joined and left voice rooms | Automatically while connected | So organisers can see who is present. |
+| Times you joined and left voice rooms | Automatically while connected | So organisers can see who is present. For each operation, its organisers, and your clan's leader and officers, can see how long you were in voice while it ran and when you joined. |
 | Changes made by leaders and admins (moves, approvals, bans) | When made | An audit log of who did what. |
 
 Like any internet service, the server and the network in front of it (Cloudflare) see your IP address while you are connected, and it may appear in their access logs.

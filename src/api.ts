@@ -148,3 +148,21 @@ export type PreviousOp = { id: number; name: string; state: OpState; startsAt: s
 export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[]; previous: PreviousOp[] };
 export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean };
 export type AllianceView = { clans: ClanSummary[]; users: AllianceUser[] };
+
+/** One player's time in voice during an operation. `seconds` is 0 when they never joined. */
+export type AttendanceRow = {
+  userId: number;
+  name: string;
+  usualName: string | null;
+  className: string | null;
+  classTag: string | null;
+  levelBand: string | null;
+  clanTag: string | null;
+  party: string | null;
+  signup: "coming" | "out" | null;
+  seconds: number;
+  firstAt: string | null;
+  lastAt: string | null;
+};
+/** `seconds` is how long the operation ran (so far, while `live`). */
+export type Attendance = { from: string | null; to: string | null; live: boolean; seconds: number; rows: AttendanceRow[] };

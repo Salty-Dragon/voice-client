@@ -178,6 +178,6 @@ Everything here is kept on your computer, except your name, class and level.
 
 ## What is stored about you
 
-On the server: your Discord account ID and name, your in-game name, class and level, your clan membership and who approved you, your constant party, your answer to each event (coming or not, and another character or a note if you gave one), your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
+On the server: your Discord account ID and name, your in-game name, class and level, your clan membership and who approved you, your constant party, your answer to each event (coming or not, and another character or a note if you gave one), your place in each operation's roster, and when you joined and left each net. From those times, the organisers of an operation and your clan's leader and officers can see how long you were in voice during it. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
 
 To remove all of it, open **Settings → Account → Delete my account**. It asks once more before deleting, and cannot be undone. The full details are in the [privacy policy](../PRIVACY.md).

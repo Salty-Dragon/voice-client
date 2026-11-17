@@ -115,6 +115,21 @@ Click **Start operation** and confirm. Every participant with the app open is mo
 
 Click **End operation** and confirm. Everyone returns to their lounge, the operation's rooms close, and its roster can no longer be changed.
 
+### Attendance
+
+Once an operation has ended, its board shows **Attendance**: everyone on the roster, with how long each was in voice while it ran.
+
+- **In voice** is the time the player was connected to the operation's nets between **Start operation** and **End operation**, and the share of the operation that is. Being connected before the start does not count.
+- **No show** marks a player who said they were coming and was never in voice. **Not in voice** is anyone else who did not come.
+- **Joined** is when they first came in, which shows who was late.
+- Each line also has the class and level they came as, their clan, the party they ended in and what they answered.
+- **Sort** by clan and name, by most time first, or by party.
+- **Copy for a spreadsheet** puts the table on your clipboard. Paste it into a sheet and it lands in columns: name, usual name, class, level, clan, party, minutes in voice, percent of the operation, joined, left, signed up. Use it for points or DKP that depend on who attended.
+
+While the operation is still running, **Attendance so far** on the board shows the same table up to now.
+
+You and the other organisers see everyone. Clan leaders and officers see their own clan. Members do not see it.
+
 ### A checklist for event night
 
 1. Create the operation ahead of time and tell the clans.
@@ -141,7 +156,7 @@ This matters for trust, so it is worth knowing.
 - The server decides who may join each net, from the roster as it is at that moment. The app only shows what the server allows.
 - When someone is moved, removed or banned, the server takes them out of the rooms they should no longer be in. A modified app cannot stay behind or get back in.
 - A plain member can only ever hear their party, their clan and Broadcast. Command is only given to current leaders.
-- Every roster move and every role change is recorded with who did it. Read it on the **Alliance** tab under **Log** (see below). Every join and leave on every net is recorded too; there is no screen for those yet, and the app admin can query them.
+- Every roster move and every role change is recorded with who did it. Read it on the **Alliance** tab under **Log** (see below). Every join and leave on every net is recorded too; an operation's **Attendance** is worked out from them.
 - Voice is never recorded.
 
 No voice tool can stop a trusted member from relaying what they hear. The design limits how much any one person hears and keeps a record of who was listening.
