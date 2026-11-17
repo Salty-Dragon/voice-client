@@ -48,6 +48,8 @@ export default function App() {
   const [signInNotice, setSignInNotice] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [tick, setTick] = useState(0);
+  /** Bumped only by changes that may reach beyond one operation: clans, crests, lounges. */
+  const [wideTick, setWideTick] = useState(0);
   const [tab, setTab] = useState<Tab>("voice");
   const [boardOp, setBoardOp] = useState<number | null>(null);
   const [crests, setCrests] = useState<ReadonlyMap<number, number>>(new Map());
@@ -102,9 +104,27 @@ export default function App() {
         noticeTimer = window.setTimeout(() => setNotice(""), next.notice.kind === "leader" ? 15000 : 8000);
       }
     };
-    c.onChanged = () => {
-      setTick((n) => n + 1);
-      refreshInfo();
+    // A change notice makes the app ask the server for fresh data. With hundreds of players connected,
+    // everyone asking at once on every single roster move would be a stampede, so: at most one refresh
+    // every two seconds (the first is immediate), spread out by a random moment, and the clan list (for
+    // crests) only when the change was not confined to one operation's roster.
+    let refreshTimer: number | undefined;
+    let refreshedAt = 0;
+    let wide = false;
+    c.onChanged = (operationId) => {
+      if (operationId === null) wide = true;
+      if (refreshTimer !== undefined) return;
+      refreshTimer = window.setTimeout(
+        () => {
+          refreshTimer = undefined;
+          refreshedAt = Date.now();
+          if (wide) setWideTick((n) => n + 1);
+          wide = false;
+          setTick((n) => n + 1);
+          refreshInfo();
+        },
+        Math.max(0, refreshedAt + 2000 - Date.now()) + Math.random() * 400,
+      );
     };
     c.onEnded = (why) => {
       if (why === "replaced") {
@@ -118,6 +138,7 @@ export default function App() {
     c.start();
     return () => {
       window.clearTimeout(noticeTimer);
+      window.clearTimeout(refreshTimer);
       window.clearTimeout(retry.current);
       c.stop();
       control.current = null;
@@ -159,14 +180,14 @@ export default function App() {
     });
   }, [settled, pendingInvite]);
 
-  // Which clans have a crest. Reloaded whenever the server reports a change.
+  // Which clans have a crest. Reloaded when the server reports a change wider than one operation's roster.
   const named = info?.user.nameSet === true;
   useEffect(() => {
     if (phase !== "running" || !named) return;
     rpc<ClanSummary[]>("clans.list")
       .then((list) => setCrests(new Map(list.filter((c) => c.crest > 0).map((c) => [c.id, c.crest]))))
       .catch(() => {});
-  }, [phase, named, tick]);
+  }, [phase, named, wideTick]);
 
   if (phase === "signin") {
     return (

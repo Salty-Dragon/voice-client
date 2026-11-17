@@ -34,7 +34,8 @@ export class ControlClient {
   onNetSet: (set: NetSet) => void = () => {};
   onEnded: (why: Ended) => void = () => {};
   /** Something in the roster changed; any open roster screen should reload. */
-  onChanged: () => void = () => {};
+  /** The roster changed. `operationId` is set when the change is inside one operation, null when it may be wider (clans, crests, lounges). */
+  onChanged: (operationId: number | null) => void = () => {};
 
   /** `token` is the desktop session token; the browser passes null and is recognised by its cookie. */
   constructor(private url: string, private token: string | null) {}
@@ -87,7 +88,7 @@ export class ControlClient {
       } else if (msg.type === "netset") {
         this.onNetSet(msg as unknown as NetSet);
       } else if (msg.type === "changed") {
-        this.onChanged();
+        this.onChanged(typeof msg.operationId === "number" ? msg.operationId : null);
       } else if (msg.type === "replaced" || msg.type === "signed_out") {
         this.stopped = true;
         this.onEnded(msg.type);
