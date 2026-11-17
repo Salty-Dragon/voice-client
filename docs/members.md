@@ -95,7 +95,8 @@ The first player placed in a party leads it. A party leader:
 - Is on **Command** as well as their party, and should bind a Command key.
 - Sees join requests on the Voice tab ("X asks to join Party 1") and answers with **Accept** or **Decline**.
 - Is told so when it happens ("You now lead Vanguard"), for example after the previous leader dropped out.
-- Can send one of their own members to Reserve from the roster board, rename the party, and hand leadership to another member.
+- Can send one of their own members to Reserve from the roster board, rename the party, choose its group type, and hand leadership to another member.
+- Sees on the board what the party still needs: **Needs** lists the support roles (Buffer, Bard, Recharger, Healer) that nobody in the party covers yet.
 
 If you are moved out of your party, leadership passes to the next member automatically.
 

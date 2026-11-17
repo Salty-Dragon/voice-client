@@ -86,7 +86,8 @@ When your clan takes part in an operation, open **Operations**, then the operati
 You can:
 
 - **Add your constant parties:** each one not yet on the board is offered under **Constant parties**. Click it and it becomes a party, with its members in order and its leader in charge. **Add all** adds every one at once. A member who is already in another party stays there. After that it is an ordinary party: change it as you like, your constant party is not affected.
-- **Create a party** with **+ New party**, and rename it by clicking its name.
+- **Create a party** with **+ New party**, rename it by clicking its name, and choose its group type (Mage group, Stopper group and so on) under the name.
+- **See what each party lacks:** every party shows **Full** or **Not ready**, and **Needs** lists the support roles it has nobody for yet (Buffer, Bard, Recharger, Healer). Click a role to list the unplaced players of that role in Reserve.
 - **Place your own members:** drag a card onto a party or onto Reserve, or click the card and use **Move to…**.
 - **Choose a party's leader:** click a member of the party, then **Make party leader**.
 - **Answer join requests** from your own members.

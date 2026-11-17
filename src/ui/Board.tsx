@@ -25,6 +25,9 @@ const LEGEND = [
   "Officer: a clan officer. Speaks on Clan.",
   "» PL: the party's leader. On Command for this party, and answers requests to join it.",
   `The usual party size is ${PARTY_SIZE}. Going over is allowed.`,
+  `Full: the party has ${PARTY_SIZE} players who have not said they cannot come. Not ready: it has fewer.`,
+  "Needs: the support roles the party has nobody for yet (buffer, bard, recharger, healer), worked out from its players' classes. A player who cannot come is not counted.",
+  "Group type: what the party is for, such as a mage or a stopper group.",
   "Ask to join: the party's leader gets your request and accepts or declines.",
 ].join("\n");
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
@@ -74,6 +77,25 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       note: x?.note ?? null,
     };
   };
+  // What each party still lacks. A member who has said they cannot come fills no place.
+  const wanted = game?.partyNeeds ?? [];
+  const stateOf = (party: Party) => {
+    const have = new Set<string>();
+    let able = 0;
+    let noClass = 0;
+    for (const id of party.memberIds) {
+      const p = person.get(id);
+      if (!p) continue;
+      const c = shown(p);
+      if (c.status === "out") continue;
+      able++;
+      const r = roleOf(game, c.className);
+      if (r) have.add(r);
+      else if (!c.className) noClass++;
+    }
+    return { able, noClass, missing: wanted.filter((r) => !have.has(r)) };
+  };
+  const full = op.parties.filter((p) => stateOf(p).able >= PARTY_SIZE).length;
   const answers = { coming: 0, out: 0 };
   for (const x of op.signups ?? []) answers[x.status]++;
   const signCp = (cpId: number) => {
@@ -209,6 +231,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             <span className="text-net-party">{answers.coming} coming</span> · {answers.out} can&apos;t · {op.people.length - answers.coming - answers.out} no answer
           </span>
         )}
+        {open && op.parties.length > 0 && (
+          <span className="text-text-muted" data-parties>
+            {op.parties.length} {op.parties.length === 1 ? "party" : "parties"} · <span className={full === op.parties.length ? "text-net-party" : ""}>{full} full</span>
+          </span>
+        )}
         {open && !here && (
           <span className="ml-auto flex items-center gap-1">
             <button type="button" className="btn text-sm" onClick={() => select(op.id)}>Join voice</button>
@@ -284,7 +311,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               : canAsk
                 ? "Ask to join a party; its leader accepts or declines."
                 : "Select a player to see their options."}
-            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? "\nClick a party's name to rename it. A new party starts empty; the first player placed in it leads it." : "")} />
+            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? "\nClick a party's name to rename it, and choose its group type under the name. A new party starts empty; the first player placed in it leads it.\nClick a role a party needs to list the unplaced players of that role in Reserve." : "")} />
           </span>
         ) : (
           <>
@@ -342,6 +369,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               highlight={over === party.id}
               canEdit={perms.canEditParties}
               canRename={perms.canEditParties || (open && party.leaderId === me)}
+              kinds={game?.groupTypes ?? []}
+              state={open && game ? stateOf(party) : null}
+              onKind={(kind) => run("party.setKind", { partyId: party.id, kind })}
+              onNeed={perms.canEditParties ? setRole : undefined}
+              needShown={role}
               onDragOver={allow(party.id)}
               onDragLeave={() => setOver(null)}
               onDrop={drop(party.id)}
@@ -482,7 +514,12 @@ function PartyBlock({
   highlight,
   canEdit,
   canRename,
+  kinds,
+  state,
   onRename,
+  onKind,
+  onNeed,
+  needShown,
   onDelete,
   footer,
   ...dnd
@@ -492,7 +529,16 @@ function PartyBlock({
   highlight: boolean;
   canEdit: boolean;
   canRename: boolean;
+  /** The group types on offer; empty while the lists load or on an older server. */
+  kinds: string[];
+  /** How full the party is and what it lacks; null once the operation has ended. */
+  state: { able: number; noClass: number; missing: string[] } | null;
   onRename: (name: string) => void;
+  onKind: (kind: string) => void;
+  /** Lists the unplaced players of a role in Reserve. Only for those who place players. */
+  onNeed?: (role: string) => void;
+  /** The role Reserve is narrowed to now. */
+  needShown: string;
   onDelete: () => void;
   /** Join requests and the ask-to-join button. */
   footer?: React.ReactNode;
@@ -529,6 +575,45 @@ function PartyBlock({
         {party.cpId !== null && <span className="text-xs uppercase tracking-wider text-gold-dim">Constant</span>}
         <span className={`tabular-nums ${count > PARTY_SIZE ? "text-danger" : "text-text-muted"}`}>{count}/{PARTY_SIZE}</span>
       </div>
+      {(kinds.length > 0 || party.kind || state) && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          {canRename && kinds.length > 0 ? (
+            <select className="field w-auto py-0 text-xs" value={party.kind ?? ""} onChange={(e) => onKind(e.target.value)} aria-label={`Group type of ${party.name}`}>
+              <option value="">Group type</option>
+              {kinds.map((k) => <option key={k} value={k}>{k} group</option>)}
+            </select>
+          ) : (
+            party.kind && <span className="text-gold">{party.kind} group</span>
+          )}
+          {state && (
+            <span className={`ml-auto uppercase tracking-wider ${state.able >= PARTY_SIZE ? "text-net-party" : "text-text-muted"}`} data-ready>
+              {state.able >= PARTY_SIZE ? "Full" : "Not ready"}
+            </span>
+          )}
+        </div>
+      )}
+      {state && (state.missing.length > 0 || state.noClass > 0) && (
+        <div className="flex flex-wrap items-center gap-1 text-xs text-text-muted" data-needs>
+          {state.missing.length > 0 && <span>Needs</span>}
+          {state.missing.map((r) =>
+            onNeed ? (
+              <button
+                key={r}
+                type="button"
+                aria-pressed={needShown === r}
+                title={`Show unplaced ${r.toLowerCase()}s in Reserve`}
+                onClick={() => onNeed(needShown === r ? "" : r)}
+                className={`rounded-sm border px-1.5 cursor-pointer transition-colors duration-150 ${needShown === r ? "border-gold-bright text-gold-bright" : "border-gold-dim text-gold hover:border-gold"}`}
+              >
+                {r}
+              </button>
+            ) : (
+              <span key={r} className="rounded-sm border border-line px-1.5 text-gold">{r}</span>
+            ),
+          )}
+          {state.noClass > 0 && <span className={state.missing.length > 0 ? "ml-1" : ""}>{state.noClass} with no class set</span>}
+        </div>
+      )}
       {count > PARTY_SIZE && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
       {count === 0 ? <p className="py-3 text-center text-text-muted">Empty</p> : <ul className="flex flex-col gap-1">{children}</ul>}
       {footer}

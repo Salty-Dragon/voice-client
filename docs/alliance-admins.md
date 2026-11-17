@@ -77,10 +77,18 @@ Every approved member of the participating clans appears in **Reserve**, with a 
 
 **Class and level.** Each card shows the player's class as a short tag and their level band. When someone brings a different character to this event, the card shows that character's name with their usual name in brackets. Select a card to see the full class name and any note they left. **Show** at the top of Reserve narrows it to one role: choose Healer to find a healer for a party that lacks one.
 
+**What a party needs.** Under each party's name:
+
+- **Group type:** choose what the party is for (Archer, Mage, Melee, Stopper, Overlord, Mixed or Fill group). It is a label for you and the party; it changes nothing in voice.
+- **Full** or **Not ready:** a party is full with 9 players. A member who has said they cannot come is not counted, so a party of nine with one **Out** goes back to Not ready.
+- **Needs:** the support roles the party has nobody for yet, out of Buffer, Bard, Recharger and Healer. It is worked out from the members' classes, including the class of another character someone brings to this event. Click a role and Reserve lists the unplaced players of that role; click it again to see everyone. "2 with no class set" means two members have not chosen a class in their settings yet, so the app cannot tell what they cover.
+
+The board's top line counts the parties and how many are full.
+
 Signing up is information for you, not a gate. You can place a player who has not answered, and starting the operation pulls in everyone on the roster.
 
 - **Constant parties** set up by the clans are offered on the board. Click one to add it as a ready party, or **Add all** to add every one: for most events this builds most of the roster in one click. Parties made this way are marked **Constant**. The clans keep their own constant parties up to date on their Clan tab; as an admin you can add them to a board, but you change them only in a clan you belong to and lead.
-- **+ New party** adds a party. Click its name to rename it.
+- **+ New party** adds a party. Click its name to rename it, and choose its group type under the name.
 - **Drag** a card onto a party or back to Reserve. Or click a card and use **Move to…**, which does the same thing without dragging.
 - The first player in a party leads it. To change that, click a member and choose **Make party leader**.
 - **Make deputy** on a selected player gives them Broadcast, Command and the power to move anyone.

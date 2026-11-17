@@ -63,7 +63,8 @@ export type Info = {
 };
 /** The alliance's own classes, roles and level bands, served by the server. */
 export type GameClass = { name: string; tag: string; role: string | null };
-export type GameOptions = { roles: string[]; classes: GameClass[]; levelBands: string[] };
+/** `groupTypes` and `partyNeeds` are missing on a server older than 0.11. */
+export type GameOptions = { roles: string[]; classes: GameClass[]; levelBands: string[]; groupTypes?: string[]; partyNeeds?: string[] };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
@@ -105,7 +106,7 @@ export type Signup = {
   /** The leader of their constant party answered for them. */
   byLeader: boolean;
 };
-export type Party = { id: number; name: string; leaderId: number | null; memberIds: number[]; leaderLost: boolean; /** The constant party it was made from. */ cpId: number | null };
+export type Party = { id: number; name: string; /** "Mage", "Fill", ...: what kind of group it is, if said. */ kind?: string | null; leaderId: number | null; memberIds: number[]; leaderLost: boolean; /** The constant party it was made from. */ cpId: number | null };
 /** One line of the audit log. `actor` is null for something the server did by itself. */
 export type AuditEntry = { id: number; at: string; actor: string | null; text: string; operation: string | null };
 /** An open invite link of a clan, as its leadership sees it. */
