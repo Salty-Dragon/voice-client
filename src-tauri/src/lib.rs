@@ -76,11 +76,26 @@ async fn set_strip(app: tauri::AppHandle, show: bool, x: Option<f64>, y: Option<
     }
 }
 
+/// Puts the window in front of other programs' windows.
+///
+/// Windows only lets a program take the foreground if the user has just
+/// clicked it. When the app is started by something else (the installer
+/// restarting it after an update, or a second launch handing over to the copy
+/// already running) a plain "focus" leaves it behind whatever is in front, and
+/// the player has to go looking for it. Marking the window "always on top" is
+/// allowed at any time, so it is marked for a moment and released: that leaves
+/// it above the other windows without staying pinned there.
+fn raise(window: &tauri::WebviewWindow) {
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_always_on_top(true);
+    let _ = window.set_focus();
+    let _ = window.set_always_on_top(false);
+}
+
 fn show_main(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
+        raise(&window);
     }
 }
 
@@ -160,6 +175,12 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             input::start(app.handle().clone());
+            // Whoever started the app wants to see it: come to the front once the window exists.
+            let handle = app.handle().clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(600));
+                show_main(&handle);
+            });
             // The app is usable without a tray icon, so a failure here is not fatal.
             if let Err(e) = build_tray(app) {
                 eprintln!("tray icon: {e}");
