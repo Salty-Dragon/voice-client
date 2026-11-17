@@ -1,6 +1,7 @@
 // Names and colours of the nets. Kept free of anything that starts voice, so
 // the compact strip can use them too.
 import type { NetKind } from "../settings";
+import { t } from "../words";
 
 export const NET_TEXT: Record<NetKind, string> = {
   broadcast: "text-net-broadcast",
@@ -11,7 +12,8 @@ export const NET_TEXT: Record<NetKind, string> = {
   lounge: "text-text",
 };
 
-export const NET_NAME: Record<NetKind, string> = {
+/** In the app's own words; shown through netName(), which says them the alliance's way. t() where shown. */
+const NET_NAME: Record<NetKind, string> = {
   broadcast: "Broadcast",
   command: "Command",
   clan: "Clan",
@@ -19,3 +21,6 @@ export const NET_NAME: Record<NetKind, string> = {
   reserve: "Reserve",
   lounge: "Lounge",
 };
+
+/** A net's name as this alliance says it: "Clan" may read "Guild". */
+export const netName = (net: NetKind): string => t(NET_NAME[net]);

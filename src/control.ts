@@ -22,12 +22,18 @@ export type ControlState = "connecting" | "online" | "offline";
 /** Why the server ended the session for good. */
 export type Ended = "replaced" | "signed_out";
 
+const PING_MS = 30_000;
+/** How long the server may say nothing, with a ping asked every PING_MS, before the connection counts as dead. */
+const SILENCE_MS = 75_000;
+
 export class ControlClient {
   private ws: WebSocket | null = null;
   private retry = 0;
   private retryTimer: number | undefined;
   private pingTimer: number | undefined;
   private stopped = false;
+  /** When the server was last heard from on the current connection. */
+  private heardAt = 0;
 
   onState: (s: ControlState) => void = () => {};
   onHello: (me: Me) => void = () => {};
@@ -75,6 +81,7 @@ export class ControlClient {
       if (this.token) ws.send(JSON.stringify({ type: "auth", token: this.token }));
     };
     ws.onmessage = (e) => {
+      this.heardAt = Date.now();
       let msg: { type?: string } & Record<string, unknown>;
       try {
         msg = JSON.parse(String(e.data));
@@ -114,7 +121,28 @@ export class ControlClient {
       this.retryTimer = window.setTimeout(() => this.open(), delay);
     };
     ws.onerror = () => {};
+    // Every ping is answered. A connection that has gone quiet for longer than two of them is dead,
+    // whatever the network in between still pretends: give it up and connect again, rather than sit
+    // "online" while hearing nothing of roster changes. (The interval may run late while the window is
+    // hidden; it is the silence that is measured, not the number of pings.)
+    this.heardAt = Date.now();
     window.clearInterval(this.pingTimer);
-    this.pingTimer = window.setInterval(() => this.send({ type: "ping" }), 30_000);
+    this.pingTimer = window.setInterval(() => {
+      if (this.ws === ws && ws.readyState === WebSocket.OPEN && Date.now() - this.heardAt > SILENCE_MS) {
+        // Not waited for: closing a dead connection politely can itself take a minute. It is dropped
+        // and a new one opened at once; the server ends the old one when the new one signs in.
+        ws.onclose = null;
+        ws.onmessage = null;
+        try {
+          ws.close();
+        } catch {
+          /* already gone */
+        }
+        window.clearInterval(this.pingTimer);
+        this.onState("offline");
+        return this.open();
+      }
+      this.send({ type: "ping" });
+    }, PING_MS);
   }
 }

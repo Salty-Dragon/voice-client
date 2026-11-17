@@ -1,3 +1,4 @@
+import { d, t } from "../words";
 import { useRef, useState } from "react";
 import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList, type Invite } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
@@ -50,7 +51,7 @@ function CrestEditor({ clanId }: { clanId: number }) {
   const has = crests.has(clanId);
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="text-text-muted">Clan crest</span>
+      <span className="text-text-muted">{t("Clan crest")}</span>
       <input
         ref={input}
         type="file"
@@ -80,7 +81,7 @@ function CrestEditor({ clanId }: { clanId: number }) {
           Remove
         </ConfirmButton>
       )}
-      <Help text={"Your clan's crest is shown beside the clan wherever it appears: its lounge and Clan net, roster boards and the clan lists. Beside your members' names it takes the place of the clan tag. Without a crest, the tag is shown.\nPick any PNG, JPEG or WebP. It is shrunk to a small square, so a simple, bold image reads best. A transparent background works well on the dark screens.\nEveryone in the alliance can see it. Alliance admins can remove a crest."} />
+      <Help text={t("Your clan's crest is shown beside the clan wherever it appears: its lounge and Clan net, roster boards and the clan lists. Beside your members' names it takes the place of the clan tag. Without a crest, the tag is shown.\nPick any PNG, JPEG or WebP. It is shrunk to a small square, so a simple, bold image reads best. A transparent background works well on the dark screens.\nEveryone in the alliance can see it. Alliance admins can remove a crest.")} />
       {act.error && <span className="text-danger" role="alert">{act.error}</span>}
     </div>
   );
@@ -95,13 +96,13 @@ function NoAlliance() {
   const [preset, setPreset] = useState("");
   return (
     <>
-      <Section title="Join an alliance" help={"You come into an alliance through one of its clans, by an invite link from that clan's leader or an officer.\nAsk them for a link, then open it, or paste it here."}>
-        <p className="text-text-muted">You are not in an alliance yet. If your clan already uses the app, ask its leader for an invite link.</p>
+      <Section title={t("Join an alliance")} help={t("You come into an alliance through one of its clans, by an invite link from that clan's leader or an officer.\nAsk them for a link, then open it, or paste it here.")}>
+        <p className="text-text-muted">{t("You are not in an alliance yet. If your clan already uses the app, ask its leader for an invite link.")}</p>
         <PasteInvite />
       </Section>
       <Section
         title="Or start your own"
-        help={"Creates an alliance with you as its owner. You then make its clans on the Alliance tab, send each clan's invite link to its leader, and appoint them.\nThe game you choose only fills in a starting list of classes and party size; you can change all of it afterwards under Game setup."}
+        help={t("Creates an alliance with you as its owner. You then make its clans on the Alliance tab, send each clan's invite link to its leader, and appoint them.\nThe game you choose only fills in a starting list of classes and party size; you can change all of it afterwards under Game setup.")}
       >
         <form
           className="flex flex-wrap items-end gap-3"
@@ -114,8 +115,8 @@ function NoAlliance() {
           }}
         >
           <label className="flex flex-col gap-1 text-text-muted">
-            Alliance name
-            <input className="field w-64" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required aria-label="Alliance name" />
+            {t("Alliance name")}
+            <input className="field w-64" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required aria-label={t("Alliance name")} />
           </label>
           <label className="flex flex-col gap-1 text-text-muted">
             Game
@@ -124,7 +125,7 @@ function NoAlliance() {
               {presets?.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </label>
-          <button className="btn" disabled={act.busy || name.trim().length < 2 || !preset}>Create alliance</button>
+          <button className="btn" disabled={act.busy || name.trim().length < 2 || !preset}>{t("Create alliance")}</button>
         </form>
         {act.error && <p className="text-danger" role="alert">{act.error}</p>}
       </Section>
@@ -137,11 +138,11 @@ function JoinAClan() {
   const { data: clans, error } = useLoad(() => rpc<ClanSummary[]>("clans.list"), []);
   const act = useAct();
   return (
-    <Section title={info.alliance ? `Join your clan in ${info.alliance.name}` : "Join your clan"}>
-      <p className="text-text-muted">Pick the clan you are in. Its leader or an officer then approves you, and you get its lounge and its operations.</p>
+    <Section title={info.alliance ? t(`Join your clan in ${d(info.alliance.name)}`) : t("Join your clan")}>
+      <p className="text-text-muted">{t("Pick the clan you are in. Its leader or an officer then approves you, and you get its lounge and its operations.")}</p>
       {error && <p className="text-danger">{error}</p>}
       {clans && clans.length === 0 && (
-        <p className="text-text-muted">{info.alliance?.role ? "No clans yet. Create the first one on the Alliance tab." : "No clans have been created yet. An alliance admin does that."}</p>
+        <p className="text-text-muted">{info.alliance?.role ? t("No clans yet. Create the first one on the Alliance tab.") : t("No clans have been created yet. An alliance admin does that.")}</p>
       )}
       <ul className="flex flex-col divide-y divide-line">
         {clans?.map((c) => (
@@ -176,9 +177,9 @@ function JoinAClan() {
               refreshInfo();
             }}
           >
-            Leave this alliance
+            {t("Leave this alliance")}
           </ConfirmButton>
-          <Help text={"Takes you out of this alliance altogether. You can then join another by an invite link, or start your own.\nA player is in one alliance at a time."} />
+          <Help text={t("Takes you out of this alliance altogether. You can then join another by an invite link, or start your own.\nA player is in one alliance at a time.")} />
         </div>
       )}
     </Section>
@@ -207,7 +208,7 @@ function PasteInvite() {
       <label className="flex flex-col gap-1 text-text-muted">
         <span className="flex items-center gap-1">
           Have an invite link?
-          <Help text={"A clan's leader or officer can send you an invite link. Paste it here (the whole address, or just its code) to join that clan.\nDepending on how the link was made, you are let in at once or added to the clan's waiting list."} />
+          <Help text={t("A clan's leader or officer can send you an invite link. Paste it here (the whole address, or just its code) to join that clan.\nDepending on how the link was made, you are let in at once or added to the clan's waiting list.")} />
         </span>
         <span className="flex flex-wrap gap-2">
           <input className="field max-w-md flex-1" value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste the link here" aria-label="Invite link" />
@@ -220,6 +221,7 @@ function PasteInvite() {
   );
 }
 
+// t() where shown.
 const INVITE_HELP = [
   "An invite link brings a player to your clan without them having to find it in the list.",
   "Send it privately, for example in your clan's own Discord channel. Anyone who has the link can use it until it runs out, expires, or you revoke it.",
@@ -245,7 +247,7 @@ function InviteLinks({ clanId }: { clanId: number }) {
     }
   };
   return (
-    <Section title={`Invite links (${data?.length ?? 0})`} help={INVITE_HELP}>
+    <Section title={`Invite links (${data?.length ?? 0})`} help={t(INVITE_HELP)}>
       {error && <p className="text-danger">{error}</p>}
       {data && data.length === 0 && <p className="text-text-muted">No open invite links.</p>}
       <ul className="flex flex-col divide-y divide-line">
@@ -287,13 +289,14 @@ function InviteLinks({ clanId }: { clanId: number }) {
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} /> Let people who use it straight in, without approval
         </label>
-        {auto && <p className="text-xs text-net-command">Anyone who gets hold of this link joins your clan and hears its nets. Share it only with people you know.</p>}
+        {auto && <p className="text-xs text-net-command">{t("Anyone who gets hold of this link joins your clan and hears its nets. Share it only with people you know.")}</p>}
       </form>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
     </Section>
   );
 }
 
+// t() where shown.
 const CP_HELP = [
   "A constant party is a standing group in your clan: the players who always fight together, in a fixed order, with a leader.",
   "On an operation's roster board it is dropped in with one click as a ready party, so the roster does not have to be rebuilt for every event.",
@@ -317,7 +320,7 @@ function ConstantParties({ clanId, members, leads }: { clanId: number; members: 
   const active = members.filter((m) => m.status === "active");
 
   return (
-    <Section title={`Constant parties (${data.cps.length})`} help={CP_HELP}>
+    <Section title={t(`Constant parties (${d(data.cps.length)})`)} help={t(CP_HELP)}>
       {data.cps.length === 0 && <p className="text-text-muted">None yet. Create one for each group that always fights together.</p>}
       <ul className="flex flex-col gap-3">
         {data.cps.map((cp) => (
@@ -333,7 +336,7 @@ function ConstantParties({ clanId, members, leads }: { clanId: number; members: 
             setName("");
           }}
         >
-          <input className="field w-56" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} placeholder="Name, for example Vanguard" aria-label="New constant party" />
+          <input className="field w-56" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} placeholder="Name, for example Vanguard" aria-label={t("New constant party")} />
           <button className="btn text-sm" disabled={act.busy || name.trim().length < 2}>Create</button>
         </form>
       )}
@@ -376,7 +379,7 @@ function CpCard({
               if (next && next !== cp.name) await call("cp.rename", { cpId: cp.id, name: next });
             }}
           >
-            <input name="name" defaultValue={cp.name} maxLength={48} autoFocus onBlur={() => setRenaming(false)} className="field py-0.5" aria-label="Constant party name" />
+            <input name="name" defaultValue={cp.name} maxLength={48} autoFocus onBlur={() => setRenaming(false)} className="field py-0.5" aria-label={t("Constant party name")} />
           </form>
         ) : (
           <h3 className="title text-sm text-net-party">
@@ -387,7 +390,7 @@ function CpCard({
             )}
           </h3>
         )}
-        {mine && <span className="text-xs uppercase tracking-wider text-gold">Your constant party</span>}
+        {mine && <span className="text-xs uppercase tracking-wider text-gold">{t("Your constant party")}</span>}
         <span className={`ml-auto tabular-nums ${over ? "text-danger" : "text-text-muted"}`}>{cp.members.length}/{PARTY_SIZE}</span>
         {canDelete && (
           <ConfirmButton className="text-xs text-text-muted hover:text-danger cursor-pointer" confirm={`Delete ${cp.name}?`} disabled={busy} onConfirm={() => void call("cp.delete", { cpId: cp.id })}>
@@ -395,7 +398,7 @@ function CpCard({
           </ConfirmButton>
         )}
       </div>
-      {over && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
+      {over && <p className="text-xs text-danger">{t("Over the usual party size of")} {PARTY_SIZE}.</p>}
       {cp.members.length === 0 ? (
         <p className="text-text-muted">No members yet.</p>
       ) : (
@@ -459,7 +462,7 @@ function Members({ clanId }: { clanId: number }) {
     <>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
       {leads && (
-        <Section title={`Waiting for approval (${pending.length})`} help={"Players who picked this clan and are waiting to be let in.\nApprove lets the player into the clan's lounge, its Clan net and its operations. Decline removes the request.\nDiscord: the name of the Discord account that is asking. Check it is the player you know before you approve. An in-game name belongs to one account, so nobody else can ask under a member's name.\nThe clan leader and officers can do both."}>
+        <Section title={`Waiting for approval (${pending.length})`} help={t("Players who picked this clan and are waiting to be let in.\nApprove lets the player into the clan's lounge, its Clan net and its operations. Decline removes the request.\nDiscord: the name of the Discord account that is asking. Check it is the player you know before you approve. An in-game name belongs to one account, so nobody else can ask under a member's name.\nThe clan leader and officers can do both.")}>
           {pending.length === 0 ? (
             <p className="text-text-muted">Nobody is waiting.</p>
           ) : (
@@ -477,13 +480,13 @@ function Members({ clanId }: { clanId: number }) {
               ))}
             </ul>
           )}
-          <p className="text-xs text-text-muted">Approve only names you recognise from the clan in game.</p>
+          <p className="text-xs text-text-muted">{t("Approve only names you recognise from the clan in game.")}</p>
         </Section>
       )}
       <Section
         title={`${data.clan.name} [${data.clan.tag}] · ${active.length} members`}
         before={<ClanCrest clanId={clanId} size={40} />}
-        help={"Green dot: the player has the app open.\nLeader: speaks on Clan and Command, approves members and appoints officers.\nOfficer: approves and removes members, builds parties, and speaks on the Clan net.\nMembers hear the Clan net and talk in the lounge and in their party."}
+        help={t("Green dot: the player has the app open.\nLeader: speaks on Clan and Command, approves members and appoints officers.\nOfficer: approves and removes members, builds parties, and speaks on the Clan net.\nMembers hear the Clan net and talk in the lounge and in their party.")}
       >
         {data.myRole === "leader" && <CrestEditor clanId={clanId} />}
         <ul className="flex flex-col divide-y divide-line">
@@ -518,15 +521,15 @@ function Members({ clanId }: { clanId: number }) {
         </ul>
         {(data.myRole === "member" || data.myRole === "officer") && (
           <div className="flex items-center justify-end gap-1 border-t border-line pt-3">
-            <ConfirmButton confirm="Leave this clan?" disabled={act.busy} onConfirm={call("clan.leave", {})}>Leave clan</ConfirmButton>
-            <Help text={"Takes you out of this clan: its lounge and Clan net, its constant parties, and your party places in operations still to come. You can then ask to join another clan.\nTo move to another clan of the alliance without waiting to be approved again, ask an alliance admin instead: they can move you across in one step.\nA clan's leader cannot leave until an alliance admin has appointed another."} />
+            <ConfirmButton confirm={t("Leave this clan?")} disabled={act.busy} onConfirm={call("clan.leave", {})}>{t("Leave clan")}</ConfirmButton>
+            <Help text={t("Takes you out of this clan: its lounge and Clan net, its constant parties, and your party places in operations still to come. You can then ask to join another clan.\nTo move to another clan of the alliance without waiting to be approved again, ask an alliance admin instead: they can move you across in one step.\nA clan's leader cannot leave until an alliance admin has appointed another.")} />
           </div>
         )}
       </Section>
       {leads && <InviteLinks clanId={clanId} />}
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />
       {data.myRole === "leader" && data.discord !== undefined && (
-        <Section title="Discord announcements" help={DISCORD_HELP("an operation your clan takes part in")}>
+        <Section title="Discord announcements" help={DISCORD_HELP(t("an operation your clan takes part in"))}>
           <DiscordSetup clanId={clanId} connected={data.discord} onChange={reload} />
         </Section>
       )}
@@ -534,8 +537,8 @@ function Members({ clanId }: { clanId: number }) {
         <AuditLog
           scope="clan"
           clanId={clanId}
-          title="Clan log"
-          help={"Who changed what in your clan, newest first: requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations.\nOnly the clan's leader sees this. Alliance admins see the whole alliance's log.\nAn account that has since been deleted shows as a deleted account."}
+          title={t("Clan log")}
+          help={t("Who changed what in your clan, newest first: requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations.\nOnly the clan's leader sees this. Alliance admins see the whole alliance's log.\nAn account that has since been deleted shows as a deleted account.")}
         />
       )}
     </>

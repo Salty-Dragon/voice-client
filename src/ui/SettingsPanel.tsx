@@ -1,14 +1,16 @@
+import { t } from "../words";
 import { useState } from "react";
 import { rpc } from "../api";
 import { APP_NAME, APP_VERSION, isDesktop } from "../config";
 import { foreground } from "../runtime";
 import { checkForUpdate, installUpdate, useUpdate } from "../update";
-import { setSettings, useSettings, type BindTarget, type InputSource } from "../settings";
+import { setSettings, useSettings, type BindTarget, type InputSource, type NetKind } from "../settings";
 import { useApp } from "./app-context";
-import { DevicePickers, KeyBind, MicTest, NET_NAME, NET_TEXT, PartyMode } from "./common";
+import { DevicePickers, KeyBind, MicTest, netName, NET_TEXT, PartyMode } from "./common";
 import { ProfileForm } from "./NameStep";
 import { Help } from "./tips";
 
+// Labels and notes: t() where shown.
 const KEYS: { target: BindTarget; label: string; note: string }[] = [
   { target: "broadcast", label: "Broadcast", note: "Event leader and deputies" },
   { target: "command", label: "Command", note: "Leaders" },
@@ -62,10 +64,9 @@ function DeleteAccount({ leadsClan, onDeleted }: { leadsClan: boolean; onDeleted
   return (
     <div className="flex flex-col gap-2 border border-danger/60 p-3" role="alertdialog" aria-label="Delete my account">
       <p>
-        This removes your account from the server for good: your name, your clan membership, your places on rosters and the record of
-        when you were in voice. It cannot be undone. Signing in again later starts from nothing.
+        {t("This removes your account from the server for good: your name, your clan membership, your places on rosters and the record of when you were in voice. It cannot be undone. Signing in again later starts from nothing.")}
       </p>
-      {leadsClan && <p className="text-text-muted">Your clan will be left without a leader until an alliance admin appoints one.</p>}
+      {leadsClan && <p className="text-text-muted">{t("Your clan will be left without a leader until an alliance admin appoints one.")}</p>}
       {error && <p className="text-danger" role="alert">{error}</p>}
       <div className="flex flex-wrap gap-2">
         <button
@@ -137,7 +138,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           </div>
         </Group>
 
-        <Group title="Party, Reserve and lounge">
+        <Group title={t("Party, Reserve and lounge")}>
           <PartyMode />
           {s.partyMode === "voice" && (
             <label className="flex items-center gap-3 text-text-muted">
@@ -162,9 +163,9 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           <ul className="flex flex-col gap-2">
             {KEYS.map((k) => (
               <li key={k.target} className="flex items-center gap-3">
-                <span className={`w-24 font-medium ${k.target === "muteAll" ? "" : NET_TEXT[k.target === "broadcastLock" ? "broadcast" : k.target]}`}>{k.label}</span>
-                <KeyBind target={k.target} label={k.label} />
-                <span className="text-xs text-text-muted">{k.note}</span>
+                <span className={`w-24 font-medium ${k.target === "muteAll" ? "" : NET_TEXT[k.target === "broadcastLock" ? "broadcast" : k.target]}`}>{t(k.label)}</span>
+                <KeyBind target={k.target} label={t(k.label)} />
+                <span className="text-xs text-text-muted">{t(k.note)}</span>
               </li>
             ))}
           </ul>
@@ -175,9 +176,9 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         </Group>
 
         <Group title="Volume">
-          {(Object.keys(NET_NAME) as (keyof typeof NET_NAME)[]).map((net) => (
+          {(Object.keys(NET_TEXT) as NetKind[]).map((net) => (
             <label key={net} className="flex items-center gap-3">
-              <span className={`w-24 ${NET_TEXT[net]}`}>{NET_NAME[net]}</span>
+              <span className={`w-24 ${NET_TEXT[net]}`}>{netName(net)}</span>
               <input
                 type="range"
                 min={0}
@@ -192,7 +193,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         </Group>
 
         <Group title="Priority">
-          <Toggle label="Lower other nets while a higher one is live" hint="So a Broadcast or Command call cuts through party chatter. Nothing is muted, only made quieter." checked={s.ducking} onChange={(v) => setSettings({ ducking: v })} />
+          <Toggle label="Lower other nets while a higher one is live" hint={t("So a Broadcast or Command call cuts through party chatter. Nothing is muted, only made quieter.")} checked={s.ducking} onChange={(v) => setSettings({ ducking: v })} />
           <label className="flex items-center gap-3 text-text-muted">
             Lowered nets stay at
             <input
@@ -208,13 +209,12 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
             <span className="tabular-nums text-text w-10">{Math.round(s.duckLevel * 100)}%</span>
           </label>
           <p className="text-xs text-text-muted">
-            Order: Broadcast, Command, Clan, Party. On Command, the event leader, deputies and clan leaders also lower the party leaders.
-            Nothing is ever muted by this, only made quieter.
+            {t("Order: Broadcast, Command, Clan, Party. On Command, the event leader, deputies and clan leaders also lower the party leaders. Nothing is ever muted by this, only made quieter.")}
           </p>
         </Group>
 
         <Group title="Sounds">
-          <Toggle label="Play a cue when you are moved to another party" checked={s.cues} onChange={(v) => setSettings({ cues: v })} />
+          <Toggle label={t("Play a cue when you are moved to another party")} checked={s.cues} onChange={(v) => setSettings({ cues: v })} />
           <label className="flex items-center gap-3 text-text-muted">
             Cue volume
             <input type="range" min={0} max={1} step={0.05} value={s.cueVolume} onChange={(e) => setSettings({ cueVolume: Number(e.target.value) })} />

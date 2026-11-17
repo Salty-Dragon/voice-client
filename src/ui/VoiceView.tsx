@@ -1,3 +1,4 @@
+import { t } from "../words";
 import { SignupPrompts } from "./Signup";
 import { useEffect, useState } from "react";
 import { isDesktop } from "../config";
@@ -7,7 +8,7 @@ import { engine } from "../runtime";
 import { bindTargetOf, setSettings, useSettings, type BindTarget } from "../settings";
 import { rpc } from "../api";
 import { useAct, useApp } from "./app-context";
-import { ClanCrest, ClanMark, Initial, KeyBind, NET_BORDER, NET_NAME, NET_TEXT, NET_TIP, NET_VAR, useEngine } from "./common";
+import { ClanCrest, ClanMark, Initial, KeyBind, NET_BORDER, netName, NET_TEXT, netTip, NET_VAR, useEngine } from "./common";
 import { Help } from "./tips";
 
 const STATE_TEXT: Record<NetView["state"], string> = {
@@ -101,7 +102,7 @@ function NetCard({
       : key === null && !voice
         ? "Bind a key in Settings to speak here."
         : "Change how you speak in Settings.";
-  const help = [NET_TIP[net.net], howTip, net.lowered ? "Lowered: a higher net is live, so you hear this one quieter until it stops. Nothing is muted. Change this under Settings, Priority." : "", onTalkHere && !talkHere ? "Talk here makes this the lounge your key and voice go to. You keep hearing both." : ""].filter(Boolean).join("\n");
+  const help = [netTip(net.net), howTip, net.lowered ? "Lowered: a higher net is live, so you hear this one quieter until it stops. Nothing is muted. Change this under Settings, Priority." : "", onTalkHere && !talkHere ? "Talk here makes this the lounge your key and voice go to. You keep hearing both." : ""].filter(Boolean).join("\n");
   // A clan's own rooms carry its crest.
   const clanRoom = /^lounge-clan-(\d+)$|^op-\d+-clan-(\d+)$/.exec(net.room);
   const clanId = clanRoom ? Number(clanRoom[1] ?? clanRoom[2]) : null;
@@ -115,7 +116,7 @@ function NetCard({
         <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left cursor-pointer" onClick={onShow} aria-pressed={shown}>
           <ClanCrest clanId={clanId} size={18} />
           <span className={`title min-w-0 break-words text-sm ${NET_TEXT[net.net]}`}>{net.label}</span>
-          {net.label !== NET_NAME[net.net] && net.net !== "lounge" && <span className="text-xs text-text-muted">{NET_NAME[net.net]}</span>}
+          {net.label !== netName(net.net) && net.net !== "lounge" && <span className="text-xs text-text-muted">{netName(net.net)}</span>}
           <span className="ml-auto text-xs text-text-muted tabular-nums">{net.members.length}</span>
         </button>
         <Help text={help} />
@@ -146,7 +147,7 @@ function NetCard({
             <button type="button" className={`cursor-pointer ${net.locked ? "font-semibold text-net-broadcast" : "text-gold hover:text-gold-bright"}`} onClick={() => engine.setBroadcastLock(!net.locked)}>
               {net.locked ? "Release" : "Lock open"}
             </button>
-            <Help text={"For a briefing. Lock open keeps your mic open on Broadcast without holding a key, so everyone in the operation hears you until you release it.\nIt ends when you click Release, press your Broadcast key or your Mute all key, when the operation ends, and by itself after ten minutes.\nYou can also bind a Broadcast lock key in Settings to switch it without leaving the game."} />
+            <Help text={t("For a briefing. Lock open keeps your mic open on Broadcast without holding a key, so everyone in the operation hears you until you release it.\nIt ends when you click Release, press your Broadcast key or your Mute all key, when the operation ends, and by itself after ten minutes.\nYou can also bind a Broadcast lock key in Settings to switch it without leaving the game.")} />
           </span>
         )}
       </div>
@@ -227,7 +228,7 @@ export function VoiceView() {
         ) : (
           <span className="font-medium">{op ? op.name : "the lounge"}</span>
         )}
-        <Help text={"Between operations you are in your clan's lounge. A live operation pulls you onto its nets by itself and returns you when it ends.\nIf operations are listed here, pick the lounge to sit one out, or a planned operation to form up early."} />
+        <Help text={t("Between operations you are in your clan's lounge. A live operation pulls you onto its nets by itself and returns you when it ends.\nIf operations are listed here, pick the lounge to sit one out, or a planned operation to form up early.")} />
         {op && (
           <span className={`text-xs uppercase tracking-wider ${op.state === "live" ? "text-net-party" : "text-gold"}`}>
             {op.state === "live" ? "Live" : "Planned"}
@@ -274,8 +275,8 @@ export function VoiceView() {
             <span>You can speak here. Bind a key for each:</span>
             {unbound.map((t) => (
               <span key={t} className="inline-flex items-center gap-2">
-                <span className={`font-semibold ${NET_TEXT[t]}`}>{t === "party" && !op ? "Lounge" : NET_NAME[t]}</span>
-                <KeyBind target={t} label={NET_NAME[t]} />
+                <span className={`font-semibold ${NET_TEXT[t]}`}>{t === "party" && !op ? "Lounge" : netName(t)}</span>
+                <KeyBind target={t} label={netName(t)} />
               </span>
             ))}
           </div>
@@ -293,20 +294,20 @@ export function VoiceView() {
               <>
                 <h1 className="title text-gold">Waiting for approval</h1>
                 <p className="text-text-muted">
-                  A leader or officer of {info.membership.name} has to approve you. You will land in the clan lounge as soon as they do.
+                  A leader or officer of {info.membership.name} {t("has to approve you. You will land in the clan lounge as soon as they do.")}
                 </p>
               </>
             ) : info.alliance === null ? (
               <>
-                <h1 className="title text-gold">Join an alliance</h1>
-                <p className="text-text-muted">Voice follows your clan. Come in with an invite link from your clan&apos;s leader, or start an alliance of your own.</p>
+                <h1 className="title text-gold">{t("Join an alliance")}</h1>
+                <p className="text-text-muted">{t("Voice follows your clan. Come in with an invite link from your clan's leader, or start an alliance of your own.")}</p>
                 <div><button type="button" className="btn" onClick={() => go("clan")}>Get started</button></div>
               </>
             ) : (
               <>
-                <h1 className="title text-gold">Join your clan</h1>
-                <p className="text-text-muted">Voice follows your clan. Pick yours, get approved, and you are in its lounge.</p>
-                <div><button type="button" className="btn" onClick={() => go("clan")}>Choose a clan</button></div>
+                <h1 className="title text-gold">{t("Join your clan")}</h1>
+                <p className="text-text-muted">{t("Voice follows your clan. Pick yours, get approved, and you are in its lounge.")}</p>
+                <div><button type="button" className="btn" onClick={() => go("clan")}>{t("Choose a clan")}</button></div>
               </>
             )}
           </div>
@@ -352,9 +353,9 @@ export function VoiceView() {
                     />
                   ))}
                 </ul>
-                {shown.net === "reserve" && shown.room === home?.room && <p className="text-text-muted">You are in Reserve until an organiser places you in a party.</p>}
+                {shown.net === "reserve" && shown.room === home?.room && <p className="text-text-muted">{t("You are in Reserve until an organiser places you in a party.")}</p>}
                 {shown.net === "lounge" && shown.members.length <= 1 && shown.state === "connected" && (
-                  <p className="text-text-muted">Nobody else is here yet. Anyone from the clan who opens the app lands in this room.</p>
+                  <p className="text-text-muted">{t("Nobody else is here yet. Anyone from the clan who opens the app lands in this room.")}</p>
                 )}
                 <p className="mt-auto pt-2 text-xs text-text-muted">Click a net to see who is on it. Click a player to set your own volume for them.</p>
               </>
@@ -368,7 +369,7 @@ export function VoiceView() {
         {hints.map((t) => (
           <span key={t}>
             <kbd className="kbd">{keyLabel(s.bindings[t] as number)}</kbd>{" "}
-            <span className={NET_TEXT[t]}>{t === "party" && !op ? "Lounge" : NET_NAME[t]}</span>
+            <span className={NET_TEXT[t]}>{t === "party" && !op ? "Lounge" : netName(t)}</span>
           </span>
         ))}
         {s.bindings.muteAll !== null && (

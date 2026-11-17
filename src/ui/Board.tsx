@@ -3,6 +3,7 @@
 // also what re-routes their audio. Permissions here only decide what is
 // offered: the server checks every move again.
 
+import { d, t } from "../words";
 import { useState } from "react";
 import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../api";
 import { partySizeOf, roleOf, useGame } from "../game";
@@ -19,16 +20,16 @@ const legend = (PARTY_SIZE: number, needs: string[]) => [
   "Green dot: the player has the app open.",
   "✓: the player has said they are coming. Out: they have said they cannot come. Neither: no answer yet.",
   "Beside the name: class and level. A second name in brackets is the player's usual name, when they bring another character to this event.",
-  "♛ Lead: the event leader. Speaks on Broadcast and Command, starts and ends the operation.",
+  t("♛ Lead: the event leader. Speaks on Broadcast and Command, starts and ends the operation."),
   "Deputy: speaks on Broadcast and Command, and can move anyone.",
-  "⚑ Clan: a clan leader. Speaks on Clan and Command.",
-  "Officer: a clan officer. Speaks on Clan.",
-  "» PL: the party's leader. On Command for this party, and answers requests to join it.",
-  `The usual party size is ${PARTY_SIZE}. Going over is allowed.`,
-  `Full: the party has ${PARTY_SIZE} players who have not said they cannot come. Not ready: it has fewer.`,
-  needs.length ? `Needs: the roles the party has nobody for yet (${needs.join(", ").toLowerCase()}), worked out from its players' classes. A player who cannot come is not counted.` : "",
-  "Group type: what the party is for, such as a mage or a stopper group.",
-  "Ask to join: the party's leader gets your request and accepts or declines.",
+  t("⚑ Clan: a clan leader. Speaks on Clan and Command."),
+  t("Officer: a clan officer. Speaks on Clan."),
+  t("» PL: the party's leader. On Command for this party, and answers requests to join it."),
+  t(`The usual party size is ${d(PARTY_SIZE)}. Going over is allowed.`),
+  t(`Full: the party has ${d(PARTY_SIZE)} players who have not said they cannot come. Not ready: it has fewer.`),
+  needs.length ? t(`Needs: the roles the party has nobody for yet (${d(needs.join(", ").toLowerCase())}), worked out from its players' classes. A player who cannot come is not counted.`) : "",
+  t("Group type: what the party is for, such as a mage or a stopper group."),
+  t("Ask to join: the party's leader gets your request and accepts or declines."),
 ].filter(Boolean).join("\n");
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
 const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text-text-muted" } as const;
@@ -54,7 +55,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
     return (
       <div className="p-4 flex flex-col gap-3">
         <p className="text-danger">{error}</p>
-        <div><button type="button" className="btn btn-quiet" onClick={onBack}>Back to operations</button></div>
+        <div><button type="button" className="btn btn-quiet" onClick={onBack}>{t("Back to operations")}</button></div>
       </div>
     );
   }
@@ -118,7 +119,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
     void act
       .run(async () => {
         const r = await rpc<CpPlaced>("op.addCps", { opId, cpId });
-        if (r.skipped.length > 0) setPlaced(`Already in another party, left where they are: ${r.skipped.join(", ")}.`);
+        if (r.skipped.length > 0) setPlaced(t(`Already in another party, left where they are: ${d(r.skipped.join(", "))}.`));
       })
       .then(() => {
         reload();
@@ -213,7 +214,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             {c.status === "out" && <span className="text-danger">Out</span>}
             {op.eventLeaderId === p.userId && <span className="text-net-broadcast">♛ Lead</span>}
             {op.deputyIds.includes(p.userId) && <span className="text-net-broadcast">Deputy</span>}
-            {p.clanRole === "leader" && <span className="text-net-clan">⚑ Clan</span>}
+            {p.clanRole === "leader" && <span className="text-net-clan">{t("⚑ Clan")}</span>}
             {p.clanRole === "officer" && <span className="text-net-clan">Officer</span>}
             {party?.leaderId === p.userId && <span className="text-net-command">» PL</span>}
             {op.clans.length > 1 && <ClanMark clanId={p.clanId} tag={p.clanTag} size={16} />}
@@ -228,7 +229,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button type="button" className="btn btn-quiet text-sm" onClick={onBack}>← Operations</button>
+        <button type="button" className="btn btn-quiet text-sm" onClick={onBack}>{t("← Operations")}</button>
         <h1 className="title text-gold-bright">{op.name}</h1>
         {op.eventType && <span className="rounded-sm border border-gold-dim px-1.5 text-xs text-gold" data-event-type>{op.eventType}</span>}
         <span className={`text-xs uppercase tracking-wider ${STATE_CLASS[op.state]}`}>{STATE_LABEL[op.state]}</span>
@@ -244,13 +245,13 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         )}
         {open && op.parties.length > 0 && (
           <span className="text-text-muted" data-parties>
-            {op.parties.length} {op.parties.length === 1 ? "party" : "parties"} · <span className={full === op.parties.length ? "text-net-party" : ""}>{full} full</span>
+            {op.parties.length} {t(op.parties.length === 1 ? "party" : "parties")} · <span className={full === op.parties.length ? "text-net-party" : ""}>{full} full</span>
           </span>
         )}
         {open && !here && (
           <span className="ml-auto flex items-center gap-1">
             <button type="button" className="btn text-sm" onClick={() => select(op.id)}>Join voice</button>
-            <Help text="Connects your voice to this operation's nets now, before it goes live. Use it to form up early; going live pulls everyone in anyway." />
+            <Help text={t("Connects your voice to this operation's nets now, before it goes live. Use it to form up early; going live pulls everyone in anyway.")} />
           </span>
         )}
         {here && <span className="ml-auto text-xs text-net-party">Your voice is here</span>}
@@ -280,18 +281,18 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           <span className="ml-auto flex items-center gap-2">
             <button type="button" className="btn btn-quiet text-sm" aria-pressed={editing} onClick={() => setEditing(!editing)}>Edit</button>
             {op.state === "planned" && (
-              <ConfirmButton className="btn text-sm" confirm="Go live now?" onConfirm={() => run("op.setState", { state: "live" })}>Start operation</ConfirmButton>
+              <ConfirmButton className="btn text-sm" confirm="Go live now?" onConfirm={() => run("op.setState", { state: "live" })}>{t("Start operation")}</ConfirmButton>
             )}
-            <ConfirmButton confirm="End for everyone?" onConfirm={() => run("op.setState", { state: "ended" })}>End operation</ConfirmButton>
-            <Help text={"Edit: change the name or the start time. An alliance admin can also change the event leader and, before it starts, the clans taking part; an operation created by mistake is deleted from there.\nStart operation moves every player on the roster from their lounge onto their party and nets.\nEnd operation returns everyone to their lounge and locks this roster. It cannot be reopened.\nStart and End ask you to click a second time to confirm."} />
+            <ConfirmButton confirm="End for everyone?" onConfirm={() => run("op.setState", { state: "ended" })}>{t("End operation")}</ConfirmButton>
+            <Help text={t("Edit: change the name or the start time. An alliance admin can also change the event leader and, before it starts, the clans taking part; an operation created by mistake is deleted from there.\nStart operation moves every player on the roster from their lounge onto their party and nets.\nEnd operation returns everyone to their lounge and locks this roster. It cannot be reopened.\nStart and End ask you to click a second time to confirm.")} />
           </span>
         )}
         {!open && info.user.runsAlliance && (
           <span className="ml-auto flex items-center gap-1">
             <ConfirmButton confirm="Delete it for good?" disabled={act.busy} onConfirm={() => void act.run(() => rpc("op.delete", { opId })).then((ok) => { if (ok) { refreshInfo(); onBack(); } })}>
-              Delete operation
+              {t("Delete operation")}
             </ConfirmButton>
-            <Help text={"Removes this ended operation for good, with its roster and its attendance. The log keeps a line saying it was deleted. Only alliance admins can do this."} />
+            <Help text={t("Removes this ended operation for good, with its roster and its attendance. The log keeps a line saying it was deleted. Only alliance admins can do this.")} />
           </span>
         )}
       </div>
@@ -313,7 +314,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       )}
       {op.state === "planned" && (
         <p className="text-xs text-text-muted -mt-2">
-          Players stay in their lounge until you start the operation; starting it pulls everyone into their party automatically.
+          {t("Players stay in their lounge until you start the operation; starting it pulls everyone into their party automatically.")}
         </p>
       )}
 
@@ -330,12 +331,12 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           {(data.myCps ?? []).map((cp) => (
             <div key={cp.id} className="flex flex-wrap items-center gap-2">
               <span className="text-text-muted">
-                Your party <span className="text-text">{cp.name}</span>: {cp.answered} of {cp.members} have answered
+                {t("Your party")} <span className="text-text">{cp.name}</span>: {cp.answered} of {cp.members} have answered
               </span>
               {cp.answered < cp.members && (
-                <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={() => signCp(cp.id)}>Sign up the whole party</button>
+                <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={() => signCp(cp.id)}>{t("Sign up the whole party")}</button>
               )}
-              <Help text={"Marks every member of your constant party as coming, in one go.\nMembers who already answered for themselves keep their own answer, and anyone can still change theirs.\nThe organiser then sees your party as ready to place."} />
+              <Help text={t("Marks every member of your constant party as coming, in one go.\nMembers who already answered for themselves keep their own answer, and anyone can still change theirs.\nThe organiser then sees your party as ready to place.")} />
             </div>
           ))}
         </div>
@@ -346,11 +347,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         {!sel ? (
           <span className="text-text-muted">
             {perms.canEditParties
-              ? "Drag a player to a party, or select one to move them."
+              ? t("Drag a player to a party, or select one to move them.")
               : canAsk
-                ? "Ask to join a party; its leader accepts or declines."
+                ? t("Ask to join a party; its leader accepts or declines.")
                 : "Select a player to see their options."}
-            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? "\nClan leaders and officers arrange their own clan's parties: one led by another clan is changed by its own leadership, its party leader or the organisers.\nClick a party's name to rename it, and choose its group type under the name. A new party starts empty; the first player placed in it leads it.\nClick a role a party needs to list the unplaced players of that role in Reserve." : "")} />
+            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? t("\nClan leaders and officers arrange their own clan's parties: one led by another clan is changed by its own leadership, its party leader or the organisers.\nClick a party's name to rename it, and choose its group type under the name. A new party starts empty; the first player placed in it leads it.\nClick a role a party needs to list the unplaced players of that role in Reserve.") : "")} />
           </span>
         ) : (
           <>
@@ -382,7 +383,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             )}
             {selParty && selParty.leaderId !== sel.userId && canLead(sel, selParty) && (
               <button type="button" className="btn btn-quiet text-sm" onClick={() => run("party.setLeader", { partyId: selParty.id, userId: sel.userId })}>
-                Make party leader
+                {t("Make party leader")}
               </button>
             )}
             {canRunOp && open && sel.userId !== op.eventLeaderId && !op.deputyIds.includes(sel.userId) && (
@@ -390,7 +391,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
                 Make deputy
               </button>
             )}
-            <Help text={"Move to: places this player in another party, or back in Reserve.\nMake party leader: party leaders are on Command and answer requests to join their party.\nMake deputy: deputies speak on Broadcast and Command and can move anyone.\nYou only see the actions you are allowed to take."} />
+            <Help text={t("Move to: places this player in another party, or back in Reserve.\nMake party leader: party leaders are on Command and answer requests to join their party.\nMake deputy: deputies speak on Broadcast and Command and can move anyone.\nYou only see the actions you are allowed to take.")} />
             <button type="button" className="ml-auto text-text-muted hover:text-text cursor-pointer" onClick={() => setSelected(null)}>Clear</button>
           </>
         )}
@@ -463,8 +464,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           {perms.canEditParties && open && offered.length > 0 && (
             <div className="flex min-h-24 flex-col gap-2 rounded-sm border border-dashed border-gold-dim p-3">
               <span className="flex items-center gap-1 text-text-muted">
-                Constant parties
-                <Help text={"Standing groups set up on the Clan screen. Click one to put it on the board as a ready party, with its members in order and its leader in charge.\nA member who is already in another party here stays where they are. Afterwards the party is an ordinary one: change it freely, the constant party itself is not affected."} />
+                {t("Constant parties")}
+                <Help text={t("Standing groups set up on the Clan screen. Click one to put it on the board as a ready party, with its members in order and its leader in charge.\nA member who is already in another party here stays where they are. Afterwards the party is an ordinary one: change it freely, the constant party itself is not affected.")} />
               </span>
               <div className="flex flex-wrap gap-2">
                 {offered.map((cp) => (
@@ -486,10 +487,10 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               onClick={() => run("party.create", { name: "" })}
               className="min-h-24 rounded-sm border border-dashed border-gold-dim text-gold hover:border-gold hover:text-gold-bright cursor-pointer transition-colors duration-150"
             >
-              + New party
+              {t("+ New party")}
             </button>
           )}
-          {op.parties.length === 0 && !perms.canEditParties && <p className="text-text-muted">No parties have been formed yet.</p>}
+          {op.parties.length === 0 && !perms.canEditParties && <p className="text-text-muted">{t("No parties have been formed yet.")}</p>}
         </div>
 
         <div
@@ -500,11 +501,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         >
           <h2 className="title flex items-center gap-1 text-sm text-net-reserve">
             Reserve
-            <Help text={"Everyone taking part who is not in a party yet, with those who said they are coming first. They can talk to each other and to the organisers placing them.\nShow: narrow the list to one role, for example to find a healer for a party that lacks one."} />
+            <Help text={t("Everyone taking part who is not in a party yet, with those who said they are coming first. They can talk to each other and to the organisers placing them.\nShow: narrow the list to one role, for example to find a healer for a party that lacks one.")} />
             <span className="ml-auto font-sans tabular-nums">{op.reserveIds.length}</span>
           </h2>
           {op.reserveIds.length === 0 ? (
-            <p className="text-text-muted">Everyone has a party.</p>
+            <p className="text-text-muted">{t("Everyone has a party.")}</p>
           ) : (
             <>
               {game && (
@@ -604,7 +605,7 @@ function PartyBlock({
               if (name && name !== party.name) onRename(name);
             }}
           >
-            <input name="name" defaultValue={party.name} maxLength={48} autoFocus onBlur={() => setEditing(false)} className="field py-0.5" aria-label="Party name" />
+            <input name="name" defaultValue={party.name} maxLength={48} autoFocus onBlur={() => setEditing(false)} className="field py-0.5" aria-label={t("Party name")} />
           </form>
         ) : (
           <h2 className="title flex-1 truncate text-sm text-net-party">
@@ -657,12 +658,12 @@ function PartyBlock({
           {state.noClass > 0 && <span className={state.missing.length > 0 ? "ml-1" : ""}>{state.noClass} with no class set</span>}
         </div>
       )}
-      {count > PARTY_SIZE && <p className="text-xs text-danger">Over the usual party size of {PARTY_SIZE}.</p>}
+      {count > PARTY_SIZE && <p className="text-xs text-danger">{t("Over the usual party size of")} {PARTY_SIZE}.</p>}
       {count === 0 ? <p className="py-3 text-center text-text-muted">Empty</p> : <ul className="flex flex-col gap-1">{children}</ul>}
       {footer}
       {canEdit && (
         <div className="flex justify-end">
-          <ConfirmButton className="text-xs text-text-muted hover:text-danger cursor-pointer" confirm="Delete party?" onConfirm={onDelete}>Delete</ConfirmButton>
+          <ConfirmButton className="text-xs text-text-muted hover:text-danger cursor-pointer" confirm={t("Delete party?")} onConfirm={onDelete}>Delete</ConfirmButton>
         </div>
       )}
     </div>

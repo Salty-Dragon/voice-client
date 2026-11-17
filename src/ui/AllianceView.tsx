@@ -1,6 +1,7 @@
 // For the alliance's owner and its admins: the alliance itself, its clans and
 // who leads them, its players, admins and bans.
 
+import { d, t } from "../words";
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
@@ -45,7 +46,7 @@ function AllianceSelf({
   return (
     <Section
       title={alliance.name}
-      help={"Your alliance: the group that shares one roster. Everything on this screen belongs to it and to nobody else.\nShared lounge: one extra room, between events, that every clan of the alliance sits in together. Off, each clan has only its own lounge.\nThe owner appoints the alliance's admins (in the list of players), can hand the alliance to another player, and can delete it."}
+      help={t("Your alliance: the group that shares one roster. Everything on this screen belongs to it and to nobody else.\nShared lounge: one extra room, between events, that every clan of the alliance sits in together. Off, each clan has only its own lounge.\nThe owner appoints the alliance's admins (in the list of players), can hand the alliance to another player, and can delete it.")}
     >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3" data-alliance-self>
         {name === null ? (
@@ -61,7 +62,7 @@ function AllianceSelf({
               });
             }}
           >
-            <input className="field w-64 py-0.5" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required autoFocus aria-label="Alliance name" />
+            <input className="field w-64 py-0.5" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required autoFocus aria-label={t("Alliance name")} />
             <button className="btn text-sm" disabled={busy}>Save</button>
             <button type="button" className="btn btn-quiet text-sm" onClick={() => setName(null)}>Cancel</button>
           </form>
@@ -70,7 +71,7 @@ function AllianceSelf({
           <span className="text-text-muted">
             Shared lounge is <span className={loungeOn ? "font-medium text-net-party" : "font-medium text-text"}>{loungeOn ? "on" : "off"}</span>
           </span>
-          <ConfirmButton confirm={loungeOn ? "Turn off for everyone?" : "Let every clan hear each other?"} disabled={busy} onConfirm={() => void call("alliance.setLounge", { on: !loungeOn })}>
+          <ConfirmButton confirm={loungeOn ? "Turn off for everyone?" : t("Let every clan hear each other?")} disabled={busy} onConfirm={() => void call("alliance.setLounge", { on: !loungeOn })}>
             {loungeOn ? "Turn off" : "Turn on"}
           </ConfirmButton>
         </span>
@@ -80,7 +81,7 @@ function AllianceSelf({
               className="field w-auto py-0.5 text-sm"
               value=""
               disabled={busy}
-              aria-label="Hand the alliance to"
+              aria-label={t("Hand the alliance to")}
               onChange={(e) => setHandTo(users.find((u) => u.id === Number(e.target.value)) ?? null)}
             >
               <option value="" disabled>Hand it to…</option>
@@ -96,7 +97,7 @@ function AllianceSelf({
                 })
               }
             >
-              Delete alliance
+              {t("Delete alliance")}
             </ConfirmButton>
           </span>
         )}
@@ -140,8 +141,8 @@ export function AllianceView() {
 
       {data.alliance && <AllianceSelf alliance={data.alliance} loungeOn={!!data.loungeOn} users={data.users} owner={owner} busy={act.busy} call={call} />}
 
-      <Section title="Clans" help={"Every player belongs to one clan, and voice follows it: a clan has its own lounge between operations and its own Clan net during them.\nRename changes a clan's name and tag; its members, constant parties, crest and invite links stay. Delete is offered once a clan is empty or has only its leader left.\nCreate the clan here, then appoint its leader. The leader approves members and appoints officers. Appointing a new leader makes the previous one an ordinary member."}>
-        {data.clans.length === 0 && <p className="text-text-muted">No clans yet. Create the first one below, then appoint its leader.</p>}
+      <Section title={t("Clans")} help={t("Every player belongs to one clan, and voice follows it: a clan has its own lounge between operations and its own Clan net during them.\nRename changes a clan's name and tag; its members, constant parties, crest and invite links stay. Delete is offered once a clan is empty or has only its leader left.\nCreate the clan here, then appoint its leader. The leader approves members and appoints officers. Appointing a new leader makes the previous one an ordinary member.")}>
+        {data.clans.length === 0 && <p className="text-text-muted">{t("No clans yet. Create the first one below, then appoint its leader.")}</p>}
         <ul className="flex flex-col divide-y divide-line">
           {data.clans.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-2">
@@ -157,7 +158,7 @@ export function AllianceView() {
                     });
                   }}
                 >
-                  <input className="field w-52 py-0.5" value={renaming.name} onChange={(e) => setRenaming({ ...renaming, name: e.target.value })} maxLength={48} required autoFocus aria-label="New clan name" />
+                  <input className="field w-52 py-0.5" value={renaming.name} onChange={(e) => setRenaming({ ...renaming, name: e.target.value })} maxLength={48} required autoFocus aria-label={t("New clan name")} />
                   <input className="field w-24 py-0.5" value={renaming.tag} onChange={(e) => setRenaming({ ...renaming, tag: e.target.value })} maxLength={8} required aria-label="New tag" />
                   <button className="btn text-sm" disabled={act.busy}>Save</button>
                   <button type="button" className="btn btn-quiet text-sm" onClick={() => setRenaming(null)}>Cancel</button>
@@ -203,22 +204,22 @@ export function AllianceView() {
           }}
         >
           <label className="flex flex-col gap-1 text-text-muted">
-            Clan name
+            {t("Clan name")}
             <input className="field" value={name} onChange={(e) => setName(e.target.value)} maxLength={48} required />
           </label>
           <label className="flex flex-col gap-1 text-text-muted">
             <span className="flex items-center gap-1">
               Tag
-              <Help text={"A short form of the clan's name: 1 to 8 letters or digits, for example DRG for Dragons.\nIt is shown in brackets beside every member's name in voice and on roster boards, so callers can tell at a glance which clan a player is from. Once the clan's leader uploads a crest, the crest is shown there instead of the tag.\nIn an operation with several clans it also names each clan's own net, for example \"Clan DRG\"."} />
+              <Help text={t("A short form of the clan's name: 1 to 8 letters or digits, for example DRG for Dragons.\nIt is shown in brackets beside every member's name in voice and on roster boards, so callers can tell at a glance which clan a player is from. Once the clan's leader uploads a crest, the crest is shown there instead of the tag.\nIn an operation with several clans it also names each clan's own net, for example \"Clan DRG\".")} />
             </span>
             <input className="field w-28" value={tag} onChange={(e) => setTag(e.target.value)} maxLength={8} required />
           </label>
-          <button className="btn" disabled={act.busy}>Create clan</button>
+          <button className="btn" disabled={act.busy}>{t("Create clan")}</button>
         </form>
-        <p className="text-xs text-text-muted">The new leader must have signed in once. A player in another clan has to be moved out of it first (Players, below). A clan can be deleted once only its leader is left in it.</p>
+        <p className="text-xs text-text-muted">{t("The new leader must have signed in once. A player in another clan has to be moved out of it first (Players, below). A clan can be deleted once only its leader is left in it.")}</p>
       </Section>
 
-      <Section title={`Players (${data.users.length})`} help={"Everyone in the alliance who has confirmed a name.\nOwner: started the alliance or was handed it; appoints its admins.\nAlliance admin: manages clans, clan leaders, operations and bans.\nMove to clan: puts the player straight into another clan as an approved member, without a request or an invite. Use it for a transfer. In the clan they leave, they lose their constant parties and their party places in operations still to come. A clan's leader has to be replaced before they can be moved.\nA ban puts the player out of the alliance at once, voice included. It follows their Discord account, so an invite link does not bring them back. Lift it from the list of bans below the players."}>
+      <Section title={`Players (${data.users.length})`} help={t("Everyone in the alliance who has confirmed a name.\nOwner: started the alliance or was handed it; appoints its admins.\nAlliance admin: manages clans, clan leaders, operations and bans.\nMove to clan: puts the player straight into another clan as an approved member, without a request or an invite. Use it for a transfer. In the clan they leave, they lose their constant parties and their party places in operations still to come. A clan's leader has to be replaced before they can be moved.\nA ban puts the player out of the alliance at once, voice included. It follows their Discord account, so an invite link does not bring them back. Lift it from the list of bans below the players.")}>
         <input className="field max-w-xs" placeholder="Find a player" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Find a player" />
         <ul className="flex flex-col divide-y divide-line">
           {shown.map((u) => (
@@ -226,16 +227,16 @@ export function AllianceView() {
               <span className="font-medium">{u.name}</span>
               <span className="text-text-muted"><ClanMark clanId={u.clanId} tag={u.clanTag} size={18} /></span>
               {u.isOwner && <span className="text-xs uppercase tracking-wider text-gold">Owner</span>}
-              {u.isAllianceAdmin && !u.isOwner && <span className="text-xs uppercase tracking-wider text-gold-dim">Alliance admin</span>}
+              {u.isAllianceAdmin && !u.isOwner && <span className="text-xs uppercase tracking-wider text-gold-dim">{t("Alliance admin")}</span>}
               {data.clans.some((c) => c.id !== u.clanId) && (
                 <select
                   className="field ml-auto w-auto py-0.5 text-sm"
                   value=""
                   disabled={act.busy}
-                  aria-label={`Move ${u.name} to a clan`}
+                  aria-label={t(`Move ${d(u.name)} to a clan`)}
                   onChange={(e) => setMoving({ userId: u.id, clanId: Number(e.target.value) })}
                 >
-                  <option value="" disabled>{u.clanId === null ? "Put in a clan…" : "Move to clan…"}</option>
+                  <option value="" disabled>{u.clanId === null ? t("Put in a clan…") : t("Move to clan…")}</option>
                   {data.clans.filter((c) => c.id !== u.clanId).map((c) => (
                     <option key={c.id} value={c.id}>{c.name} [{c.tag}]</option>
                   ))}
@@ -260,13 +261,13 @@ export function AllianceView() {
                   <span className="text-gold">Move {u.name} to {data.clans.find((c) => c.id === moving.clanId)?.name}?</span>
                   <button type="button" className="btn text-sm" disabled={act.busy} onClick={() => void call("alliance.moveToClan", { userId: u.id, clanId: moving.clanId }).then(() => setMoving(null))}>Move</button>
                   <button type="button" className="btn btn-quiet text-sm" onClick={() => setMoving(null)}>Cancel</button>
-                  {u.clanId !== null && <span className="w-full text-right text-xs text-text-muted">They leave their constant parties and their party places in operations still to come.</span>}
+                  {u.clanId !== null && <span className="w-full text-right text-xs text-text-muted">{t("They leave their constant parties and their party places in operations still to come.")}</span>}
                 </span>
               )}
             </li>
           ))}
         </ul>
-        <p className="text-xs text-text-muted">A ban puts the player out of the alliance at once, voice included, and keeps them out. It follows their Discord account.</p>
+        <p className="text-xs text-text-muted">{t("A ban puts the player out of the alliance at once, voice included, and keeps them out. It follows their Discord account.")}</p>
         {(data.bans?.length ?? 0) > 0 && (
           <div className="flex flex-col gap-1 border-t border-line pt-3" data-bans>
             <h3 className="text-xs uppercase tracking-wider text-danger">Banned ({data.bans?.length})</h3>
@@ -283,12 +284,12 @@ export function AllianceView() {
         )}
       </Section>
 
-      <Section title="Game setup" help={GAME_SETUP_HELP}>
+      <Section title="Game setup" help={t(GAME_SETUP_HELP)}>
         <GameSetup />
       </Section>
 
       {data.discord !== undefined && (
-        <Section title="Discord announcements" help={DISCORD_HELP("any operation of the alliance") + "\nEach clan's leader can also set up a channel of their own on the Clan screen, for the operations that clan takes part in."}>
+        <Section title="Discord announcements" help={DISCORD_HELP(t("any operation of the alliance")) + t("\nEach clan's leader can also set up a channel of their own on the Clan screen, for the operations that clan takes part in.")}>
           <DiscordSetup clanId={null} connected={data.discord} onChange={reload} />
         </Section>
       )}
@@ -296,7 +297,7 @@ export function AllianceView() {
       <AuditLog
         scope="alliance"
         title="Log"
-        help={"Who changed what, newest first: clans and their leaders, approvals and removals, invite links, constant parties, operations, every roster move, bans.\nA line that starts with The server is something done automatically, such as promoting a party's next member when its leader dropped out.\nAn account that has since been deleted shows as a deleted account.\nA clan's leader can read the part of this that concerns their own clan, on the Clan tab."}
+        help={t("Who changed what, newest first: clans and their leaders, approvals and removals, invite links, constant parties, operations, every roster move, bans.\nA line that starts with The server is something done automatically, such as promoting a party's next member when its leader dropped out.\nAn account that has since been deleted shows as a deleted account.\nA clan's leader can read the part of this that concerns their own clan, on the Clan tab.")}
       />
     </div>
   );

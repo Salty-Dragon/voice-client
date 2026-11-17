@@ -3,6 +3,7 @@
 // from the joins and leaves it already records; the copy button gives the
 // table as tab-separated text, which pastes straight into a spreadsheet.
 
+import { d, t } from "../words";
 import { useState } from "react";
 import { rpc, type Attendance, type AttendanceRow } from "../api";
 import { useLoad } from "./app-context";
@@ -16,6 +17,7 @@ const span = (seconds: number) => {
 const clock = (iso: string | null) => (iso ? new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "");
 const share = (row: AttendanceRow, total: number) => (total > 0 ? Math.min(100, Math.round((row.seconds / total) * 100)) : 0);
 
+// Labels: t() where shown.
 const SORTS = {
   clan: { label: "Clan, then name", by: null },
   time: { label: "Most time first", by: (a: AttendanceRow, b: AttendanceRow) => b.seconds - a.seconds || a.name.localeCompare(b.name) },
@@ -31,7 +33,7 @@ const cell = (v: string | number) => (typeof v === "number" ? String(v) : (/^[=+
 
 /** The table as text a spreadsheet takes: one line per player, columns separated by tabs. */
 function asText(a: Attendance, rows: AttendanceRow[]): string {
-  const head = ["Name", "Usual name", "Class", "Level", "Clan", "Party", "Minutes in voice", "Percent of operation", "Joined", "Left", "Signed up"];
+  const head = ["Name", "Usual name", "Class", "Level", t("Clan"), t("Party"), "Minutes in voice", t("Percent of operation"), "Joined", "Left", "Signed up"];
   const lines = rows.map((r) =>
     [r.name, r.usualName ?? "", r.className ?? "", r.levelBand ?? "", r.clanTag ?? "", r.party ?? "", Math.round(r.seconds / 60), share(r, a.seconds), clock(r.firstAt), clock(r.lastAt), r.signup === "coming" ? "Coming" : r.signup === "out" ? "Can't come" : ""].map(cell).join("\t"),
   );
@@ -68,7 +70,7 @@ export function AttendancePanel({ opId, live }: { opId: number; live: boolean })
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <h2 className="title flex items-center gap-1 text-sm text-gold-bright">
           Attendance
-          <Help text={"Who was in voice while the operation ran, from Start operation to End operation.\nIn voice: the time the player was connected to the operation's nets. Time before it started does not count.\nNo show: the player said they were coming and was never in voice.\nCopy: puts the table on your clipboard as text. Paste it into a spreadsheet and it lands in columns.\nOrganisers see everyone; clan leaders and officers see their own clan."} />
+          <Help text={t("Who was in voice while the operation ran, from Start operation to End operation.\nIn voice: the time the player was connected to the operation's nets. Time before it started does not count.\nNo show: the player said they were coming and was never in voice.\nCopy: puts the table on your clipboard as text. Paste it into a spreadsheet and it lands in columns.\nOrganisers see everyone; clan leaders and officers see their own clan.")} />
         </h2>
         {data && (
           <span className="text-text-muted" data-attendance-summary>
@@ -78,7 +80,7 @@ export function AttendancePanel({ opId, live }: { opId: number; live: boolean })
         <span className="ml-auto flex flex-wrap items-center gap-2">
           {copied && <span className="text-net-party" role="status">Copied. Paste it into your sheet.</span>}
           <select className="field w-auto py-0.5" value={sort} onChange={(e) => setSort(e.target.value as keyof typeof SORTS)} aria-label="Sort attendance by">
-            {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>{s.label}</option>)}
+            {Object.entries(SORTS).map(([k, s]) => <option key={k} value={k}>{t(s.label)}</option>)}
           </select>
           <button type="button" className="btn text-sm" disabled={!data || rows.length === 0} onClick={copy}>Copy for a spreadsheet</button>
           {live && <button type="button" className="text-text-muted hover:text-text cursor-pointer" onClick={() => setOpen(false)}>Close</button>}
@@ -94,8 +96,8 @@ export function AttendancePanel({ opId, live }: { opId: number; live: boolean })
               <tr>
                 <th className="py-1 pr-3 font-normal">Player</th>
                 <th className="py-1 pr-3 font-normal">Class</th>
-                <th className="py-1 pr-3 font-normal">Clan</th>
-                <th className="py-1 pr-3 font-normal">Party</th>
+                <th className="py-1 pr-3 font-normal">{t("Clan")}</th>
+                <th className="py-1 pr-3 font-normal">{t("Party")}</th>
                 <th className="py-1 pr-3 font-normal">In voice</th>
                 <th className="py-1 pr-3 font-normal">Joined</th>
                 <th className="py-1 font-normal">Signed up</th>
@@ -120,7 +122,7 @@ export function AttendancePanel({ opId, live }: { opId: number; live: boolean })
                     <td className="py-1 pr-3 tabular-nums">
                       {r.seconds > 0 ? (
                         <span className="flex items-center gap-2">
-                          <span className="inline-block h-1.5 w-16 rounded-sm bg-line" role="img" aria-label={`${pct} percent of the operation`}>
+                          <span className="inline-block h-1.5 w-16 rounded-sm bg-line" role="img" aria-label={t(`${d(pct)} percent of the operation`)}>
                             <span className="block h-full rounded-sm bg-net-party" style={{ width: `${pct}%` }} />
                           </span>
                           {span(r.seconds)} <span className="text-text-muted">{pct}%</span>

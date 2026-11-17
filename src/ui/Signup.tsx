@@ -1,6 +1,7 @@
 // Signing up for an operation: "coming" or "can't come", and, when a player
 // brings a character other than the one on their profile, which one.
 
+import { t } from "../words";
 import { useState } from "react";
 import { rpc, type Signup } from "../api";
 import { useGame } from "../game";
@@ -9,6 +10,7 @@ import { CharacterFields } from "./CharacterFields";
 import { when } from "./RosterView";
 import { Help } from "./tips";
 
+// t() where shown.
 const SIGNUP_HELP = [
   "Tell the organiser whether you are coming, so they can build the parties before the event.",
   "Coming: you appear at the top of the organiser's list of players to place.",
@@ -79,13 +81,13 @@ export function SignupControl({
       <div className="flex flex-wrap items-center gap-2">
         {button("coming", status === "coming" ? "✓ Coming" : "Coming", "border-net-party text-net-party")}
         {button("out", "Can't come", "border-danger text-danger")}
-        {full && <Help text={SIGNUP_HELP} />}
+        {full && <Help text={t(SIGNUP_HELP)} />}
         {full && status === "coming" && (
           <span className="text-text-muted">
             as <span className="text-text">{signup?.charName ?? info.user.name}</span>
             {(signup?.className ?? info.user.className) && <span> · {signup?.className ?? info.user.className}</span>}
             {(signup?.levelBand ?? info.user.levelBand) && <span> · {signup?.levelBand ?? info.user.levelBand}</span>}
-            {signup?.byLeader && <span> · signed up by your party's leader</span>}
+            {signup?.byLeader && <span> {t("· signed up by your party's leader")}</span>}
           </span>
         )}
         {full && game && !open && (

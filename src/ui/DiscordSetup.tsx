@@ -5,6 +5,7 @@
 // What is pasted is a channel webhook's address, which is a secret: the
 // server keeps it and only ever tells the app whether one is set.
 
+import { t } from "../words";
 import { useState } from "react";
 import { rpc } from "../api";
 import { ConfirmButton, useAct } from "./app-context";
@@ -15,7 +16,7 @@ export const DISCORD_HELP = (what: string) =>
     "To set it up: in Discord, open the channel's settings (the cog beside its name), then Integrations, Webhooks, New Webhook, and Copy Webhook URL. Paste that address here. You need the Manage Webhooks permission on the Discord server.",
     "A first message is posted at once, so you can see it arrive.",
     "The address is a secret: anyone who has it can post in that channel. The app stores it and never shows it again. To stop, disconnect here or delete the webhook in Discord.",
-    "A message names the operation, its start (shown to each reader in their own time zone), the clans and the event leader. Nobody is pinged.",
+    t("A message names the operation, its start (shown to each reader in their own time zone), the clans and the event leader. Nobody is pinged."),
   ].join("\n");
 
 /** `clanId` null: the alliance's own channel. */
@@ -36,7 +37,7 @@ export function DiscordSetup({ clanId, connected, onChange }: { clanId: number |
   };
   return (
     <div className="flex flex-col gap-2" data-discord-setup>
-      <p className={connected ? "text-net-party" : "text-text-muted"}>{connected ? "Connected: operations are announced in a Discord channel." : "Not set up."}</p>
+      <p className={connected ? "text-net-party" : "text-text-muted"}>{connected ? t("Connected: operations are announced in a Discord channel.") : "Not set up."}</p>
       <form
         className="flex flex-wrap items-center gap-2"
         onSubmit={(e) => {

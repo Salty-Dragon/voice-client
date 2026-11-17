@@ -1,3 +1,4 @@
+import { t } from "../words";
 import { useState } from "react";
 import { rpc } from "../api";
 import { useGame } from "../game";
@@ -35,8 +36,8 @@ export function ProfileForm({ name, className, levelBand, onSaved, submit }: { n
         <div className="flex flex-col gap-1">
           <CharacterFields game={game} className={cls} levelBand={band} onClass={setCls} onLevel={setBand} />
           <span className="flex items-center gap-1 text-xs text-text-muted">
-            Your main character. Organisers see it when they build parties.
-            <Help text={"Class and level are shown beside your name on rosters, so the organiser can see at a glance which parties still need a buffer or a healer.\nUpdate the level when you move into the next band.\nWhen you sign up for an event you can say that you are bringing a different character, for that event only."} />
+            {t("Your main character. Organisers see it when they build parties.")}
+            <Help text={t("Class and level are shown beside your name on rosters, so the organiser can see at a glance which parties still need a buffer or a healer.\nUpdate the level when you move into the next band.\nWhen you sign up for an event you can say that you are bringing a different character, for that event only.")} />
           </span>
         </div>
       )}
@@ -55,7 +56,7 @@ export function NameStep({ onSaved }: { onSaved: () => void }) {
       <div className="panel rise w-full max-w-md p-8 flex flex-col gap-5">
         <Wordmark className="text-lg" />
         <h1 className="title text-gold">Your name</h1>
-        <p className="text-text-muted">Welcome. First, confirm the name you play under. Your clan leader approves you by this name.</p>
+        <p className="text-text-muted">{t("Welcome. First, confirm the name you play under. Your clan leader approves you by this name.")}</p>
         <ProfileForm name="" className="" levelBand="" onSaved={onSaved} submit="Confirm name" />
       </div>
     </main>

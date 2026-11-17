@@ -1,3 +1,4 @@
+import type { Words } from "./reword";
 // Calls to the backend's app API. The desktop app proves who it is with its
 // session token; the browser version, served from the site, with the site's cookie.
 
@@ -85,9 +86,11 @@ export type GameOptions = {
   eventTypes?: string[];
   /** Which characters an in-game name may have, in words. */
   nameRule?: string;
+  /** What this alliance calls an alliance, a clan, a party, a constant party and an operation. */
+  words?: Words;
 };
 /** The whole setup, for the editor on the Alliance screen. */
-export type GameProfile = { preset: string; classes: GameClass[]; roles: string[]; partySize: number; partyNeeds: string[]; groupTypes: string[]; levelLabel: string; levelBands: string[]; eventTypes: string[]; nameRule: string };
+export type GameProfile = { words: Words; preset: string; classes: GameClass[]; roles: string[]; partySize: number; partyNeeds: string[]; groupTypes: string[]; levelLabel: string; levelBands: string[]; eventTypes: string[]; nameRule: string };
 export type GameProfileEdit = { profile: GameProfile; presets: { id: string; label: string; profile: GameProfile }[]; nameRules: { id: string; label: string }[] };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */

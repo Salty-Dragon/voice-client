@@ -3,6 +3,7 @@
 // player has seen which clan it is for and said yes: a link alone must never
 // put someone in a clan, or their voice in its lounge.
 
+import { t } from "../words";
 import { useEffect, useState } from "react";
 import { dropPending, peekPending, redeemPending, type InvitePeek } from "../invite";
 import { ClanCrest } from "./common";
@@ -31,19 +32,19 @@ export function InviteAsk({ onDone }: { onDone: () => void }) {
   }, []);
 
   if (inv === undefined) return null;
-  const clan = inv?.clanName ?? "a clan";
+  const clan = inv?.clanName ?? t("a clan");
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 p-6" role="dialog" aria-modal="true" aria-label="Clan invite">
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 p-6" role="dialog" aria-modal="true" aria-label={t("Clan invite")}>
       <div className="panel flex w-full max-w-md flex-col gap-4 p-5">
         <h2 className="title flex items-center gap-2 text-gold-bright">
           {inv && <ClanCrest clanId={inv.clanId} size={28} />}
           You are invited to join {clan}
           {inv && <span className="font-sans text-sm font-normal text-text-muted">[{inv.clanTag}]</span>}
         </h2>
-        {inv?.allianceName && <p className="-mt-2 text-text-muted">A clan of the alliance <span className="text-text">{inv.allianceName}</span>.</p>}
+        {inv?.allianceName && <p className="-mt-2 text-text-muted">{t("A clan of the alliance")} <span className="text-text">{inv.allianceName}</span>.</p>}
         <p className="text-text-muted">
           {inv === null
-            ? "A link you opened asks to add you to a clan. Only accept if you were expecting it."
+            ? t("A link you opened asks to add you to a clan. Only accept if you were expecting it.")
             : inv.autoApprove
               ? `If you join, you are a member of ${clan} at once and your voice goes to its lounge.`
               : `If you join, your request goes to ${clan}'s leader and officers, who let you in.`}

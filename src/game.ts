@@ -6,6 +6,7 @@
 
 import { useSyncExternalStore } from "react";
 import { rpc, type GameOptions } from "./api";
+import { setWords } from "./words";
 
 let cached: GameOptions | null = null;
 let loading: Promise<void> | null = null;
@@ -22,6 +23,8 @@ function load(): Promise<void> {
       // The same lists again are not a change: do not redraw every screen for nothing.
       if (JSON.stringify(g) !== JSON.stringify(cached)) {
         cached = g;
+        // Before anything redraws: every sentence drawn from here on is said in the alliance's words.
+        setWords(g.words);
         listeners.forEach((l) => l());
       }
     })

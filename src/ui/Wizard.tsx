@@ -1,3 +1,4 @@
+import { t } from "../words";
 import { useEffect, useState } from "react";
 import { engine } from "../runtime";
 import { setSettings, useSettings } from "../settings";
@@ -53,8 +54,7 @@ export function Wizard() {
         {step === 2 && (
           <>
             <p className="text-text-muted">
-              Your party, and your clan's lounge between events, hear you either while you hold a key or whenever you speak. Mouse side buttons work as keys.
-              Command, Clan and Broadcast always need a key; you bind those if you get such a role.
+              {t("Your party, and your clan's lounge between events, hear you either while you hold a key or whenever you speak. Mouse side buttons work as keys. Command, Clan and Broadcast always need a key; you bind those if you get such a role.")}
             </p>
             <PartyMode />
           </>

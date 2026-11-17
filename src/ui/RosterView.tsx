@@ -1,3 +1,4 @@
+import { d, t } from "../words";
 import { useGame } from "../game";
 import { useState } from "react";
 import { rpc, type OpOptions, type OpSummary } from "../api";
@@ -10,6 +11,7 @@ import { Help } from "./tips";
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
 const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text-text-muted" } as const;
 
+// t() where shown.
 const OPERATIONS_HELP = [
   "An operation is one event: a siege, a raid, an epic boss.",
   "Each has its own roster of parties and its own nets: Broadcast, Command, Clan, Party and Reserve.",
@@ -35,7 +37,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
   const game = useGame();
   const act = useAct();
   if (!data) return null;
-  if (data.clans.length === 0) return <p className="text-text-muted">Create a clan on the Alliance screen first.</p>;
+  if (data.clans.length === 0) return <p className="text-text-muted">{t("Create a clan on the Alliance screen first.")}</p>;
   const clanIds = picked ?? (data.clans.length === 1 ? [data.clans[0].id] : []);
 
   return (
@@ -59,7 +61,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         <label className="flex flex-col gap-1 text-text-muted">
           <span className="flex items-center gap-1">
             Kind of event
-            <Help text={"What this operation is, from your alliance's own list. It is shown beside the name, here and in Discord announcements.\nAn alliance admin keeps the list on the Alliance screen, under Game setup."} />
+            <Help text={t("What this operation is, from your alliance's own list. It is shown beside the name, here and in Discord announcements.\nAn alliance admin keeps the list on the Alliance screen, under Game setup.")} />
           </span>
           <select className="field" value={eventType} onChange={(e) => setEventType(e.target.value)} aria-label="Kind of event">
             <option value="">Not said</option>
@@ -71,7 +73,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         <label className="flex flex-col gap-1 text-text-muted">
           <span className="flex items-center gap-1">
             Start from
-            <Help text={"Begin with the parties of an earlier operation: the same parties in the same order, with the same leaders, members and deputies.\nOnly players who are still approved members of the clans you tick below are carried over; everyone else starts in Reserve.\nThe earlier operation is not changed. You can rearrange the new one freely afterwards."} />
+            <Help text={t("Begin with the parties of an earlier operation: the same parties in the same order, with the same leaders, members and deputies.\nOnly players who are still approved members of the clans you tick below are carried over; everyone else starts in Reserve.\nThe earlier operation is not changed. You can rearrange the new one freely afterwards.")} />
           </span>
           <select
             className="field"
@@ -89,7 +91,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
           >
             <option value="">An empty roster</option>
             {data.previous.map((p) => (
-              <option key={p.id} value={p.id}>{`${p.name}: ${p.parties} ${p.parties === 1 ? "party" : "parties"}, ${p.players} ${p.players === 1 ? "player" : "players"}`}</option>
+              <option key={p.id} value={p.id}>{t(`${d(p.name)}: ${d(p.parties)} ${p.parties === 1 ? "party" : "parties"}, ${d(p.players)} ${p.players === 1 ? "player" : "players"}`)}</option>
             ))}
           </select>
         </label>
@@ -97,14 +99,14 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
       <label className="flex flex-col gap-1 text-text-muted">
         <span className="flex items-center gap-1">
           Starts (your local time, optional)
-          <Help text={"Shown to players so they know when to be ready. Each player sees it in their own local time.\nThe operation does not start by itself: the event leader presses Start operation."} />
+          <Help text={t("Shown to players so they know when to be ready. Each player sees it in their own local time.\nThe operation does not start by itself: the event leader presses Start operation.")} />
         </span>
         <input type="datetime-local" className="field" value={starts} onChange={(e) => setStarts(e.target.value)} />
       </label>
       <label className="flex flex-col gap-1 text-text-muted">
         <span className="flex items-center gap-1">
           Event leader
-          <Help text={"The player who runs the event. They speak on Broadcast and Command, appoint deputies, build the roster, and start and end the operation.\nIt can be you or anyone who has signed in. Alliance admins keep the same powers over every operation."} />
+          <Help text={t("The player who runs the event. They speak on Broadcast and Command, appoint deputies, build the roster, and start and end the operation.\nIt can be you or anyone who has signed in. Alliance admins keep the same powers over every operation.")} />
         </span>
         <select className="field" value={leader} onChange={(e) => setLeader(Number(e.target.value))}>
           {data.users.map((u) => (
@@ -114,8 +116,8 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
       </label>
       <fieldset className="flex flex-col gap-1">
         <legend className="text-text-muted mb-1 flex items-center gap-1">
-          Clans taking part
-          <Help text={"Every member of the clans you tick is on this operation's roster, starting in Reserve until placed in a party.\nEach clan gets its own Clan net. Players from other clans cannot join the operation's nets."} />
+          {t("Clans taking part")}
+          <Help text={t("Every member of the clans you tick is on this operation's roster, starting in Reserve until placed in a party.\nEach clan gets its own Clan net. Players from other clans cannot join the operation's nets.")} />
         </legend>
         {data.clans.map((c) => (
           <label key={c.id} className="flex items-center gap-2">
@@ -130,7 +132,7 @@ function NewOperation({ onCreated }: { onCreated: (id: number) => void }) {
         ))}
       </fieldset>
       <div className="flex items-center gap-3">
-        <button className="btn" disabled={act.busy || !name.trim() || clanIds.length === 0}>Create operation</button>
+        <button className="btn" disabled={act.busy || !name.trim() || clanIds.length === 0}>{t("Create operation")}</button>
         {act.error && <span className="text-danger" role="alert">{act.error}</span>}
       </div>
     </form>
@@ -149,19 +151,19 @@ export function RosterView() {
       <section className="panel p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="title title-rule flex-1 text-sm text-gold">
-            Operations
-            <Help text={OPERATIONS_HELP} />
+            {t("Operations")}
+            <Help text={t(OPERATIONS_HELP)} />
           </h2>
           {info.user.runsAlliance && !creating && (
-            <button type="button" className="btn text-sm" onClick={() => setCreating(true)}>New operation</button>
+            <button type="button" className="btn text-sm" onClick={() => setCreating(true)}>{t("New operation")}</button>
           )}
         </div>
         {error && <p className="text-danger">{error}</p>}
         {ops && ops.length === 0 && (
           <p className="text-text-muted">
             {info.membership?.status === "active" || info.user.runsAlliance
-              ? "No operations yet. Until one starts, you are in the lounge."
-              : "You will see your clan's operations here once you have been approved."}
+              ? t("No operations yet. Until one starts, you are in the lounge.")
+              : t("You will see your clan's operations here once you have been approved.")}
           </p>
         )}
         <ul className="flex flex-col divide-y divide-line">
@@ -191,8 +193,8 @@ export function RosterView() {
         <section className="panel p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="title title-rule flex-1 text-sm text-gold">
-              New operation
-              <Help text={"Plan an event: name it, pick who leads it and which clans take part. It is created as Planned, and its roster board opens so you can build parties.\nNothing changes for players until the event leader starts it."} />
+              {t("New operation")}
+              <Help text={t("Plan an event: name it, pick who leads it and which clans take part. It is created as Planned, and its roster board opens so you can build parties.\nNothing changes for players until the event leader starts it.")} />
             </h2>
             <button type="button" className="btn btn-quiet text-sm" onClick={() => setCreating(false)}>Cancel</button>
           </div>

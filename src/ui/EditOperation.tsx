@@ -2,6 +2,7 @@
 // event leader or an alliance admin), its event leader and clans (an alliance
 // admin; the clans only before it starts), and deleting one planned by mistake.
 
+import { t } from "../words";
 import { useState } from "react";
 import { rpc, type OpOptions, type OpView } from "../api";
 import { useGame } from "../game";
@@ -69,7 +70,7 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
         <label className="flex flex-col gap-1 text-text-muted">
           <span className="flex items-center gap-1">
             Starts (your local time)
-            <Help text={"Each player sees the start in their own local time. Clear the field for no start time.\nThe operation does not start by itself: the event leader presses Start operation."} />
+            <Help text={t("Each player sees the start in their own local time. Clear the field for no start time.\nThe operation does not start by itself: the event leader presses Start operation.")} />
           </span>
           <input type="datetime-local" className="field" value={starts} onChange={(e) => setStarts(e.target.value)} aria-label="Starts" />
         </label>
@@ -87,8 +88,8 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
       {admin && data && planned && (
         <fieldset className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <legend className="mb-1 flex items-center gap-1 text-text-muted">
-            Clans taking part
-            <Help text={"Tick a clan to add its members to this operation's roster; they are then asked whether they are coming.\nUntick a clan to take it out: its members leave the operation's parties and their answers are dropped. Organisers stay.\nThe clans can only be changed before the operation starts."} />
+            {t("Clans taking part")}
+            <Help text={t("Tick a clan to add its members to this operation's roster; they are then asked whether they are coming.\nUntick a clan to take it out: its members leave the operation's parties and their answers are dropped. Organisers stay.\nThe clans can only be changed before the operation starts.")} />
           </legend>
           {data.clans.map((c) => (
             <label key={c.id} className="flex items-center gap-2">
@@ -101,7 +102,7 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
       )}
       {leaving.length > 0 && (
         <p className="text-gold" role="status">
-          Taking out {leaving.map((c) => c.name).join(", ")}: its members leave this operation's parties.
+          Taking out {leaving.map((c) => c.name).join(", ")}{t(": its members leave this operation's parties.")}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
@@ -115,9 +116,9 @@ export function EditOperation({ op, onClose, onSaved, onDeleted }: { op: OpView;
               disabled={act.busy}
               onConfirm={() => void act.run(() => rpc("op.delete", { opId: op.id })).then((ok) => ok && onDeleted())}
             >
-              Delete operation
+              {t("Delete operation")}
             </ConfirmButton>
-            <Help text={"Removes this operation with its parties and answers, for one created by mistake. It cannot be undone.\nAn operation that has started cannot be deleted here: end it, and an alliance admin can delete it afterwards."} />
+            <Help text={t("Removes this operation with its parties and answers, for one created by mistake. It cannot be undone.\nAn operation that has started cannot be deleted here: end it, and an alliance admin can delete it afterwards.")} />
           </span>
         )}
       </div>

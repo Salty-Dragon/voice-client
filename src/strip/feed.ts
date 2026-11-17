@@ -9,7 +9,7 @@ export const CHANNEL = "warcryer-strip";
 export const POSITION_KEY = "strip.pos";
 
 export type StripSpeaker = { name: string; crest: string | null; tag: string | null };
-export type StripLine = { net: NetKind; label: string; you: boolean; lowered: boolean; speakers: StripSpeaker[] };
+export type StripLine = { net: NetKind; label: string; /** What the strip calls this net, in the alliance's words. */ short: string; you: boolean; lowered: boolean; speakers: StripSpeaker[] };
 export type StripState = {
   /** Lounge name or operation name; null when not in voice at all. */
   where: string | null;

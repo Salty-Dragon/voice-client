@@ -1,3 +1,4 @@
+import { t } from "../words";
 import { useState } from "react";
 import { rpc } from "../api";
 import type { LeaderLost } from "../control";
@@ -32,7 +33,7 @@ export function LeaderLostBar({ opId, lost, myId }: { opId: number; lost: Leader
         </button>
       ))}
       <span className="text-xs text-text-muted">
-        {here.length === 0 ? "Nobody else from the party is in voice yet." : "If nobody chooses, the next member in party order takes over in half a minute."}
+        {here.length === 0 ? t("Nobody else from the party is in voice yet.") : t("If nobody chooses, the next member in party order takes over in half a minute.")}
       </span>
       {error && <span className="text-xs text-danger" role="alert">{error}</span>}
     </div>

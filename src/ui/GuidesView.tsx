@@ -2,6 +2,8 @@
 // docs folder, built into the app, so they always match the installed version
 // and open without a browser.
 
+import { useGame } from "../game";
+import { d, t } from "../words";
 import { marked } from "marked";
 import { useEffect, useMemo, useRef, useState } from "react";
 import admins from "../../docs/alliance-admins.md?raw";
@@ -11,6 +13,7 @@ import { DOCS_URL } from "../config";
 import { useApp } from "./app-context";
 import { openInBrowser } from "./common";
 
+// Labels and descriptions: t() where shown.
 const GUIDES = [
   { file: "members.md", label: "Members", who: "Everyone: signing in, class and level, invite links, talking, keys, signing up for events, the compact strip, updates, settings", text: members },
   { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties, your parties in an operation, Discord announcements, attendance, the clan log", text: leaders },
@@ -34,14 +37,20 @@ export function GuidesView() {
   const guide = GUIDES.find((g) => g.file === file) ?? GUIDES[0];
   // The text is this app's own, built in at compile time. Even so, HTML written into a guide is shown
   // as text, not run: the guides are Markdown, and a change to one must never be a way to put script in the app.
-  const html = useMemo(() => marked.parse(guide.text, { async: false, gfm: true, renderer: PLAIN_HTML }), [guide]);
+  // The guides are written in the app's own words and read in the alliance's. Link addresses and
+  // anything in code type are left as written.
+  const game = useGame();
+  const said = useMemo(() => t(guide.text.replace(/(\]\([^)\s]*\)|`[^`\n]*`)/g, (m) => d(m))), [guide, game]);
+  const html = useMemo(() => marked.parse(said, { async: false, gfm: true, renderer: PLAIN_HTML }), [said]);
+  // A heading is found by the name it has in the guide as written, which is what the links in the guides use.
+  const anchors = useMemo(() => marked.lexer(guide.text).flatMap((tok) => (tok.type === "heading" && (tok.depth === 2 || tok.depth === 3) ? [slug(tok.text)] : [])), [guide]);
 
   useEffect(() => {
     const el = page.current;
     if (!el) return;
     el.scrollTop = 0;
-    for (const h of el.querySelectorAll("h2, h3")) h.id = slug(h.textContent ?? "");
-  }, [html]);
+    el.querySelectorAll("h2, h3").forEach((h, i) => (h.id = anchors[i] ?? slug(h.textContent ?? "")));
+  }, [html, anchors]);
 
   /** Links stay in the app where they can: another guide, or a heading on this page. */
   const follow = (e: React.MouseEvent) => {
@@ -67,10 +76,10 @@ export function GuidesView() {
             className={`panel flex flex-col gap-1 px-3 py-2 text-left cursor-pointer ${g.file === file ? "border-gold bg-bg-2" : "hover:border-gold"}`}
           >
             <span className="flex items-center gap-2">
-              <span className={`font-medium ${g.file === file ? "text-gold-bright" : ""}`}>{g.label}</span>
+              <span className={`font-medium ${g.file === file ? "text-gold-bright" : ""}`}>{t(g.label)}</span>
               {yours.has(g.file) && g.file !== "members.md" && <span className="ml-auto text-xs uppercase tracking-wider text-net-party">Your role</span>}
             </span>
-            <span className="text-xs text-text-muted">{g.who}</span>
+            <span className="text-xs text-text-muted">{t(g.who)}</span>
           </button>
         ))}
         <p className="px-1 text-xs text-text-muted">These match the version of the app you have installed.</p>

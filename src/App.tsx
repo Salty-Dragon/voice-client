@@ -1,9 +1,10 @@
+import { d, t } from "./words";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
-import { refreshGame } from "./game";
+import { refreshGame, useGame } from "./game";
 import { usePendingInvite } from "./invite";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
@@ -12,7 +13,7 @@ import { installUpdate, useUpdate } from "./update";
 import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
-import { NET_NAME, useEngine, Wordmark } from "./ui/common";
+import { netName, useEngine, Wordmark } from "./ui/common";
 import { GuidesView } from "./ui/GuidesView";
 import { InviteAsk } from "./ui/InviteAsk";
 import { LeaderLostBar } from "./ui/LeaderLostBar";
@@ -27,6 +28,7 @@ import { Wizard } from "./ui/Wizard";
 
 type Phase = "signin" | "running" | "replaced";
 
+// The labels go through t() where shown.
 const TABS: { id: Tab; label: string }[] = [
   { id: "voice", label: "Voice" },
   { id: "roster", label: "Operations" },
@@ -97,7 +99,7 @@ export default function App() {
         engine.cue("moved");
         setNotice(
           next.notice.kind === "leader"
-            ? `You now lead ${next.notice.party ?? "your party"}. You are on Command: bind a Command key if you have not.`
+            ? `You now lead ${next.notice.party ?? t("your party")}. You are on Command: bind a Command key if you have not.`
             : next.notice.party
               ? `You were moved to ${next.notice.party}.`
               : "You were moved to Reserve.",
@@ -158,6 +160,9 @@ export default function App() {
         .map((n) => ({
           net: n.net,
           label: n.label,
+          // The strip has no words of its own: it is told what to call each net. A party goes by its
+          // own name; a lounge's full name is too long for the strip's column.
+          short: n.net === "party" ? n.label : n.net === "lounge" && n.room.startsWith("lounge-alliance") ? t("Alliance") : netName(n.net),
           you: n.live,
           lowered: n.lowered,
           speakers: n.speakers.map((sp) => {
@@ -186,6 +191,14 @@ export default function App() {
   useEffect(() => {
     if (wideTick > 0) refreshGame();
   }, [wideTick]);
+  // And when the player comes into another alliance, or out of one: its lists and its words are its own.
+  const allianceId = info?.alliance?.id ?? null;
+  useEffect(() => {
+    if (info) refreshGame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allianceId]);
+  // Read here so that the whole app is drawn again when the alliance's words change.
+  useGame();
 
   if (phase === "signin") {
     return (
@@ -237,7 +250,7 @@ export default function App() {
   if (!s.wizardDone) return <Wizard />;
 
   // Nets your mic is open on right now, for the header's indicator.
-  const onAir = eng.view().filter((n) => n.live).map((n) => (n.net === "lounge" || n.net === "party" ? n.label : NET_NAME[n.net]));
+  const onAir = eng.view().filter((n) => n.live).map((n) => (n.net === "lounge" || n.net === "party" ? n.label : netName(n.net)));
 
   const go = (next: Tab, opId?: number) => {
     setTab(next);
@@ -252,24 +265,24 @@ export default function App() {
         <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
           <Wordmark />
           <nav className="flex gap-1" aria-label="Screens">
-            {TABS.filter((t) => t.id !== "alliance" || info.user.runsAlliance).map((t) => (
+            {TABS.filter((x) => x.id !== "alliance" || info.user.runsAlliance).map((x) => (
               <button
-                key={t.id}
+                key={x.id}
                 type="button"
-                aria-current={tab === t.id ? "page" : undefined}
-                onClick={() => go(t.id)}
+                aria-current={tab === x.id ? "page" : undefined}
+                onClick={() => go(x.id)}
                 className={`border-b-2 px-3 py-1 cursor-pointer transition-colors duration-150 ${
-                  tab === t.id ? "border-gold text-gold-bright" : "border-transparent text-text-muted hover:text-text"
+                  tab === x.id ? "border-gold text-gold-bright" : "border-transparent text-text-muted hover:text-text"
                 }`}
               >
-                {t.label}
-                {t.id === "roster" && info.joinRequests.length > 0 && (
-                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.joinRequests.length} asking to join your party`}>{info.joinRequests.length}</span>
+                {t(x.label)}
+                {x.id === "roster" && info.joinRequests.length > 0 && (
+                  <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={t(`${d(info.joinRequests.length)} asking to join your party`)}>{info.joinRequests.length}</span>
                 )}
-                {t.id === "roster" && (info.openSignups?.length ?? 0) > 0 && (
+                {x.id === "roster" && (info.openSignups?.length ?? 0) > 0 && (
                   <span className="ml-2 rounded-sm border border-gold px-1.5 text-xs font-semibold text-gold" aria-label={`${info.openSignups?.length} waiting for your answer`}>?</span>
                 )}
-                {t.id === "clan" && info.pendingApprovals > 0 && (
+                {x.id === "clan" && info.pendingApprovals > 0 && (
                   <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.pendingApprovals} waiting for approval`}>{info.pendingApprovals}</span>
                 )}
               </button>
@@ -324,7 +337,7 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-3 border-b border-net-broadcast bg-bg-2 px-4 py-2" role="alert">
             <span className="pulse h-2 w-2 rounded-full bg-net-broadcast" />
             <span>
-              <span className="font-semibold text-net-broadcast">Broadcast is locked open.</span> Everyone in the operation hears you.
+              <span className="font-semibold text-net-broadcast">Broadcast is locked open.</span> {t("Everyone in the operation hears you.")}
             </span>
             <button type="button" className="btn text-sm" onClick={() => engine.setBroadcastLock(false)}>Release</button>
             <span className="text-xs text-text-muted">Your Broadcast key releases it too. It releases by itself after ten minutes.</span>

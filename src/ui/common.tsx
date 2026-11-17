@@ -1,3 +1,4 @@
+import { t } from "../words";
 import { useEffect, useRef, useState } from "react";
 import { APP_NAME, isDesktop } from "../config";
 import { keyLabel } from "../keys";
@@ -7,8 +8,8 @@ import { crestUrl } from "../api";
 import { useApp } from "./app-context";
 import { Help } from "./tips";
 
-export { NET_NAME, NET_TEXT } from "./net-style";
-import { NET_NAME, NET_TEXT } from "./net-style";
+export { netName, NET_TEXT } from "./net-style";
+import { netName, NET_TEXT } from "./net-style";
 
 export const NET_BORDER: Record<NetKind, string> = {
   broadcast: "border-l-net-broadcast",
@@ -18,8 +19,8 @@ export const NET_BORDER: Record<NetKind, string> = {
   reserve: "border-l-net-reserve",
   lounge: "border-l-gold-dim",
 };
-/** One line on what each net is for, shown behind the net's help icon. */
-export const NET_TIP: Record<NetKind, string> = {
+/** One line on what each net is for, shown behind the net's help icon. t() where shown: through netTip(). */
+const NET_TIP: Record<NetKind, string> = {
   broadcast: "Broadcast: the event leader and deputies speak, everyone in the operation hears.",
   command: "Command: the event leader, deputies, clan leaders and party leaders talk to each other. Nobody else hears it.",
   clan: "Clan: the clan leader and officers speak, the whole clan hears.",
@@ -27,6 +28,8 @@ export const NET_TIP: Record<NetKind, string> = {
   reserve: "Reserve: players without a party, and the organisers placing them.",
   lounge: "Lounge: your clan's room between operations. Everyone in it can talk.",
 };
+/** What a net is for, in the alliance's words. */
+export const netTip = (net: NetKind): string => t(netTip(net));
 /** The net colours as CSS values, for glows and shadows. */
 export const NET_VAR: Record<NetKind, string> = {
   broadcast: "var(--color-net-broadcast)",
@@ -63,7 +66,7 @@ export function ClanMark({ clanId, tag, size = 16 }: { clanId: number | null | u
   const { crests } = useApp();
   const version = clanId ? crests.get(clanId) : undefined;
   if (clanId && version) {
-    return <img src={crestUrl(clanId, version)} width={size} height={size} alt={tag ? `[${tag}]` : "clan crest"} draggable={false} className="shrink-0 rounded-sm object-contain" style={{ width: size, height: size }} />;
+    return <img src={crestUrl(clanId, version)} width={size} height={size} alt={tag ? `[${tag}]` : t("clan crest")} draggable={false} className="shrink-0 rounded-sm object-contain" style={{ width: size, height: size }} />;
   }
   return tag ? <span>[{tag}]</span> : null;
 }
@@ -258,12 +261,12 @@ export function PartyMode() {
         <label className="flex items-center gap-2">
           <input type="radio" checked={s.partyMode === "voice"} onChange={() => setSettings({ partyMode: "voice" })} /> Voice activation
         </label>
-        <Help text={"Push-to-talk: your mic is open only while you hold your key.\nVoice activation: your mic opens by itself when you speak. It applies to your party, Reserve and the lounge only; Command, Clan and Broadcast always need a key.\nTo bind a key, click the key button, then press the key or mouse button you want. The game still receives the key."} />
+        <Help text={t("Push-to-talk: your mic is open only while you hold your key.\nVoice activation: your mic opens by itself when you speak. It applies to your party, Reserve and the lounge only; Command, Clan and Broadcast always need a key.\nTo bind a key, click the key button, then press the key or mouse button you want. The game still receives the key.")} />
       </div>
       {s.partyMode === "ptt" ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-text-muted">Party and lounge key</span>
-          <KeyBind target="party" label="Party" />
+          <span className="text-text-muted">{t("Party and lounge key")}</span>
+          <KeyBind target="party" label={t("Party")} />
         </div>
       ) : (
         <div className="flex flex-col gap-2">
