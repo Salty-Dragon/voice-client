@@ -68,7 +68,8 @@ export type GameOptions = { roles: string[]; classes: GameClass[]; levelBands: s
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
-export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active" };
+/** `discordName`: only on a player waiting to be let in, and only for those who may approve them. */
+export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active"; discordName?: string | null };
 export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[] };
 
 export type OpState = "planned" | "live" | "ended";

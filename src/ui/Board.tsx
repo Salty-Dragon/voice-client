@@ -136,7 +136,13 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const canPlace = (p: Person) => open && (perms.isOrganiser || overOwnClan(p));
   /** May the viewer at least send this player to Reserve? */
   const canKick = (p: Person) => open && (canPlace(p) || partyOf(p.userId)?.leaderId === me);
-  const canLead = (p: Person, party: Party) => open && (perms.isOrganiser || overOwnClan(p) || party.leaderId === me);
+  /** A party the viewer's clan may arrange: led by one of its own members, or with no leader yet. Organisers may arrange any. */
+  const ours = (party: Party) => {
+    if (perms.isOrganiser || party.leaderId === null) return true;
+    const leader = person.get(party.leaderId);
+    return !!leader && overOwnClan(leader);
+  };
+  const canLead = (p: Person, party: Party) => open && (perms.isOrganiser || (overOwnClan(p) && ours(party)) || party.leaderId === me);
 
   const move = (userId: number, partyId: number | null) => {
     if ((partyOf(userId)?.id ?? null) === partyId) return;
@@ -148,7 +154,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
     setOver(null);
     const p = dragging === null ? undefined : person.get(dragging);
     setDragging(null);
-    if (p && (target === null ? canKick(p) : canPlace(p))) move(p.userId, target);
+    const to = target === null ? null : op.parties.find((x) => x.id === target);
+    if (p && (to ? canPlace(p) && ours(to) : target === null && canKick(p))) move(p.userId, target);
   };
   const allow = (target: number | "reserve") => (e: React.DragEvent) => {
     if (dragging === null) return;
@@ -315,7 +322,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               : canAsk
                 ? "Ask to join a party; its leader accepts or declines."
                 : "Select a player to see their options."}
-            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? "\nClick a party's name to rename it, and choose its group type under the name. A new party starts empty; the first player placed in it leads it.\nClick a role a party needs to list the unplaced players of that role in Reserve." : "")} />
+            <Help className="ml-1" text={LEGEND + (perms.canEditParties ? "\nClan leaders and officers arrange their own clan's parties: one led by another clan is changed by its own leadership, its party leader or the organisers.\nClick a party's name to rename it, and choose its group type under the name. A new party starts empty; the first player placed in it leads it.\nClick a role a party needs to list the unplaced players of that role in Reserve." : "")} />
           </span>
         ) : (
           <>
@@ -339,7 +346,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               >
                 <option value="" disabled>Move to…</option>
                 {canPlace(sel) &&
-                  op.parties.filter((p) => p.id !== selParty?.id).map((p) => (
+                  op.parties.filter((p) => p.id !== selParty?.id && ours(p)).map((p) => (
                     <option key={p.id} value={p.id}>{p.name} ({p.memberIds.length})</option>
                   ))}
                 {selParty && <option value="reserve">Reserve</option>}
@@ -372,7 +379,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
               party={party}
               highlight={over === party.id}
               canEdit={perms.canEditParties}
-              canRename={perms.canEditParties || (open && party.leaderId === me)}
+              canRename={(perms.canEditParties && ours(party)) || (open && party.leaderId === me)}
               kinds={game?.groupTypes ?? []}
               state={open && game ? stateOf(party) : null}
               onKind={(kind) => run("party.setKind", { partyId: party.id, kind })}

@@ -3,7 +3,7 @@ import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URL, isDesktop, SERVER } from "./config";
 import { ControlClient, type ControlState, type NetSet } from "./control";
-import { redeemPending, usePendingInvite } from "./invite";
+import { usePendingInvite } from "./invite";
 import { engine } from "./runtime";
 import { useSettings } from "./settings";
 import { publishStrip } from "./strip/publish";
@@ -13,6 +13,7 @@ import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
 import { NET_NAME, useEngine, Wordmark } from "./ui/common";
 import { GuidesView } from "./ui/GuidesView";
+import { InviteAsk } from "./ui/InviteAsk";
 import { LeaderLostBar } from "./ui/LeaderLostBar";
 import { Help } from "./ui/tips";
 import { NameStep } from "./ui/NameStep";
@@ -168,17 +169,9 @@ export default function App() {
     });
   });
 
-  // An invite link that was opened: use it as soon as the player is signed in and set up, and show the Clan screen.
+  // An invite link that was opened: once the player is signed in and set up, the app asks before using it (InviteAsk, below).
   const pendingInvite = usePendingInvite();
   const settled = phase === "running" && info?.user.nameSet === true && s.wizardDone;
-  useEffect(() => {
-    if (!settled || !pendingInvite) return;
-    void redeemPending().then(() => {
-      refreshInfoRef.current();
-      setTab("clan");
-      setBoardOp(null);
-    });
-  }, [settled, pendingInvite]);
 
   // Which clans have a crest. Reloaded when the server reports a change wider than one operation's roster.
   const named = info?.user.nameSet === true;
@@ -340,6 +333,17 @@ export default function App() {
           {tab === "alliance" && info.user.runsAlliance && <AllianceView />}
           {tab === "guides" && <GuidesView />}
         </div>
+
+        {settled && pendingInvite && (
+          <InviteAsk
+            key={pendingInvite}
+            onDone={() => {
+              refreshInfo();
+              setTab("clan");
+              setBoardOp(null);
+            }}
+          />
+        )}
 
         {showSettings && (
           <SettingsPanel

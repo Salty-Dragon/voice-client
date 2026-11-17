@@ -50,6 +50,8 @@ From version 0.8.0 the app updates itself. An update found when the app starts i
 
 Only full releases are offered as updates. A tag with a suffix, such as `v1.2.3-rc.1`, is published as a pre-release for testing and is never offered.
 
+The update key is kept in a GitHub environment that only a version tag can use, and only after the project's owner approves that run. Builds of ordinary commits are signed with a throwaway key made for the run, which no installed app accepts. A release is built only from a commit on `main`, and the build's third-party actions are pinned to exact commits.
+
 ## Uninstall
 
 Open **Windows Settings → Apps → Installed apps**, find **Warcryer** and choose **Uninstall**. This removes the program, its Start menu entry and the sign-in link it registered. Tick "Delete the application data" in the uninstaller to also remove your saved key bindings and settings.
@@ -63,7 +65,7 @@ Not in effect yet: releases so far are unsigned. This applies to releases publis
 - Committers and reviewers: [Salty-Dragon](https://github.com/Salty-Dragon)
 - Approvers: [Salty-Dragon](https://github.com/Salty-Dragon)
 
-Every release is built from this repository by [GitHub Actions](.github/workflows/build.yml) on GitHub-hosted runners, and is published only after the installed app passes an [automated test](.github/workflows/test-windows.yml) on a clean Windows machine.
+Every release is built from this repository by [GitHub Actions](.github/workflows/build.yml) on GitHub-hosted runners, after the owner has approved that build, and is published only after the installed app passes an [automated test](.github/workflows/test-windows.yml) on a clean Windows machine.
 
 ## Privacy policy
 

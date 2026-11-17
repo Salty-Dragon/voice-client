@@ -12,7 +12,7 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 
 | What | When | Why |
 | --- | --- | --- |
-| Your Discord account ID and Discord name | At sign-in, from Discord to the server | To know who you are. Only Discord's `identify` permission is requested: no email address, no server list, no messages. The app never sees your Discord password. |
+| Your Discord account ID and Discord name | At sign-in, from Discord to the server | To know who you are. When you ask to join a clan, its leader and officers see your Discord name beside the request, so they can tell it is you; nobody else is shown it. Only Discord's `identify` permission is requested: no email address, no server list, no messages. The app never sees your Discord password. |
 | In-game name, class and level | When you set them | Shown to other members beside your voice and on rosters. |
 | Your answer to an event: coming or not, and another character's name, class and level or a note if you give them | When you sign up | Shown to the members on that event's roster, so the organiser can build parties. |
 | Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |

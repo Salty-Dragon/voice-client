@@ -98,7 +98,7 @@ Signing up is information for you, not a gate. You can place a player who has no
 - The count on each party turns red past 9. That is a warning, not a limit.
 - Members can click **Ask to join** on a party. You, or the party's leader, accept or decline.
 
-Clan leaders and officers can do most of this for their own members, so you can leave each clan to fill its own parties.
+Clan leaders and officers can do most of this for their own members and their own clan's parties, so you can leave each clan to fill its own. A party led by another clan they cannot change: mixed parties are yours and your deputies' to build, or a member asks to join one.
 
 ### Starting
 

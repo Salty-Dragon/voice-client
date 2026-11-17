@@ -1,7 +1,8 @@
 // Clan invite links. A link opened on the invite page arrives here through
 // the app's own link scheme (warcryer://join?invite=CODE). It is kept until
-// the player is signed in and set up, then used once; the outcome is shown on
-// the Clan screen.
+// the player is signed in and set up. The app then says which clan it is for
+// and asks (ui/InviteAsk); only a yes uses it. The outcome is shown on the
+// Clan screen.
 
 import { useSyncExternalStore } from "react";
 import { rpc } from "./api";
@@ -54,6 +55,16 @@ const said = (r: Redeemed) =>
 /** Uses an invite (a link or a bare code). Resolves with what to tell the player; throws with the reason if it could not be used. */
 export async function redeemInvite(text: string): Promise<string> {
   return said(await rpc<Redeemed>("clan.redeemInvite", { code: text }));
+}
+
+/** What the server says about the invite that arrived by link: which clan it is for. Throws if it no longer works. */
+export type InvitePeek = { clanId: number; clanName: string; clanTag: string; crest: number; autoApprove: boolean };
+export const peekPending = (): Promise<InvitePeek> => rpc<InvitePeek>("clan.peekInvite", { code: pending ?? "" });
+
+/** Forgets the invite that arrived by link without using it. With `why`, the Clan screen says so. */
+export function dropPending(why?: string) {
+  if (why) outcome = { ok: false, text: why };
+  setPending(null);
 }
 
 /** Uses the invite that arrived by link, once. The outcome is kept for the Clan screen. */

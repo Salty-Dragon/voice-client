@@ -33,10 +33,10 @@ The crest then appears beside the clan wherever it shows: the clan's lounge and 
 A new player picks your clan in the app and waits. You see a number on the **Clan** tab.
 
 1. Open **Clan**.
-2. Under **Waiting for approval**, check the in-game name against your clan in game.
+2. Under **Waiting for approval**, check the in-game name against your clan in game, and the **Discord** name beside it against the player you know.
 3. Click **Approve** or **Decline**.
 
-Approve only names you recognise. An approved player hears your clan's lounge, your Clan net and Broadcast during operations, so approval is the gate that keeps strangers out.
+Approve only names you recognise. An in-game name belongs to one account, so a stranger cannot ask under a member's name once that member has signed in; the Discord name tells you who is asking when the member has not. A change of in-game name is written to the log. An approved player hears your clan's lounge, your Clan net and Broadcast during operations, so approval is the gate that keeps strangers out.
 
 The green dot beside a member means they have the app open right now.
 
@@ -88,8 +88,9 @@ You can:
 - **Add your constant parties:** each one not yet on the board is offered under **Constant parties**. Click it and it becomes a party, with its members in order and its leader in charge. **Add all** adds every one at once. A member who is already in another party stays there. After that it is an ordinary party: change it as you like, your constant party is not affected.
 - **Create a party** with **+ New party**, rename it by clicking its name, and choose its group type (Mage group, Stopper group and so on) under the name.
 - **See what each party lacks:** every party shows **Full** or **Not ready**, and **Needs** lists the support roles it has nobody for yet (Buffer, Bard, Recharger, Healer). Click a role to list the unplaced players of that role in Reserve.
-- **Place your own members:** drag a card onto a party or onto Reserve, or click the card and use **Move to…**.
-- **Choose a party's leader:** click a member of the party, then **Make party leader**.
+- **Place your own members** in your clan's parties: drag a card onto a party or onto Reserve, or click the card and use **Move to…**. Your clan's parties are those led by one of your members, and any that have no leader yet.
+- **Choose a party's leader** in your clan's parties: click a member of the party, then **Make party leader**.
+- **A party led by another clan** is theirs to arrange. To get one of your members into it, the member clicks **Ask to join** and its leader accepts, or you ask the event leader. You can always take your own member back out to Reserve.
 - **Answer join requests** from your own members.
 - **Delete a party**, if everyone in it is from your clan.
 

@@ -11,32 +11,85 @@ on:
         type: string
         default: main
 
+# Who can put code on players' PCs. An installed app accepts an update only if
+# it is signed with the project's update key, so that key is the thing to
+# guard. It lives in the "release" environment, which only a version tag can
+# use and only after the owner approves the run on GitHub. Every other build
+# (each push to main) is signed with a throwaway key made for that run, so
+# that it can be tested as an update without the real key being involved.
+#
+# The actions below are pinned to exact commits: a tag such as @v4 can be
+# moved by whoever controls that repository, a commit cannot. To update one,
+# look up the commit of its new version and change the line.
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 jobs:
   build:
     runs-on: windows-latest   # GitHub-hosted runner, as SignPath requires
+    environment: ${{ startsWith(github.ref, 'refs/tags/v') && 'release' || '' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: A release is built from main
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          git fetch --quiet origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::This tag is not on main. Releases are built only from commits on main."
+            exit 1
+          fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable, as of 2026-11-17
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
         with:
           workspaces: src-tauri
       - run: npm ci
       # The installer is also the update package. Its signature (the .sig file)
-      # is made with the project's update key; installed apps accept an update
-      # only if that signature checks out against the key built into them.
-      - run: npx tauri build
+      # is checked by installed apps against the key built into them.
+      #
+      # A tagged build: the project's update key, which this job only receives
+      # once the owner has approved the run.
+      - name: The project's update key (tagged builds, after approval)
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      - uses: actions/upload-artifact@v4
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          PASS: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::The release environment has no TAURI_SIGNING_PRIVATE_KEY."
+            exit 1
+          fi
+          {
+            echo "TAURI_SIGNING_PRIVATE_KEY<<__END_OF_KEY__"
+            echo "$KEY"
+            echo "__END_OF_KEY__"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$PASS"
+          } >> "$GITHUB_ENV"
+      # Any other build: a key made here and thrown away with the machine. The
+      # app is built to trust that key instead, so the update test still works,
+      # and nothing signed here would be accepted by an app players have.
+      - name: A throwaway key (every other build)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx tauri signer generate --ci -w "$RUNNER_TEMP/throwaway.key" > /dev/null
+          PUB="$RUNNER_TEMP/throwaway.key.pub" node -e "const fs=require('fs'),f='src-tauri/tauri.conf.json',c=JSON.parse(fs.readFileSync(f,'utf8'));c.plugins.updater.pubkey=fs.readFileSync(process.env.PUB,'utf8').trim();fs.writeFileSync(f,JSON.stringify(c,null,2))"
+          {
+            echo "TAURI_SIGNING_PRIVATE_KEY=$(cat "$RUNNER_TEMP/throwaway.key")"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD="
+          } >> "$GITHUB_ENV"
+      - run: npx tauri build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: installer
           path: |
@@ -47,7 +100,7 @@ jobs:
       # commit always builds from the same code. Rust is only ever built here,
       # so this is also where a changed lock file comes from: it is kept with
       # the run, to be committed.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cargo-lock
           path: src-tauri/Cargo.lock
@@ -67,16 +120,13 @@ jobs:
       # not kept, so it can never be offered to anyone as an update itself.
       - name: Build an old-numbered copy for the update test
         shell: bash
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           node -e "const fs=require('fs'),f='src-tauri/tauri.conf.json',c=JSON.parse(fs.readFileSync(f,'utf8'));c.version='0.0.1';fs.writeFileSync(f,JSON.stringify(c,null,2))"
           npx tauri build
           mkdir update-base
           cp src-tauri/target/release/bundle/nsis/*_0.0.1_x64-setup.exe update-base/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: update-base
           path: update-base/*.exe
@@ -89,7 +139,8 @@ jobs:
     uses: ./.github/workflows/test-windows.yml
     with:
       backend_ref: ${{ inputs.backend_ref || 'main' }}
-    secrets: inherit
+    secrets:
+      BACKEND_DEPLOY_KEY: ${{ secrets.BACKEND_DEPLOY_KEY }}
 
   # A tagged build is published only if the installed app passed its test.
   #
@@ -100,8 +151,10 @@ jobs:
     needs: [build, test]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # to publish the release; no other job can write to the repository
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: installer
           path: installer

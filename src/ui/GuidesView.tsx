@@ -17,6 +17,11 @@ const GUIDES = [
   { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, operations, who is coming, what each party needs, the roster board, briefings, attendance, bans, the log", text: admins },
 ] as const;
 
+const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
+/** Raw HTML in the Markdown, as a block or inside a line, comes out as the characters that were typed. */
+const PLAIN_HTML = new marked.Renderer();
+PLAIN_HTML.html = ({ text }) => escapeHtml(text);
+
 const slug = (text: string) => text.toLowerCase().trim().replace(/[^\p{L}\p{N}\s-]/gu, "").replace(/\s+/g, "-");
 
 export function GuidesView() {
@@ -27,8 +32,9 @@ export function GuidesView() {
   const [file, setFile] = useState<string>("members.md");
   const page = useRef<HTMLDivElement>(null);
   const guide = GUIDES.find((g) => g.file === file) ?? GUIDES[0];
-  // The text is this app's own, built in at compile time, so it is safe to show as HTML.
-  const html = useMemo(() => marked.parse(guide.text, { async: false, gfm: true }), [guide]);
+  // The text is this app's own, built in at compile time. Even so, HTML written into a guide is shown
+  // as text, not run: the guides are Markdown, and a change to one must never be a way to put script in the app.
+  const html = useMemo(() => marked.parse(guide.text, { async: false, gfm: true, renderer: PLAIN_HTML }), [guide]);
 
   useEffect(() => {
     const el = page.current;

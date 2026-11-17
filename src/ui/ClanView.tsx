@@ -394,7 +394,7 @@ function Members({ clanId }: { clanId: number }) {
     <>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
       {leads && (
-        <Section title={`Waiting for approval (${pending.length})`} help={"Players who picked this clan and are waiting to be let in.\nApprove lets the player into the clan's lounge, its Clan net and its operations. Decline removes the request.\nThe clan leader and officers can do both."}>
+        <Section title={`Waiting for approval (${pending.length})`} help={"Players who picked this clan and are waiting to be let in.\nApprove lets the player into the clan's lounge, its Clan net and its operations. Decline removes the request.\nDiscord: the name of the Discord account that is asking. Check it is the player you know before you approve. An in-game name belongs to one account, so nobody else can ask under a member's name.\nThe clan leader and officers can do both."}>
           {pending.length === 0 ? (
             <p className="text-text-muted">Nobody is waiting.</p>
           ) : (
@@ -403,6 +403,7 @@ function Members({ clanId }: { clanId: number }) {
                 <li key={m.userId} className="flex flex-wrap items-center gap-3 py-2">
                   <span className="font-medium">{m.name}</span>
                   {m.classTag && <span className="text-gold">{m.classTag}</span>}
+                  {m.discordName && <span className="text-text-muted" data-discord>Discord: {m.discordName}</span>}
                   <span className="ml-auto flex gap-2">
                     <button type="button" className="btn text-sm" disabled={act.busy} onClick={call("clan.approve", { userId: m.userId })}>Approve</button>
                     <ConfirmButton confirm="Decline?" disabled={act.busy} onConfirm={call("clan.remove", { userId: m.userId })}>Decline</ConfirmButton>
