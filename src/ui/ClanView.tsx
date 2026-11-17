@@ -452,6 +452,12 @@ function Members({ clanId }: { clanId: number }) {
             </li>
           ))}
         </ul>
+        {(data.myRole === "member" || data.myRole === "officer") && (
+          <div className="flex items-center justify-end gap-1 border-t border-line pt-3">
+            <ConfirmButton confirm="Leave this clan?" disabled={act.busy} onConfirm={call("clan.leave", {})}>Leave clan</ConfirmButton>
+            <Help text={"Takes you out of this clan: its lounge and Clan net, its constant parties, and your party places in operations still to come. You can then ask to join another clan.\nTo move to another clan of the alliance without waiting to be approved again, ask an alliance admin instead: they can move you across in one step.\nA clan's leader cannot leave until an alliance admin has appointed another."} />
+          </div>
+        )}
       </Section>
       {leads && <InviteLinks clanId={clanId} />}
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />

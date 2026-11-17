@@ -101,6 +101,14 @@ The first player placed in a party leads it. A party leader:
 
 If you are moved out of your party, leadership passes to the next member automatically.
 
+## Leaving or changing your clan
+
+On the **Clan** tab, **Leave clan** takes you out of your clan: its lounge and Clan net, its constant parties, and your party places in operations still to come. You can then ask to join another clan, and wait to be approved there.
+
+If you are moving to another clan of the same alliance, ask an alliance admin instead. They can move you across in one step, already approved, and your voice follows you to the new clan's lounge at once.
+
+A clan's leader cannot leave until an alliance admin has appointed another leader.
+
 ## Constant parties
 
 If you always fight with the same group, your clan's leader or officers can save it as a **constant party**. You can see your clan's constant parties on the **Clan** tab, with yours marked. Organisers put a constant party on an operation's board with one click, so you are in the right party from the start. If you lead a constant party, you can rename it, change its members and hand leadership on from that same screen.

@@ -36,7 +36,9 @@ Alliance admins and the app admin see an extra tab, **Alliance**.
 ### Clans
 
 - **Create a clan:** enter a name and a tag, click **Create clan**. The tag is a short form of the name, 1 to 8 letters or digits (for example DRG). It is shown in brackets beside every member's name in voice and on roster boards until the clan's leader uploads a crest, which then takes its place; in an operation with several clans the tag also names each clan's own net ("Clan DRG").
-- **Appoint its leader:** use the selector beside the clan. The player must have signed in once. A player who belongs to another clan has to be removed from it first. The previous leader becomes an ordinary member.
+- **Appoint its leader:** use the selector beside the clan. The player must have signed in once. A player who belongs to another clan has to be moved out of it first (see Players). The previous leader becomes an ordinary member.
+- **Rename a clan:** click **Rename** beside it and change the name, the tag or both. Its members, constant parties, crest and invite links stay with it.
+- **Delete a clan:** **Delete** appears beside a clan once it is empty or has only its leader left; move or remove its other members first. A clan that is the only one in an operation still to come cannot be deleted until that operation is changed or deleted.
 
 - **Remove a crest:** a clan's leader uploads its crest. If one is unsuitable, **Remove crest** beside the clan takes it down.
 
@@ -48,6 +50,7 @@ Every player who has signed in and confirmed a name. Use **Find a player** to fi
 
 - **Ban:** click **Ban** and confirm. The player is signed out everywhere and removed from every room at once. The ban follows their Discord account, so signing in again does not lift it.
 - **Lift ban** reverses it. Their clan membership is as it was.
+- **Move to clan:** choose a clan beside the player and confirm. They become an approved member of it at once, with no request and no invite. This is how a transfer between clans is done, and how you put a player with no clan into one. In the clan they leave they lose their constant parties and their party places in operations still to come; place them again on the board. A clan's leader cannot be moved until you have appointed another leader there.
 
 An alliance admin cannot ban the app admin or another alliance admin.
 

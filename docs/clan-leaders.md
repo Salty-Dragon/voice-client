@@ -55,6 +55,10 @@ A link is a secret. Anyone who gets hold of it can use it until its uses run out
 
 Click **Remove** beside their name and confirm. They are dropped from the lounge, from any party in an operation that has not ended, from the clan's constant parties, and from every net, at once. They can request to join again, and you can decline.
 
+A member or an officer can also leave by themselves, with **Leave clan** on their Clan tab; the same things happen. You, as leader, cannot leave until an alliance admin has appointed another leader.
+
+For a transfer to another clan of the alliance, ask an alliance admin: they move the player across in one step, already approved.
+
 ## Officers
 
 The leader clicks **Make officer** beside a member, or **Remove officer** to undo it. An officer can speak on the Clan net from then on, and the app asks them to bind a Clan key the next time they are in an operation.
