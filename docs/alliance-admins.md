@@ -73,6 +73,12 @@ Only players who are still approved members of the clans you tick are carried ov
 
 Every approved member of the participating clans appears in **Reserve**, with a green dot if they have the app open.
 
+**Who is coming.** As soon as the operation exists, every member of its clans is asked in the app whether they are coming. The board's top line counts the answers (coming, can't, no answer), and Reserve is sorted by them: **Coming** first, then **No answer yet**, then **Can't come**, dimmed. A **✓** on a card means coming and **Out** means they cannot; these marks stay on the card after you place the player in a party, so you can see at a glance who in a party has confirmed.
+
+**Class and level.** Each card shows the player's class as a short tag and their level band. When someone brings a different character to this event, the card shows that character's name with their usual name in brackets. Select a card to see the full class name and any note they left. **Show** at the top of Reserve narrows it to one role: choose Healer to find a healer for a party that lacks one.
+
+Signing up is information for you, not a gate. You can place a player who has not answered, and starting the operation pulls in everyone on the roster.
+
 - **Constant parties** set up by the clans are offered on the board. Click one to add it as a ready party, or **Add all** to add every one: for most events this builds most of the roster in one click. Parties made this way are marked **Constant**. The clans keep their own constant parties up to date on their Clan tab; as an admin you can add them to a board, but you change them only in a clan you belong to and lead.
 - **+ New party** adds a party. Click its name to rename it.
 - **Drag** a card onto a party or back to Reserve. Or click a card and use **Move to…**, which does the same thing without dragging.

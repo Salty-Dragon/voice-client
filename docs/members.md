@@ -7,7 +7,7 @@ You never pick a voice channel in this app. Your place in the roster decides wha
 1. **Install.** Download the newest installer from the [Releases page](../../../releases). It is not code-signed yet, so Windows shows a blue SmartScreen warning: click **More info**, then **Run anyway**. You only do this once: after that the app [updates itself](#updates-and-the-tray-icon).
 2. **Sign in.** Click **Sign in with Discord**. Your browser opens, you approve, and the app continues by itself. The app receives your Discord account ID and name only: no email, no server list, never your password.
    - If the app does not continue, the browser page has a section called **The app did not open** with a code. In the app, open **Enter code instead** and paste it.
-3. **Your name.** Enter your in-game name exactly as it appears in game (letters and digits, no spaces), and optionally a class tag such as BP, OL or SWS so callers can find healers and buffers.
+3. **Your name, class and level.** Enter your in-game name exactly as it appears in game (letters and digits, no spaces). Then pick your main character's **class** and **level** from the lists. They are the alliance's own lists, so the server's special classes are there. Both are shown beside your name on rosters, so organisers can see which parties still need a buffer or a healer. Change them any time in **Settings**, at the bottom; move the level up when you reach the next band.
 4. **Setup wizard.** Three short steps: choose your microphone and headset, record three seconds and hear them back, then choose how you talk (see [Talking](#talking)).
 5. **Join your clan.** Open the **Clan** tab, find your clan and click **Request to join**. A clan leader or officer has to approve you. Until then you cannot hear anything.
    - **If you were sent an invite link,** you do not need to find your clan. Open the link and click **Open in Warcryer**, or paste the link on the **Clan** tab under **Have an invite link?**. Depending on how the link was made, you are let in at once or added to the clan's waiting list.
@@ -72,6 +72,16 @@ Change any of this in **Settings**.
 While someone speaks on a higher net, the nets below it get quieter for you (30% by default) and return when the higher net goes quiet. So a Broadcast call cuts through party chatter without silencing it. Turn this off or change the level in **Settings → Priority**.
 
 While a higher net is live, the nets below it show **Lowered** on the Voice tab, so you can see why they went quiet.
+
+## Signing up for an event
+
+When an event is planned for your clan, the app asks whether you are coming. The organiser builds the parties from the answers, so answer early.
+
+- **Where:** a line at the top of the **Voice** tab names the event and its time, with two buttons. The same buttons are on the **Operations** tab beside each event, and a **?** on that tab means an event is still waiting for your answer.
+- **Coming:** you go to the top of the organiser's list of players to place. **Can't come:** the organiser knows not to count on you. Change your answer whenever you like.
+- **Another character:** open the event (click it on the Operations tab) and choose **Another character or a note**. Enter that character's name, class and level, for this event only; your profile stays as it is. The note is for the organiser, for example that you will be late.
+- **If you lead a constant party,** the event's board offers **Sign up the whole party**. It marks every member as coming in one go. Members who already answered keep their own answer.
+- Your answer does not change your voice. When the event starts, everyone on its roster is pulled in as before, whatever they answered.
 
 ## Being moved, and asking to move
 
@@ -143,9 +153,9 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | **Key capture** | How keys are read while the game is in front. Leave it on **Polling** unless told otherwise. |
 | **Window and updates** | The compact strip, keeping the app running in the tray, automatic updates, and **Check for updates**. |
 | **Help** | Opens these guides. |
-| **Account** | Your in-game name and class tag, **Sign out**, and **Delete my account**. |
+| **Account** | Your in-game name, class and level, **Sign out**, and **Delete my account**. |
 
-Everything here is kept on your computer, except your name and class tag.
+Everything here is kept on your computer, except your name, class and level.
 
 ## Troubleshooting
 
@@ -167,6 +177,6 @@ Everything here is kept on your computer, except your name and class tag.
 
 ## What is stored about you
 
-On the server: your Discord account ID and name, your in-game name and class tag, your clan membership and who approved you, your constant party, your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
+On the server: your Discord account ID and name, your in-game name, class and level, your clan membership and who approved you, your constant party, your answer to each event (coming or not, and another character or a note if you gave one), your place in each operation's roster, and when you joined and left each net. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
 
 To remove all of it, open **Settings → Account → Delete my account**. It asks once more before deleting, and cannot be undone. The full details are in the [privacy policy](../PRIVACY.md).

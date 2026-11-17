@@ -1,3 +1,4 @@
+import { SignupPrompts } from "./Signup";
 import { useEffect, useState } from "react";
 import { isDesktop } from "../config";
 import type { Member, NetView } from "../engine";
@@ -266,6 +267,7 @@ export function VoiceView() {
             </span>
           </div>
         ))}
+        <SignupPrompts />
         {act.error && <div className="text-danger" role="alert">{act.error}</div>}
         {unbound.length > 0 && (
           <div className="panel flex flex-wrap items-center gap-x-5 gap-y-2 px-3 py-2">

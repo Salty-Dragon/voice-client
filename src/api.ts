@@ -44,6 +44,9 @@ export type Info = {
     name: string;
     nameSet: boolean;
     classTag: string | null;
+    /** Class and level band chosen from the alliance's lists; null until chosen. */
+    className: string | null;
+    levelBand: string | null;
     /** App admin: runs the install. */
     isAdmin: boolean;
     isAllianceAdmin: boolean;
@@ -55,7 +58,12 @@ export type Info = {
   pendingApprovals: number;
   /** Players asking to join a party this player leads. */
   joinRequests: JoinRequest[];
+  /** Operations waiting for this player's "coming" or "cannot come". Absent on servers older than the sign-up feature. */
+  openSignups?: { opId: number; name: string; startsAt: string | null; state: OpState }[];
 };
+/** The alliance's own classes, roles and level bands, served by the server. */
+export type GameClass = { name: string; tag: string; role: string | null };
+export type GameOptions = { roles: string[]; classes: GameClass[]; levelBands: string[] };
 export type JoinRequest = { opId: number; opName: string; partyId: number; partyName: string; userId: number; name: string; classTag: string | null };
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
@@ -63,8 +71,40 @@ export type ClanMember = { userId: number; name: string; classTag: string | null
 export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[] };
 
 export type OpState = "planned" | "live" | "ended";
-export type OpSummary = { id: number; name: string; startsAt: string | null; state: OpState; leaderName: string };
-export type Person = { userId: number; name: string; classTag: string | null; clanId: number | null; clanTag: string | null; clanRole: ClanRole | null };
+export type OpSummary = {
+  id: number;
+  name: string;
+  startsAt: string | null;
+  state: OpState;
+  leaderName: string;
+  /** My own answer; null when I have not answered. */
+  mySignup?: "coming" | "out" | null;
+  /** I am on this operation's roster, so I can answer. */
+  canSignUp?: boolean;
+  coming?: number;
+};
+export type Person = {
+  userId: number;
+  name: string;
+  classTag: string | null;
+  className?: string | null;
+  levelBand?: string | null;
+  clanId: number | null;
+  clanTag: string | null;
+  clanRole: ClanRole | null;
+};
+/** A player's answer to "are you coming?". The character fields are set only when they bring a character other than their profile's. */
+export type Signup = {
+  userId: number;
+  status: "coming" | "out";
+  charName: string | null;
+  className: string | null;
+  classTag: string | null;
+  levelBand: string | null;
+  note: string | null;
+  /** The leader of their constant party answered for them. */
+  byLeader: boolean;
+};
 export type Party = { id: number; name: string; leaderId: number | null; memberIds: number[]; leaderLost: boolean; /** The constant party it was made from. */ cpId: number | null };
 /** One line of the audit log. `actor` is null for something the server did by itself. */
 export type AuditEntry = { id: number; at: string; actor: string | null; text: string; operation: string | null };
@@ -89,9 +129,19 @@ export type OpView = {
   reserveIds: number[];
   /** Players waiting for an answer to "may I join this party?". */
   requests: { partyId: number; userId: number }[];
+  /** Who has answered. Players without an answer are not listed. */
+  signups?: Signup[];
 };
 export type OpPerms = { isOrganiser: boolean; leadClanIds: number[]; canView: boolean; canEditParties: boolean };
-export type OpDetail = { op: OpView; perms: OpPerms; canRunOp: boolean; onlineIds: number[]; cps: BoardCp[] };
+export type OpDetail = {
+  op: OpView;
+  perms: OpPerms;
+  canRunOp: boolean;
+  onlineIds: number[];
+  cps: BoardCp[];
+  /** Constant parties I lead in this operation's clans, and how many of their members have answered. */
+  myCps?: { id: number; name: string; members: number; answered: number }[];
+};
 /** An earlier operation whose roster a new one can start from. */
 export type PreviousOp = { id: number; name: string; state: OpState; startsAt: string | null; eventLeaderId: number; clanIds: number[]; parties: number; players: number };
 export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: string; clanTag: string | null }[]; previous: PreviousOp[] };

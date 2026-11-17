@@ -287,7 +287,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
         </Group>
 
         <Group title="Account">
-          <ProfileForm name={info.user.name} classTag={info.user.classTag ?? ""} onSaved={refreshInfo} submit="Save" />
+          <ProfileForm name={info.user.name} className={info.user.className ?? ""} levelBand={info.user.levelBand ?? ""} onSaved={refreshInfo} submit="Save" />
           <div><button type="button" className="btn btn-quiet text-sm" onClick={onSignOut}>Sign out</button></div>
           <DeleteAccount leadsClan={info.membership?.role === "leader" && info.membership.status === "active"} onDeleted={onSignOut} />
         </Group>

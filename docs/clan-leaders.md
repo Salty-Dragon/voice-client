@@ -106,6 +106,8 @@ The leader has a **Clan log** at the bottom of the **Clan** tab: who changed wha
 
 - Approve the waiting requests, so nobody is locked out when it starts.
 - Check your constant parties are current: new members added, people who left taken out, the right leader. Then one click puts them on the board.
+- Chase the answers. The board shows who is **Coming**, who has not answered and who cannot come. The leader of each constant party can sign the whole party up with one click on the board; you and your officers can do it for them.
+- Ask members to set their class and level in **Settings**, so the organiser can see what each party lacks.
 - Ask members to open the app early and check the green dots on the board.
 - Make sure every party has the leader you want; the leader is marked **» PL**.
 - Remind new officers to bind a Clan key, and party leaders a Command key.

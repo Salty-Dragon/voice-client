@@ -31,7 +31,7 @@ To notice your push-to-talk keys while the game is in front, the app reads keybo
 
 Only keys you have bound to a net are ever acted on, plus the single key you press while binding. Key presses are not logged, stored or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
 
-Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, and your in-game name and class tag when you set them.
+Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, and your in-game name, class and level when you set them, and your answer when you sign up for an event.
 
 ## Guides
 

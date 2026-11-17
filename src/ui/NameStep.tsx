@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { rpc } from "../api";
+import { useGame } from "../game";
 import { useAct } from "./app-context";
+import { CharacterFields } from "./CharacterFields";
 import { Wordmark } from "./common";
+import { Help } from "./tips";
 
-/** In-game name and class tag. Shown once after the first sign-in, and reused in Settings. */
-export function ProfileForm({ name, classTag, onSaved, submit }: { name: string; classTag: string; onSaved: () => void; submit: string }) {
+/** In-game name, class and level. Shown once after the first sign-in, and reused in Settings. */
+export function ProfileForm({ name, className, levelBand, onSaved, submit }: { name: string; className: string; levelBand: string; onSaved: () => void; submit: string }) {
+  const game = useGame();
   const [n, setN] = useState(name);
-  const [t, setT] = useState(classTag);
+  const [cls, setCls] = useState(className);
+  const [band, setBand] = useState(levelBand);
   const [saved, setSaved] = useState(false);
   const { busy, error, run } = useAct();
   return (
@@ -15,7 +20,7 @@ export function ProfileForm({ name, classTag, onSaved, submit }: { name: string;
       onSubmit={async (e) => {
         e.preventDefault();
         setSaved(false);
-        if (await run(() => rpc("profile.save", { name: n, classTag: t }))) {
+        if (await run(() => rpc("profile.save", { name: n, className: cls, levelBand: band }))) {
           setSaved(true);
           onSaved();
         }
@@ -26,10 +31,15 @@ export function ProfileForm({ name, classTag, onSaved, submit }: { name: string;
         <input className="field" value={n} onChange={(e) => setN(e.target.value)} maxLength={24} required autoComplete="off" />
         <span className="text-xs">Exactly as it appears in game, so callers can find you.</span>
       </label>
-      <label className="flex flex-col gap-1 text-text-muted">
-        Class tag (optional)
-        <input className="field w-32 uppercase" value={t} onChange={(e) => setT(e.target.value)} maxLength={4} autoComplete="off" placeholder="BP, OL, SWS…" />
-      </label>
+      {game && (
+        <div className="flex flex-col gap-1">
+          <CharacterFields game={game} className={cls} levelBand={band} onClass={setCls} onLevel={setBand} />
+          <span className="flex items-center gap-1 text-xs text-text-muted">
+            Your main character. Organisers see it when they build parties.
+            <Help text={"Class and level are shown beside your name on rosters, so the organiser can see at a glance which parties still need a buffer or a healer.\nUpdate the level when you move into the next band.\nWhen you sign up for an event you can say that you are bringing a different character, for that event only."} />
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-3">
         <button className="btn" disabled={busy || !n.trim()}>{busy ? "Saving…" : submit}</button>
         {error && <span className="text-danger" role="alert">{error}</span>}
@@ -46,7 +56,7 @@ export function NameStep({ onSaved }: { onSaved: () => void }) {
         <Wordmark className="text-lg" />
         <h1 className="title text-gold">Your name</h1>
         <p className="text-text-muted">Welcome. First, confirm the name you play under. Your clan leader approves you by this name.</p>
-        <ProfileForm name="" classTag="" onSaved={onSaved} submit="Confirm name" />
+        <ProfileForm name="" className="" levelBand="" onSaved={onSaved} submit="Confirm name" />
       </div>
     </main>
   );

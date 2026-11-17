@@ -5,9 +5,11 @@
 
 import { useState } from "react";
 import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../api";
+import { roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
+import { SignupControl } from "./Signup";
 import { Help } from "./tips";
 
 const PARTY_SIZE = 9;
@@ -15,6 +17,8 @@ const PARTY_SIZE = 9;
 /** What the marks on a player's card mean, shown behind the board's help icon. */
 const LEGEND = [
   "Green dot: the player has the app open.",
+  "✓: the player has said they are coming. Out: they have said they cannot come. Neither: no answer yet.",
+  "Beside the name: class and level. A second name in brackets is the player's usual name, when they bring another character to this event.",
   "♛ Lead: the event leader. Speaks on Broadcast and Command, starts and ends the operation.",
   "Deputy: speaks on Broadcast and Command, and can move anyone.",
   "⚑ Clan: a clan leader. Speaks on Clan and Command.",
@@ -36,6 +40,9 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | "reserve" | null>(null);
   const [placed, setPlaced] = useState("");
+  const game = useGame();
+  /** Reserve shows only this role when set. */
+  const [role, setRole] = useState("");
 
   if (error && !data) {
     return (
@@ -52,6 +59,32 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const online = new Set(data.onlineIds);
   const person = new Map(op.people.map((p) => [p.userId, p]));
   const partyOf = (userId: number) => op.parties.find((p) => p.memberIds.includes(userId)) ?? null;
+
+  // Who is coming, and as which character: a sign-up may name another character than the profile's.
+  const signup = new Map((op.signups ?? []).map((x) => [x.userId, x]));
+  const shown = (p: Person) => {
+    const x = signup.get(p.userId);
+    return {
+      name: x?.charName ?? p.name,
+      usual: x?.charName ? p.name : null,
+      tag: x?.className ? x.classTag : p.classTag,
+      className: x?.className ?? p.className ?? null,
+      band: x?.levelBand ?? p.levelBand ?? null,
+      status: x?.status ?? null,
+      note: x?.note ?? null,
+    };
+  };
+  const answers = { coming: 0, out: 0 };
+  for (const x of op.signups ?? []) answers[x.status]++;
+  const signCp = (cpId: number) => {
+    setPlaced("");
+    void act
+      .run(async () => {
+        const r = await rpc<{ added: number; kept: number }>("op.signupCp", { opId, cpId });
+        setPlaced(`Signed up ${r.added} ${r.added === 1 ? "member" : "members"}.${r.kept > 0 ? ` ${r.kept} had already answered and keep their own answer.` : ""}`);
+      })
+      .then(reload);
+  };
 
   // Constant parties that can still be dropped onto this board.
   const offered = (data.cps ?? []).filter((cp) => !cp.onBoard && cp.members > 0);
@@ -113,6 +146,7 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   // be remounted on every state change, which cancels a drag in progress.
   const card = (p: Person, party: Party | null) => {
     const draggable = canKick(p);
+    const c = shown(p);
     return (
       <li
         key={p.userId}
@@ -136,9 +170,15 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           } ${draggable ? "cursor-grab" : "cursor-default"}`}
         >
           <span className={`h-2 w-2 shrink-0 rounded-full ${online.has(p.userId) ? "bg-net-party" : "bg-line"}`} role="img" aria-label={online.has(p.userId) ? "App open" : "Offline"} />
-          <span className={`truncate font-medium ${p.userId === me ? "text-gold-bright" : ""}`}>{p.name}</span>
-          {p.classTag && <span className="text-xs text-gold">{p.classTag}</span>}
+          <span className={`truncate font-medium ${p.userId === me ? "text-gold-bright" : ""} ${c.status === "out" ? "line-through decoration-danger/70" : ""}`}>
+            {c.name}
+            {c.usual && <span className="font-normal text-text-muted"> ({c.usual})</span>}
+          </span>
+          {c.tag && <span className="text-xs text-gold">{c.tag}</span>}
+          {c.band && <span className="text-xs text-text-muted tabular-nums">{c.band}</span>}
           <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-text-muted">
+            {c.status === "coming" && <span className="text-net-party" role="img" aria-label="Coming">✓</span>}
+            {c.status === "out" && <span className="text-danger">Out</span>}
             {op.eventLeaderId === p.userId && <span className="text-net-broadcast">♛ Lead</span>}
             {op.deputyIds.includes(p.userId) && <span className="text-net-broadcast">Deputy</span>}
             {p.clanRole === "leader" && <span className="text-net-clan">⚑ Clan</span>}
@@ -164,6 +204,11 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
           {op.clans.map((c) => <ClanCrest key={c.id} clanId={c.id} size={18} />)}
           {op.clans.map((c) => c.name).join(", ")} · {op.people.length} players · {op.people.filter((p) => online.has(p.userId)).length} online
         </span>
+        {open && (
+          <span className="text-text-muted" data-answers>
+            <span className="text-net-party">{answers.coming} coming</span> · {answers.out} can&apos;t · {op.people.length - answers.coming - answers.out} no answer
+          </span>
+        )}
         {open && !here && (
           <span className="ml-auto flex items-center gap-1">
             <button type="button" className="btn text-sm" onClick={() => select(op.id)}>Join voice</button>
@@ -209,6 +254,27 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         </p>
       )}
 
+      {/* My own answer, and for the leader of a constant party, the party's */}
+      {open && self && (
+        <div className="panel flex flex-col gap-2 px-3 py-2" data-signup>
+          <div className="flex flex-wrap items-start gap-3">
+            <span className="pt-0.5 text-text-muted">{signup.has(me) ? "Your answer" : "Are you coming?"}</span>
+            <SignupControl key={`${signup.get(me)?.status ?? "none"}`} opId={opId} status={signup.get(me)?.status ?? null} signup={signup.get(me) ?? null} full onDone={reload} />
+          </div>
+          {(data.myCps ?? []).map((cp) => (
+            <div key={cp.id} className="flex flex-wrap items-center gap-2">
+              <span className="text-text-muted">
+                Your party <span className="text-text">{cp.name}</span>: {cp.answered} of {cp.members} have answered
+              </span>
+              {cp.answered < cp.members && (
+                <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={() => signCp(cp.id)}>Sign up the whole party</button>
+              )}
+              <Help text={"Marks every member of your constant party as coming, in one go.\nMembers who already answered for themselves keep their own answer, and anyone can still change theirs.\nThe organiser then sees your party as ready to place."} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Selected player: the keyboard and touch way to do what dragging does */}
       <div className="panel flex min-h-12 flex-wrap items-center gap-3 px-3 py-2" aria-live="polite">
         {!sel ? (
@@ -223,8 +289,15 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         ) : (
           <>
             <span>
-              <span className="font-medium">{sel.name}</span>
-              <span className="text-text-muted"> · {selParty ? selParty.name : "Reserve"}</span>
+              <span className="font-medium">{shown(sel).name}</span>
+              <span className="text-text-muted">
+                {" "}· {selParty ? selParty.name : "Reserve"}
+                {shown(sel).className && ` · ${shown(sel).className}`}
+                {shown(sel).band && ` · ${shown(sel).band}`}
+                {shown(sel).status === "coming" && " · coming"}
+                {shown(sel).status === "out" && " · can't come"}
+                {shown(sel).note && ` · “${shown(sel).note}”`}
+              </span>
             </span>
             {canKick(sel) && (
               <select
@@ -355,18 +428,47 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
         >
           <h2 className="title flex items-center gap-1 text-sm text-net-reserve">
             Reserve
-            <Help text="Everyone taking part who is not in a party yet. They can talk to each other and to the organisers placing them." />
+            <Help text={"Everyone taking part who is not in a party yet, with those who said they are coming first. They can talk to each other and to the organisers placing them.\nShow: narrow the list to one role, for example to find a healer for a party that lacks one."} />
             <span className="ml-auto font-sans tabular-nums">{op.reserveIds.length}</span>
           </h2>
           {op.reserveIds.length === 0 ? (
             <p className="text-text-muted">Everyone has a party.</p>
           ) : (
-            <ul className="flex flex-col gap-1">
-              {op.reserveIds.map((id) => {
-                const p = person.get(id);
-                return p ? card(p, null) : null;
+            <>
+              {game && (
+                <label className="flex items-center gap-2 text-text-muted">
+                  Show
+                  <select className="field w-auto py-0.5" value={role} onChange={(e) => setRole(e.target.value)} aria-label="Show which role">
+                    <option value="">Every role</option>
+                    {game.roles.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </label>
+              )}
+              {(
+                [
+                  ["coming", "Coming", "text-net-party"],
+                  [null, "No answer yet", "text-text-muted"],
+                  ["out", "Can't come", "text-danger"],
+                ] as const
+              ).map(([status, label, tone]) => {
+                const list = op.reserveIds
+                  .map((id) => person.get(id))
+                  .filter((p): p is Person => !!p && shown(p).status === status && (!role || roleOf(game, shown(p).className) === role));
+                if (list.length === 0) return null;
+                return (
+                  <div key={label} className="flex flex-col gap-1" data-reserve={status ?? "none"}>
+                    <h3 className={`flex items-center text-xs uppercase tracking-wider ${tone}`}>
+                      {label}
+                      <span className="ml-auto font-sans tabular-nums">{list.length}</span>
+                    </h3>
+                    <ul className={`flex flex-col gap-1 ${status === "out" ? "opacity-60" : ""}`}>{list.map((p) => card(p, null))}</ul>
+                  </div>
+                );
               })}
-            </ul>
+              {role && !op.reserveIds.some((id) => { const p = person.get(id); return !!p && roleOf(game, shown(p).className) === role; }) && (
+                <p className="text-text-muted">No unplaced {role.toLowerCase()} here.</p>
+              )}
+            </>
           )}
         </div>
       </div>

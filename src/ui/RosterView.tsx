@@ -3,6 +3,7 @@ import { rpc, type OpOptions, type OpSummary } from "../api";
 import { useAct, useApp, useLoad } from "./app-context";
 import { Board } from "./Board";
 import { ClanCrest } from "./common";
+import { SignupControl } from "./Signup";
 import { Help } from "./tips";
 
 const STATE_LABEL = { live: "Live", planned: "Planned", ended: "Ended" } as const;
@@ -11,7 +12,7 @@ const STATE_CLASS = { live: "text-net-party", planned: "text-gold", ended: "text
 const OPERATIONS_HELP = [
   "An operation is one event: a siege, a raid, an epic boss.",
   "Each has its own roster of parties and its own nets: Broadcast, Command, Clan, Party and Reserve.",
-  "Planned: the roster is being built. Players stay in their lounge unless they choose to form up early.",
+  "Planned: the roster is being built. Say whether you are coming, so the organiser can plan the parties. Players stay in their lounge unless they choose to form up early.",
   "Live: everyone on the roster is pulled onto its nets.",
   "Ended: everyone is back in their lounge and the roster is locked.",
   "Alliance admins create operations. Open one to see its board.",
@@ -150,14 +151,21 @@ export function RosterView() {
         )}
         <ul className="flex flex-col divide-y divide-line">
           {ops?.map((o) => (
-            <li key={o.id}>
-              <button type="button" className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 py-2 text-left cursor-pointer hover:bg-bg-2/60" onClick={() => go("roster", o.id)}>
+            <li key={o.id} className="flex flex-col gap-1 py-1">
+              <button type="button" className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 py-1 text-left cursor-pointer hover:bg-bg-2/60" onClick={() => go("roster", o.id)}>
                 <span className="font-medium text-gold-bright">{o.name}</span>
                 <span className={`text-xs uppercase tracking-wider ${STATE_CLASS[o.state]}`}>{STATE_LABEL[o.state]}</span>
                 {set?.operation?.id === o.id && <span className="text-xs text-net-party">your voice is here</span>}
                 <span className="text-text-muted">{when(o.startsAt)}</span>
+                {o.state !== "ended" && (o.coming ?? 0) > 0 && <span className="text-text-muted">{o.coming} coming</span>}
                 <span className="text-text-muted ml-auto">Led by {o.leaderName}</span>
               </button>
+              {o.canSignUp && (
+                <div className="flex flex-wrap items-center gap-2 pb-1">
+                  {o.mySignup == null && <span className="text-text-muted">Are you coming?</span>}
+                  <SignupControl opId={o.id} status={o.mySignup ?? null} onDone={reload} />
+                </div>
+              )}
             </li>
           ))}
         </ul>

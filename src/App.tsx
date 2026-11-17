@@ -268,6 +268,9 @@ export default function App() {
                 {t.id === "roster" && info.joinRequests.length > 0 && (
                   <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.joinRequests.length} asking to join your party`}>{info.joinRequests.length}</span>
                 )}
+                {t.id === "roster" && (info.openSignups?.length ?? 0) > 0 && (
+                  <span className="ml-2 rounded-sm border border-gold px-1.5 text-xs font-semibold text-gold" aria-label={`${info.openSignups?.length} waiting for your answer`}>?</span>
+                )}
                 {t.id === "clan" && info.pendingApprovals > 0 && (
                   <span className="ml-2 rounded-sm bg-gold px-1.5 text-xs font-semibold text-bg-0" aria-label={`${info.pendingApprovals} waiting for approval`}>{info.pendingApprovals}</span>
                 )}

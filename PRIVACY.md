@@ -13,7 +13,8 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | What | When | Why |
 | --- | --- | --- |
 | Your Discord account ID and Discord name | At sign-in, from Discord to the server | To know who you are. Only Discord's `identify` permission is requested: no email address, no server list, no messages. The app never sees your Discord password. |
-| In-game name and class tag | When you type them | Shown to other members beside your voice. |
+| In-game name, class and level | When you set them | Shown to other members beside your voice and on rosters. |
+| Your answer to an event: coming or not, and another character's name, class and level or a note if you give them | When you sign up | Shown to the members on that event's roster, so the organiser can build parties. |
 | Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
 | Which leader or officer let you in | When you are approved, or use an invite link that lets you straight in | So a clan knows who vouched for each member. |
 | Your voice | While you hold a push-to-talk key, or while voice activation is open | Relayed live to the members of that room. It is not recorded or stored. |
@@ -32,7 +33,7 @@ To notice push-to-talk keys while a game has focus, the app reads keyboard and m
 
 ## Who can see what
 
-Other signed-in members see your in-game name, class tag, clan and which voice room you are in. Clan leaders, event leaders and alliance admins also see join requests and rosters. Alliance admins can read the log of changes (who moved, approved, removed or banned whom, and when); a clan's leader can read the part of it that concerns their own clan. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
+Other signed-in members see your in-game name, class, level, clan and which voice room you are in. Clan leaders, event leaders and alliance admins also see join requests and rosters. Alliance admins can read the log of changes (who moved, approved, removed or banned whom, and when); a clan's leader can read the part of it that concerns their own clan. Your Discord account ID is visible only to the server's administrators. Clan crest images can be loaded by anyone who knows their address.
 
 ## How long it is kept
 
@@ -40,7 +41,7 @@ Sign-in sessions expire and are deleted. Account, clan, roster, voice-room times
 
 ## Removing your data
 
-Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name and class tag, your clan membership, your places in constant parties and on rosters, your join requests and the record of when you were in voice.
+Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name, class and level, your clan membership, your places in constant parties and on rosters, your answers to events, your join requests and the record of when you were in voice.
 
 What stays, without you:
 
