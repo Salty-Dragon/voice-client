@@ -38,7 +38,17 @@ Other signed-in members see your in-game name, class, level, clan and which voic
 
 ## How long it is kept
 
-Sign-in sessions expire and are deleted. Account, clan, roster, voice-room times and audit entries are kept until the server's administrators remove them. Nothing is sold or shared with anyone else.
+The server clears old records by itself every night:
+
+| What | Kept for |
+| --- | --- |
+| Times you sat in a lounge | 30 days |
+| An operation that has ended, with its roster and who attended | 12 months after it ended (an alliance admin can delete one sooner) |
+| The log of changes made by leaders and admins | 12 months |
+| Invite links | 30 days after they expire |
+| Sign-in sessions and sign-in codes | Until they expire |
+
+Your account, your in-game name, class and level, and your clan membership are kept for as long as you have the account. Nothing is sold or shared with anyone else.
 
 ## Removing your data
 
@@ -50,7 +60,7 @@ What stays, without you:
 - An operation you led that has ended stays in the list, shown as led by "Deleted player". You cannot delete your account while you lead an operation that has not ended; end it first.
 - Entries in the audit log about changes you made or that were made to you stay, but they hold only your account's number, which no longer leads to a name or a Discord account.
 - If you were banned, your Discord account ID and the ban are kept, and nothing else, so that the ban still holds.
-- Backups of the database are kept for 14 days, so a deleted account can remain in a backup for that long.
+- Backups of the database are kept on the server for 14 days, so a deleted account can remain in a backup for that long. A copy of each backup may also be kept with a storage provider (Backblaze), encrypted before it leaves the server so that the provider cannot read it, and removed there after a set number of days.
 
 If you cannot sign in, ask an alliance admin to pass your request to the app admin, who can delete an account from the admin page.
 
