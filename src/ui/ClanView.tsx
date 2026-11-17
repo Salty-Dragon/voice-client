@@ -229,8 +229,12 @@ const INVITE_HELP = [
   "Lets them straight in: no approval step. Whoever made the link is recorded as having vouched for everyone who uses it. Use it only for a link you hand to people you know.",
 ].join("\n");
 
-/** The clan leadership's invite links: make one, copy it, revoke it. */
-function InviteLinks({ clanId }: { clanId: number }) {
+/**
+ * A clan's invite links: make one, copy it, revoke it. For the clan's leadership on the Clan screen, and
+ * (`inline`) for the alliance's admins beside any clan on the Alliance screen, which is how a new clan's
+ * leader is brought in: an alliance is entered by invite link only.
+ */
+export function InviteLinks({ clanId, inline = false }: { clanId: number; inline?: boolean }) {
   const { data, error, reload } = useLoad(() => rpc<Invite[]>("clan.invites", { clanId }), [clanId]);
   const act = useAct();
   const [uses, setUses] = useState(10);
@@ -246,8 +250,21 @@ function InviteLinks({ clanId }: { clanId: number }) {
       setCopied("");
     }
   };
-  return (
-    <Section title={`Invite links (${data?.length ?? 0})`} help={t(INVITE_HELP)}>
+  // A plain function, not a component: a component made here would be a new one on every draw, and
+  // the fields inside it would lose the cursor at each key.
+  const framed = (children: React.ReactNode) =>
+    inline ? (
+      <div className="flex w-full flex-col gap-3 border-l-2 border-gold-dim pl-3" data-invites={clanId}>
+        <span className="flex items-center gap-1 text-xs uppercase tracking-wider text-text-muted">
+          Invite links ({data?.length ?? 0}) <Help text={t(INVITE_HELP)} />
+        </span>
+        {children}
+      </div>
+    ) : (
+      <Section title={`Invite links (${data?.length ?? 0})`} help={t(INVITE_HELP)}>{children}</Section>
+    );
+  return framed(
+    <>
       {error && <p className="text-danger">{error}</p>}
       {data && data.length === 0 && <p className="text-text-muted">No open invite links.</p>}
       <ul className="flex flex-col divide-y divide-line">
@@ -292,7 +309,7 @@ function InviteLinks({ clanId }: { clanId: number }) {
         {auto && <p className="text-xs text-net-command">{t("Anyone who gets hold of this link joins your clan and hears its nets. Share it only with people you know.")}</p>}
       </form>
       {act.error && <p className="text-danger" role="alert">{act.error}</p>}
-    </Section>
+    </>,
   );
 }
 

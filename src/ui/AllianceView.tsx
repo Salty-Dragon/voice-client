@@ -7,6 +7,7 @@ import { rpc, type AllianceView as AllianceData } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
+import { InviteLinks } from "./ClanView";
 import { ClanCrest, ClanMark } from "./common";
 import { Help } from "./tips";
 import { AuditLog } from "./AuditLog";
@@ -123,6 +124,8 @@ export function AllianceView() {
   const [filter, setFilter] = useState("");
   /** The clan being renamed, with what has been typed so far. */
   const [renaming, setRenaming] = useState<{ id: number; name: string; tag: string } | null>(null);
+  /** The clan whose invite links are open. */
+  const [inviting, setInviting] = useState<number | null>(null);
   /** A move to another clan that is waiting to be confirmed. */
   const [moving, setMoving] = useState<{ userId: number; clanId: number } | null>(null);
 
@@ -174,6 +177,15 @@ export function AllianceView() {
                 </>
               )}
               <span className="text-text-muted">{c.leaderName ? `Led by ${c.leaderName}` : "No leader yet"} · {c.members} members</span>
+              <button
+                type="button"
+                className="text-xs text-text-muted hover:text-gold-bright cursor-pointer"
+                aria-expanded={inviting === c.id}
+                aria-label={`Invite links for ${c.name}`}
+                onClick={() => setInviting(inviting === c.id ? null : c.id)}
+              >
+                {inviting === c.id ? "Hide invite links" : "Invite links"}
+              </button>
               {crests.has(c.id) && (
                 <ConfirmButton className="ml-auto text-xs text-text-muted hover:text-danger cursor-pointer" confirm="Remove this crest?" disabled={act.busy} onConfirm={() => void call("clan.setCrest", { clanId: c.id, image: null })}>Remove crest</ConfirmButton>
               )}
@@ -189,6 +201,7 @@ export function AllianceView() {
                   <option key={u.id} value={u.id}>{u.name}{u.clanTag ? ` [${u.clanTag}]` : ""}</option>
                 ))}
               </select>
+              {inviting === c.id && <InviteLinks clanId={c.id} inline />}
             </li>
           ))}
         </ul>
@@ -216,7 +229,7 @@ export function AllianceView() {
           </label>
           <button className="btn" disabled={act.busy}>{t("Create clan")}</button>
         </form>
-        <p className="text-xs text-text-muted">{t("The new leader must have signed in once. A player in another clan has to be moved out of it first (Players, below). A clan can be deleted once only its leader is left in it.")}</p>
+        <p className="text-xs text-text-muted">{t("To bring in a clan's leader, open Invite links beside the clan, make a link and send it to them; once they have used it, appoint them here. A player in another clan has to be moved out of it first (Players, below). A clan can be deleted once only its leader is left in it.")}</p>
       </Section>
 
       <Section title={`Players (${data.users.length})`} help={t("Everyone in the alliance who has confirmed a name.\nOwner: started the alliance or was handed it; appoints its admins.\nAlliance admin: manages clans, clan leaders, operations and bans.\nMove to clan: puts the player straight into another clan as an approved member, without a request or an invite. Use it for a transfer. In the clan they leave, they lose their constant parties and their party places in operations still to come. A clan's leader has to be replaced before they can be moved.\nA ban puts the player out of the alliance at once, voice included. It follows their Discord account, so an invite link does not bring them back. Lift it from the list of bans below the players.")}>

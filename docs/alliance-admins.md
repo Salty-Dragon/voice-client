@@ -40,8 +40,8 @@ The owner and the alliance admins see an extra tab, **Alliance**.
 **Starting one.** A player who is in no alliance starts one on the **Clan** tab, under **Or start your own**: a name, and the game it plays. The game only fills in a starting point (classes, party size, kinds of event) that you can change later under **Game setup**. Whoever starts it owns it. Then, in this order:
 
 1. Create your clans (below).
-2. Open each clan on the **Clan** tab and make an **invite link** for it. Send it to that clan's leader.
-3. When they have come in, appoint them leader of their clan. From then on they make their own invite links for their members.
+2. Beside each clan, open **Invite links**, make a link and send it to that clan's leader. Tick **Let people who use it straight in** if you know them; one use is enough.
+3. When they have come in, appoint them leader of their clan. From then on they make their own invite links for their members, on their **Clan** tab.
 
 An invite link is the only way into an alliance. Nobody can find or ask to join it from outside.
 
@@ -57,7 +57,8 @@ The owner cannot leave the alliance or delete their account while they own it: h
 ### Clans
 
 - **Create a clan:** enter a name and a tag, click **Create clan**. The tag is a short form of the name, 1 to 8 letters or digits (for example DRG). It is shown in brackets beside every member's name in voice and on roster boards until the clan's leader uploads a crest, which then takes its place; in an operation with several clans the tag also names each clan's own net ("Clan DRG").
-- **Appoint its leader:** use the selector beside the clan. The player must have signed in once. A player who belongs to another clan has to be moved out of it first (see Players). The previous leader becomes an ordinary member.
+- **Invite links:** opens the clan's invite links beside it, where you can make, copy and revoke them as its leader can. This is how a clan's first member, usually its leader, comes into the alliance.
+- **Appoint its leader:** use the selector beside the clan. The player must be in the alliance. A player who belongs to another clan has to be moved out of it first (see Players). The previous leader becomes an ordinary member.
 - **Rename a clan:** click **Rename** beside it and change the name, the tag or both. Its members, constant parties, crest and invite links stay with it.
 - **Delete a clan:** **Delete** appears beside a clan once it is empty or has only its leader left; move or remove its other members first. A clan that is the only one in an operation still to come cannot be deleted until that operation is changed or deleted.
 
