@@ -2,7 +2,7 @@
 
 # Warcryer
 
-Push-to-talk voice chat for large gaming alliances, where the event roster decides who hears whom. Project page: <https://warcryer.github.io>.
+Voice chat for large gaming alliances and clans: a free, open-source alternative to TeamSpeak, where the event roster decides who hears whom. Project page: <https://warcryer.github.io>.
 
 This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
@@ -10,7 +10,7 @@ Voice follows the roster: the server tells the client which voice rooms ("nets")
 
 Between events you sit in your clan's lounge. When an operation you belong to goes live you are pulled into it, and returned to the lounge when it ends.
 
-The app is also where the alliance is run: joining a clan (by request or by invite link), approving members, keeping constant parties, creating operations and building the roster on a drag-and-drop board. Each screen offers only what your role allows, and the server checks every action again.
+The app is also where the alliance is run: joining a clan (by request or by invite link), approving members, keeping constant parties, creating operations, signing up for them, building the roster on a drag-and-drop board and checking attendance afterwards. Each screen offers only what your role allows, and the server checks every action again.
 
 ## What it does
 
@@ -22,6 +22,7 @@ The app is also where the alliance is run: joining a clan (by request or by invi
 - Lowers the nets below while a higher one is live, so a leader's call cuts through without muting anyone.
 - Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
+- Plans the event as well as carrying it: players set their class and level and answer "are you coming?", the board shows what each party still needs, and afterwards it lists who was in voice and for how long.
 - Updates itself, with every update signed. Sits in the Windows tray; can keep running there when the window is closed.
 - An optional compact strip: a small always-on-top window showing who is speaking on which net. It is an ordinary window, never drawn into the game.
 
@@ -31,7 +32,7 @@ To notice your push-to-talk keys while the game is in front, the app reads keybo
 
 Only keys you have bound to a net are ever acted on, plus the single key you press while binding. Key presses are not logged, stored or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
 
-Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, and your in-game name, class and level when you set them, and your answer when you sign up for an event.
+Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, your in-game name, class and level when you set them, and your answer when you sign up for an event. It records when you join and leave each net, from which an operation's organisers and your clan's leadership see how long you were in voice. Voice itself is never recorded. The [privacy policy](PRIVACY.md) has the full list.
 
 ## Guides
 
@@ -100,4 +101,4 @@ The server address is set at build time with `VITE_SERVER`.
 
 ## Name and artwork
 
-Warcryer is a community project. It is not affiliated with or endorsed by NCSOFT or any game publisher, and it contains no game artwork: the emblem in [`art/`](art) and every drawing in the app, including the sword on the opening screen ([`src/ui/SwordLoader.tsx`](src/ui/SwordLoader.tsx)), were made for this project.
+Warcryer is a community project. It is not affiliated with or endorsed by NCSOFT or any game publisher, and it contains no game artwork: the emblem in [`art/`](art) and every drawing in the app, including the sword on the opening screen ([`src/ui/SwordLoader.tsx`](src/ui/SwordLoader.tsx)), were made for this project. TeamSpeak is a trademark of its owner, named above only for comparison; Warcryer is not affiliated with it.

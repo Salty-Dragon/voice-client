@@ -19,6 +19,7 @@ Read the [members guide](members.md) first, and the [clan leaders guide](clan-le
 | Start and end the operation, name deputies | Yes | Yes | Yes | |
 | Move anyone in the operation, edit parties | Yes | Yes | Yes | Yes |
 | Add any clan's constant parties to the board | Yes | Yes | Yes | Yes |
+| See who attended an operation | Yes | Yes | Yes | Yes |
 | Speak on Broadcast and Command | If also leading it | If also leading it | Yes | Yes |
 | Appoint alliance admins | Yes | | | |
 | Alliance lounge switch | Yes | | | |
@@ -51,6 +52,8 @@ An alliance admin cannot ban the app admin or another alliance admin.
 ## Operations
 
 An operation is one event: a siege, an epic boss, a mass PvP. It has an event leader, deputies, parties and a Reserve.
+
+The app covers the whole event: create it, see who is coming and as which class, build the parties and see what each still needs, run it, and afterwards see who attended.
 
 ### Creating one
 
@@ -132,14 +135,16 @@ You and the other organisers see everyone. Clan leaders and officers see their o
 
 ### A checklist for event night
 
-1. Create the operation ahead of time and tell the clans.
-2. Let clan leaders fill their parties; check the board.
-3. Name your deputies.
-4. Ten minutes before: check the green dots. Chase anyone missing, and send clan leaders an invite link for anyone not in the app yet.
-5. Check that every party has the right leader and that leaders have bound their Command key.
-6. Start the operation.
-7. Brief everyone with Broadcast locked open, then release it before the fight.
-8. Afterwards, end it.
+1. Create the operation ahead of time and tell the clans. Everyone in them is asked whether they are coming.
+2. Watch the answers come in on the board's top line. Ask clan leaders to chase the players under **No answer yet**, and members to set their class and level.
+3. Add the constant parties, then place the rest, or let clan leaders fill their own parties. Give each party its group type.
+4. Work through **Needs**: click a missing role on a party to list the unplaced players who can fill it. Aim for every party **Full**.
+5. Name your deputies.
+6. Ten minutes before: check the green dots. Chase anyone missing, and send clan leaders an invite link for anyone not in the app yet.
+7. Check that every party has the right leader and that leaders have bound their Command key.
+8. Start the operation. Attendance counts from this moment.
+9. Brief everyone with Broadcast locked open, then release it before the fight.
+10. Afterwards, end it. Its board then shows **Attendance**; copy it into your sheet if you keep points.
 
 ## The log
 

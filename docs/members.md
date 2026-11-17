@@ -87,6 +87,7 @@ When an event is planned for your clan, the app asks whether you are coming. The
 
 - When an organiser moves you to another party, you hear a short cue, a line tells you where you went, and your voice switches within a second or two. You do nothing.
 - To ask to join a party yourself, open **Operations**, open the operation, and click **Ask to join** on the party. Its leader accepts or declines. You can cancel, and asking a different party replaces the first request.
+- Each party on the board shows what kind of group it is (a mage group, a stopper group and so on), whether it is **Full**, and under **Needs** the support roles it has nobody for yet. That tells you where your class is wanted.
 
 ## If you lead a party
 
