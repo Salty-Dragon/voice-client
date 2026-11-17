@@ -1,6 +1,6 @@
 # Privacy policy
 
-This covers Warcryer, the Windows app built from this repository, and the server the released installer connects to, `ignite.v1rtopia.com`. If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
+This covers Warcryer, the Windows app built from this repository, and the service the released installer connects to (the server at `ignite.v1rtopia.com`), which is run by Warcryer. The only contact is the [Warcryer Discord](https://discord.gg/qf4meEMfhp). The service's rules are in the [terms of use](TERMS.md). If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
 
 ## Before you sign in
 
@@ -64,6 +64,10 @@ What stays, without you:
 - Backups of the database are kept on the server for 14 days, so a deleted account can remain in a backup for that long. A copy of each backup may also be kept with a storage provider (Backblaze), encrypted before it leaves the server so that the provider cannot read it, and removed there after a set number of days.
 
 If you cannot sign in, ask an alliance admin to pass your request to whoever runs the service, who can delete an account from the admin page.
+
+## What the service's operator can see
+
+Whoever runs the service has a page listing every alliance: its name, its owner's in-game name, how many players, clans and operations it has, when something last changed in it, its plan, and which beta code it was started with. That page shows nothing of what is inside an alliance. As with any hosted service, the operator has access to the server and its database, where everything described on this page is stored; it is looked at only to keep the service running or to deal with a breach of the terms.
 
 ## Other services involved
 

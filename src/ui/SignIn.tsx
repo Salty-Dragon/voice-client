@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { beginSignIn, onSignInLink, redeem } from "../auth";
-import { isDesktop, SERVER } from "../config";
-import { Wordmark } from "./common";
+import { isDesktop, PRIVACY_URL, SERVER, TERMS_URL } from "../config";
+import { openInBrowser, Wordmark } from "./common";
 
 export function SignIn({ onToken, notice }: { onToken: (token: string) => void; notice?: string }) {
   const [waiting, setWaiting] = useState(false);
@@ -82,6 +82,11 @@ export function SignIn({ onToken, notice }: { onToken: (token: string) => void; 
           </>
         )}
         {error && <p className="text-danger" role="alert">{error}</p>}
+        <p className="text-xs text-text-muted">
+          In beta, and free. By signing in you accept the{" "}
+          <button type="button" className="underline underline-offset-2 hover:text-text cursor-pointer" onClick={() => void openInBrowser(TERMS_URL)}>terms of use</button>; what is kept about you is in the{" "}
+          <button type="button" className="underline underline-offset-2 hover:text-text cursor-pointer" onClick={() => void openInBrowser(PRIVACY_URL)}>privacy policy</button>.
+        </p>
       </div>
     </main>
   );

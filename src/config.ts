@@ -19,5 +19,9 @@ export const DOCS_URL = "https://github.com/Warcryer/client/blob/main/docs";
 /** Link scheme that brings a browser sign-in back to the desktop app. */
 export const LINK_SCHEME = "warcryer";
 
+/** The service's terms of use and privacy policy, kept in the public repository where their history can be seen. */
+export const TERMS_URL = "https://github.com/Warcryer/client/blob/main/TERMS.md";
+export const PRIVACY_URL = "https://github.com/Warcryer/client/blob/main/PRIVACY.md";
+
 /** Where to reach whoever runs the service: its Discord. The only contact there is. */
 export const SUPPORT_URL = "https://discord.gg/qf4meEMfhp";

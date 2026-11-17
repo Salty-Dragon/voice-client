@@ -7,6 +7,7 @@ import { d, t } from "../words";
 import { marked } from "marked";
 import { useEffect, useMemo, useRef, useState } from "react";
 import admins from "../../docs/alliance-admins.md?raw";
+import firstHour from "../../docs/first-hour.md?raw";
 import leaders from "../../docs/clan-leaders.md?raw";
 import members from "../../docs/members.md?raw";
 import { DOCS_URL } from "../config";
@@ -17,6 +18,7 @@ import { openInBrowser } from "./common";
 const GUIDES = [
   { file: "members.md", label: "Members", who: "Everyone: signing in, class and level, invite links, talking, keys, signing up for events, the compact strip, updates, settings", text: members },
   { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties, your parties in an operation, Discord announcements, attendance, the clan log", text: leaders },
+  { file: "first-hour.md", label: "Your alliance's first hour", who: "For whoever starts an alliance: from installing to a first planned operation, step by step", text: firstHour },
   { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, game setup, operations and changing them, who is coming, what each party needs, the roster board, briefings, attendance, bans, the log", text: admins },
 ] as const;
 
@@ -31,7 +33,7 @@ export function GuidesView() {
   const { info } = useApp();
   const role = info.membership?.status === "active" ? info.membership.role : null;
   // The guide that matches what this player does is marked, not forced.
-  const yours = new Set<string>(["members.md", ...(role === "leader" || role === "officer" ? ["clan-leaders.md"] : []), ...(info.user.runsAlliance ? ["alliance-admins.md"] : [])]);
+  const yours = new Set<string>(["members.md", ...(role === "leader" || role === "officer" ? ["clan-leaders.md"] : []), ...(info.user.runsAlliance ? ["first-hour.md", "alliance-admins.md"] : [])]);
   const [file, setFile] = useState<string>("members.md");
   const page = useRef<HTMLDivElement>(null);
   const guide = GUIDES.find((g) => g.file === file) ?? GUIDES[0];
