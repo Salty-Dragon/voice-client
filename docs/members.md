@@ -69,6 +69,26 @@ Good to know:
 
 Change any of this in **Settings**.
 
+## Chat
+
+An operation has a text chat beside its voice: on the **Voice** tab, under the list of who is connected. It is for what voice is bad at: a name to assist, a time to regroup, a late arrival catching up, or when you cannot talk.
+
+- **A tab for each of your nets.** What is written on a net is read by whoever is on it, the same people who hear it. Your party's lines are your party's.
+- **Who may write follows who may speak.** Everyone writes in their own party and in Reserve. On Broadcast and in your clan's channel you read unless you are one of those who speak there, or your alliance's admins have opened it to everyone. The line you type in says which it is.
+- **A dot on a tab** means lines you have not seen. When you join late, or come back after a dropped connection, you are given the last lines of each net.
+- **Your own lines** can be removed: point at one and click **remove**. Those who run the operation can remove any line they can read, and switch a player's writing off for that operation.
+- **It is kept** with the operation, for as long as your alliance's admins have chosen, and you can read it back on the operation's board afterwards (**Show the chat**). Voice is never recorded; what you type is.
+
+### The chat window over the game
+
+On the Voice tab, **Open as a window over the game** turns the compact strip into a chat window: who is speaking on top, the chat underneath. It stays on top of the game, so put it where the game's own chat box is.
+
+- Drag it by its top line; size it from its edges or the bottom right corner; the slider in its top line makes it more or less see-through. **▴** folds it back into the strip, **×** closes it.
+- **The Chat key** (Settings → Keys) lets you type without leaving the game: press it, type, **Enter** sends and the game has the keyboard again. **Esc**, or the Chat key again, gives up. Pick a key the game does not use, because the game receives it too.
+- While you type, your talk keys are just letters: they open no mic.
+- You can also click in the line and type; Enter gives the keyboard back to the game the same way.
+- Like the strip, it is a window and not an overlay: a game in exclusive full screen hides it, so run the game windowed or borderless.
+
 ## When a higher net is live
 
 While someone speaks on a higher net, the nets below it get quieter for you (30% by default) and return when the higher net goes quiet. So a Broadcast call cuts through party chatter without silencing it. Turn this off or change the level in **Settings → Priority**.
@@ -143,7 +163,8 @@ You do not have to switch to the app to see who is talking. Tick **Show the comp
 
 - **Drag** it wherever suits you; it remembers the place.
 - **Double-click** it to bring the app forward.
-- **×** closes it; switch it on again in Settings.
+- **▾** opens it into the [chat window](#the-chat-window-over-the-game): the operation's chat under the line of who is speaking.
+- **×** closes it; switch it on again in Settings, with the Chat key, or with **Open as a window over the game** on the Voice tab.
 
 It sits over a game that runs in a window or in borderless mode. A game in exclusive full screen covers it, because the app never draws inside the game.
 
@@ -163,7 +184,7 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | --- | --- |
 | **Devices** | Your microphone and headset, the three-second test, and three clean-up switches: echo cancellation, noise suppression and auto gain. Leave them on unless something sounds wrong. |
 | **Party, Reserve and lounge** | Push-to-talk or voice activation for the nets you chat on, with the sensitivity marker and how long the mic stays open after you stop. |
-| **Keys** | One key per net you may speak on, plus **Mute all**. Mouse side buttons work. **Broadcast lock** is for event leaders only. |
+| **Keys** | One key per net you may speak on, plus **Mute all**. Mouse side buttons work. **Broadcast lock** is for event leaders only. **Chat** puts the keyboard in the chat window's line while the game is in front. |
 | **Volume** | Your own level for each net. |
 | **Priority** | Whether lower nets get quieter while a higher one is live, and how quiet. |
 | **Sounds** | The cue you hear when you are moved, and its volume. |

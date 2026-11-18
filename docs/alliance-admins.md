@@ -142,6 +142,16 @@ A message names the operation, its start (shown to each reader in their own time
 
 Each clan's leader can connect a channel of their own on the Clan tab, for the operations that clan takes part in. If a clan uses the same channel as the alliance, it gets each message once.
 
+### The chat, and who may write in it
+
+Every operation has a text chat, with a channel for each net ([members' guide](members.md#chat)). On the **Alliance** tab, **Chat** has its three settings:
+
+- **Members may write in their clan's channel.** Off, only a clan's leader and officers write there, as only they speak on the Clan net.
+- **Members may write to the whole operation.** Off, only the event leader and deputies write on Broadcast. With hundreds of players an operation-wide channel that everyone writes in moves fast: try it on a small event first.
+- **Kept:** how long an operation's lines stay after it has ended: until it ends, 7 days, 30 days (unless you change it), or as long as the operation's own record. Choosing a shorter time removes older lines at once.
+
+Keeping order: the event leader, the deputies and you can remove any line you can read (point at it), and switch a player's writing off for that operation; they go on reading, and it ends with the operation. Both are written to the log, without what the line said. A party's channel is read only by that party, during and after: you do not see it unless you are in it.
+
 ### Starting from an earlier operation
 
 You do not have to rebuild the roster for every event. **Start from** lists your recent operations with their size. Pick one and the new operation begins with the same parties in the same order, with the same leaders, members and deputies. The clans and event leader are filled in to match; change them if you need to.

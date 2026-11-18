@@ -38,7 +38,9 @@ Warcryer is not connected with any game's publisher. Following your game's own r
 
 ## What you put in
 
-Names, clan names and tags, crests, event names and notes are yours. By putting them in you allow us to store them and show them to the members of your alliance, which is what the service is for. Do not upload a crest or use a name that you have no right to use.
+Names, clan names and tags, crests, event names, notes and what you write in an operation's chat are yours. By putting them in you allow us to store them and show them to the members of your alliance, which is what the service is for (a chat line is shown only to the players on the net it was written on). Do not upload a crest or use a name that you have no right to use.
+
+Voice is not recorded. The chat is text, and it is kept: for as long as your alliance's admins have chosen, and never longer than the operation it belongs to. Those who run an operation can remove a line and switch a player's writing off for that operation.
 
 ## What we may do
 

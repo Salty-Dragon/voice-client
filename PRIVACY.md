@@ -18,6 +18,7 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | Your answer to an event: coming or not, and another character's name, class and level or a note if you give them | When you sign up | Shown to the members on that event's roster, so the organiser can build parties. |
 | Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
 | Which leader or officer let you in | When you are approved, or use an invite link that lets you straight in | So a clan knows who vouched for each member. |
+| What you write in an operation's chat | When you send a line | Shown to the players on that net of that operation, and to nobody else in your alliance. Kept after the operation so that those players can read it back. |
 | Your voice | While you hold a push-to-talk key, or while voice activation is open | Relayed live to the members of that room. It is not recorded or stored. |
 | Times you joined and left voice rooms | Automatically while connected | So organisers can see who is present. For each operation, its organisers, and your clan's leader and officers, can see how long you were in voice while it ran and when you joined. |
 | Changes made by leaders and admins (moves, approvals, bans) | When made | An audit log of who did what. |
@@ -48,13 +49,14 @@ The server clears old records by itself every night:
 | An operation that has ended, with its roster and who attended | 12 months after it ended (an alliance admin can delete one sooner) |
 | The log of changes made by leaders and admins | 12 months |
 | Invite links | 30 days after they expire |
+| What was written in an operation's chat | As your alliance's admins have chosen: until the operation ends, or 7 days, 30 days (unless they change it) or 12 months after it. Never longer than the operation itself |
 | Sign-in sessions and sign-in codes | Until they expire |
 
 Your account, your in-game name, class and level, your other characters, and your clan membership are kept for as long as you have the account. Nothing is sold or shared with anyone else.
 
 ## Removing your data
 
-Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name, class and level, your list of other characters, your clan membership, your places in constant parties and on rosters, your answers to events, your join requests and the record of when you were in voice.
+Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name, class and level, your list of other characters, your clan membership, your places in constant parties and on rosters, your answers to events, your join requests, everything you wrote in operations' chats and the record of when you were in voice.
 
 What stays, without you:
 

@@ -104,6 +104,10 @@ The first player placed in a party leads it, and party leaders are on Command. I
 
 Until the operation is started, everyone stays in their lounge while you build the roster. Starting it moves every player into their party at once.
 
+## Your clan's chat channel
+
+During an operation your clan has a channel in the chat ([members' guide](members.md#chat)), read by your members who are in that operation. You and your officers write in it; members read, unless your alliance's admins have opened clans' channels to everyone. It is a good place for what must not be missed: where to regroup, who to assist.
+
 ## Discord announcements
 
 Players who do not have the app open do not see that an event has been planned. The clan's leader can have the app say so in a Discord channel: on the **Clan** tab, under **Discord announcements**.
