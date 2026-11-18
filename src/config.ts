@@ -25,3 +25,6 @@ export const PRIVACY_URL = "https://github.com/Warcryer/client/blob/main/PRIVACY
 
 /** Where to reach whoever runs the service: its Discord. The only contact there is. */
 export const SUPPORT_URL = "https://discord.gg/qf4meEMfhp";
+
+/** The service's own page saying whether it is working right now. */
+export const STATUS_URL = `${SERVER}/status`;

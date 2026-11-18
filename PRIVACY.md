@@ -14,6 +14,7 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | --- | --- | --- |
 | Your Discord account ID and Discord name | At sign-in, from Discord to the server | To know who you are. When you ask to join a clan, its leader and officers see your Discord name beside the request, so they can tell it is you; nobody else is shown it. Only Discord's `identify` permission is requested: no email address, no server list, no messages. The app never sees your Discord password. |
 | In-game name, class and level | When you set them | Shown to other members beside your voice and on rosters. |
+| Your other characters: each one's name, class and level, and whether you play it beside your main | When you list them in Settings | Shown to your clan on its roster and to the members on an event's roster, so organisers know what you can bring. |
 | Your answer to an event: coming or not, and another character's name, class and level or a note if you give them | When you sign up | Shown to the members on that event's roster, so the organiser can build parties. |
 | Clan membership, join requests, constant party and roster places, clan crest images | When you or your leaders change them | To decide which voice rooms you belong in. |
 | Which leader or officer let you in | When you are approved, or use an invite link that lets you straight in | So a clan knows who vouched for each member. |
@@ -49,11 +50,11 @@ The server clears old records by itself every night:
 | Invite links | 30 days after they expire |
 | Sign-in sessions and sign-in codes | Until they expire |
 
-Your account, your in-game name, class and level, and your clan membership are kept for as long as you have the account. Nothing is sold or shared with anyone else.
+Your account, your in-game name, class and level, your other characters, and your clan membership are kept for as long as you have the account. Nothing is sold or shared with anyone else.
 
 ## Removing your data
 
-Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name, class and level, your clan membership, your places in constant parties and on rosters, your answers to events, your join requests and the record of when you were in voice.
+Signing out ends your session. To delete your account, open **Settings → Account → Delete my account** in the app. That removes, at once and for good: your account and Discord account ID, your in-game name, class and level, your list of other characters, your clan membership, your places in constant parties and on rosters, your answers to events, your join requests and the record of when you were in voice.
 
 What stays, without you:
 

@@ -2,11 +2,12 @@
 // brings a character other than the one on their profile, which one.
 
 import { t } from "../words";
-import { useState } from "react";
-import { rpc, type Signup } from "../api";
+import { useEffect, useState } from "react";
+import { rpc, type Character, type Signup } from "../api";
 import { useGame } from "../game";
 import { useAct, useApp } from "./app-context";
 import { CharacterFields } from "./CharacterFields";
+import { CharacterLine } from "./MyCharacters";
 import { when } from "./RosterView";
 import { Help } from "./tips";
 
@@ -21,6 +22,7 @@ const SIGNUP_HELP = [
 const OTHER_HELP = [
   "Use this when you bring a different character than the one on your profile, for this event only.",
   "Leave a field empty to use what your profile says.",
+  "If you keep a list of other characters (Settings, Account), pick one from it instead of typing.",
   "The note is for the organiser, for example that you will be half an hour late.",
 ].join("\n");
 
@@ -51,6 +53,12 @@ export function SignupControl({
   const [cls, setCls] = useState(signup?.className ?? "");
   const [band, setBand] = useState(signup?.levelBand ?? "");
   const [note, setNote] = useState(signup?.note ?? "");
+  // The player's own standing list, fetched when the form is first opened.
+  const [mine, setMine] = useState<Character[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    void rpc<{ characters: Character[] }>("character.list").then((r) => setMine(r.characters), () => {});
+  }, [open]);
 
   const send = (next: "coming" | "out" | "none", details: boolean) =>
     void act
@@ -114,6 +122,25 @@ export function SignupControl({
             Coming with another character
             <Help text={OTHER_HELP} />
           </span>
+          {mine.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2" data-pick-character>
+              <span className="text-text-muted">From your list:</span>
+              {mine.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`btn btn-quiet text-sm ${charName.trim().toLowerCase() === c.name.toLowerCase() ? "border-gold text-gold-bright" : ""}`}
+                  onClick={() => {
+                    setCharName(c.name);
+                    setCls(c.className ?? "");
+                    setBand(c.levelBand ?? "");
+                  }}
+                >
+                  <CharacterLine c={c} />
+                </button>
+              ))}
+            </div>
+          )}
           <label className="flex flex-col gap-1 text-text-muted">
             Character name
             <input className="field max-w-xs" value={charName} onChange={(e) => setCharName(e.target.value)} maxLength={24} autoComplete="off" placeholder={info.user.name} />

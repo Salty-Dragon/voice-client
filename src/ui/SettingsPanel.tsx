@@ -1,12 +1,13 @@
 import { t } from "../words";
 import { useState } from "react";
 import { rpc } from "../api";
-import { APP_NAME, APP_VERSION, isDesktop } from "../config";
+import { APP_NAME, APP_VERSION, isDesktop, STATUS_URL } from "../config";
 import { foreground } from "../runtime";
 import { checkForUpdate, installUpdate, useUpdate } from "../update";
 import { setSettings, useSettings, type BindTarget, type InputSource, type NetKind } from "../settings";
 import { useApp } from "./app-context";
-import { DevicePickers, KeyBind, MicTest, netName, NET_TEXT, PartyMode } from "./common";
+import { DevicePickers, KeyBind, MicTest, netName, NET_TEXT, openInBrowser, PartyMode } from "./common";
+import { MyCharacters } from "./MyCharacters";
 import { ProfileForm } from "./NameStep";
 import { Help } from "./tips";
 
@@ -279,6 +280,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
             >
               Open the guides
             </button>
+            <button type="button" className="btn btn-quiet ml-2 text-sm" onClick={() => void openInBrowser(STATUS_URL)} data-status-link>Is the service working?</button>
           </div>
           <p className="flex items-center gap-1 text-xs text-text-muted">
             Point at a scroll like this one for a short explanation.
@@ -288,6 +290,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
 
         <Group title="Account">
           <ProfileForm name={info.user.name} className={info.user.className ?? ""} levelBand={info.user.levelBand ?? ""} onSaved={refreshInfo} submit="Save" />
+          <MyCharacters />
           <div><button type="button" className="btn btn-quiet text-sm" onClick={onSignOut}>Sign out</button></div>
           <DeleteAccount leadsClan={info.membership?.role === "leader" && info.membership.status === "active"} onDeleted={onSignOut} />
         </Group>

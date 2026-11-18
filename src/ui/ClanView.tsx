@@ -2,6 +2,7 @@ import { d, t } from "../words";
 import { useRef, useState } from "react";
 import { rpc, type ClanMember, type ClanSummary, type ClanView as ClanData, type Cp, type CpList, type Invite } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
+import { CharacterLine } from "./MyCharacters";
 import { partySizeOf, useGame } from "../game";
 import { clearInviteOutcome, redeemInvite, useInviteOutcome } from "../invite";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
@@ -545,6 +546,13 @@ function Members({ clanId }: { clanId: number }) {
                   {m.role}
                 </span>
               )}
+              {/* Their other characters, as on a leader's sheet. */}
+              {m.characters && m.characters.length > 0 && (
+                <span className="flex flex-wrap items-baseline gap-x-3 text-sm text-text-muted" data-characters={m.name}>
+                  also
+                  {m.characters.map((c) => <CharacterLine key={c.id} c={c} />)}
+                </span>
+              )}
               <span className="ml-auto flex gap-2">
                 {data.myRole === "leader" && m.role === "member" && (
                   <button type="button" className="btn btn-quiet text-sm" disabled={act.busy} onClick={call("clan.setOfficer", { userId: m.userId, officer: true })}>Make officer</button>
@@ -570,7 +578,7 @@ function Members({ clanId }: { clanId: number }) {
       <ConstantParties clanId={clanId} members={data.members} leads={leads} />
       {data.myRole === "leader" && data.discord !== undefined && (
         <Section title="Discord announcements" help={DISCORD_HELP(t("an operation your clan takes part in"))}>
-          <DiscordSetup clanId={clanId} connected={data.discord} onChange={reload} />
+          <DiscordSetup clanId={clanId} connected={data.discord} role={data.discordRole} onChange={reload} />
         </Section>
       )}
       {data.myRole === "leader" && (

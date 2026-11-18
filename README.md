@@ -22,7 +22,8 @@ The app is also where the alliance is run: starting one (with a beta code from t
 - Lowers the nets below while a higher one is live, so a leader's call cuts through without muting anyone.
 - Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
-- Can announce operations in a Discord channel (a webhook the clan's leader pastes; no bot), for players who do not have the app open.
+- Can announce operations in a Discord channel (a webhook the clan's leader pastes; no bot), for players who do not have the app open: when one is planned, changed or started, and as a reminder before it starts. A leader can choose a role for those messages to ping.
+- Keeps each player's other characters as a standing list, boxes included, which the clan sees on its roster, organisers see on the board, and the player picks from when signing up.
 - Plans the event as well as carrying it: players set their class and level and answer "are you coming?", the board shows what each party still needs, and afterwards it lists who was in voice and for how long.
 - Each alliance is its own. What is inside one (clans, players, operations, voice, the log) is seen and heard by nobody outside it, and the only way in is an invite link from one of its clans.
 - Fits the game an alliance plays: its classes and roles, party size, what a party should have, level or gear bands and kinds of event are the alliance's own lists, with starting points for a few games. If its players say guild and raid, the app says so too.
@@ -35,13 +36,13 @@ To notice your push-to-talk keys while the game is in front, the app reads keybo
 
 Only keys you have bound to a net are ever acted on, plus the single key you press while binding. Key presses are not logged, stored or sent anywhere. The code is in [`src-tauri/src/input`](src-tauri/src/input).
 
-Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, your in-game name, class and level when you set them, and your answer when you sign up for an event. It records when you join and leave each net, from which an operation's organisers and your clan's leadership see how long you were in voice. Voice itself is never recorded. The [privacy policy](PRIVACY.md) has the full list.
+Key bindings and audio settings stay on your computer. The server receives your Discord account ID and name at sign-in, your in-game name, class and level when you set them, the other characters you list, and your answer when you sign up for an event. It records when you join and leave each net, from which an operation's organisers and your clan's leadership see how long you were in voice. Voice itself is never recorded. The [privacy policy](PRIVACY.md) has the full list.
 
 ## Guides
 
 Step-by-step guides for [members](docs/members.md), [clan leaders and officers](docs/clan-leaders.md) and [alliance admins and event leaders](docs/alliance-admins.md), and for whoever starts an alliance, [its first hour](docs/first-hour.md). The same guides are inside the app, on the Guides tab.
 
-The hosted service has [terms of use](TERMS.md) and a [privacy policy](PRIVACY.md). Questions go to the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
+The hosted service has [terms of use](TERMS.md), a [privacy policy](PRIVACY.md) and a [status page](https://ignite.v1rtopia.com/status). Questions go to the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
 
 ## Install
 

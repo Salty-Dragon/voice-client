@@ -12,6 +12,7 @@ import { AttendancePanel } from "./Attendance";
 import { EditOperation } from "./EditOperation";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
+import { CharacterLine } from "./MyCharacters";
 import { SignupControl } from "./Signup";
 import { Help } from "./tips";
 
@@ -20,6 +21,7 @@ const legend = (PARTY_SIZE: number, needs: string[]) => [
   "Green dot: the player has the app open.",
   "✓: the player has said they are coming. Out: they have said they cannot come. Neither: no answer yet.",
   "Beside the name: class and level. A second name in brackets is the player's usual name, when they bring another character to this event.",
+  "+2 and the like: how many boxes the player has listed, characters they can play at the same time as their main. Click a card to read all of that player's other characters.",
   t("♛ Lead: the event leader. Speaks on Broadcast and Command, starts and ends the operation."),
   "Deputy: speaks on Broadcast and Command, and can move anyone.",
   t("⚑ Clan: a clan leader. Speaks on Clan and Command."),
@@ -180,6 +182,9 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
   const card = (p: Person, party: Party | null) => {
     const draggable = canKick(p);
     const c = shown(p);
+    const boxes = (p.characters ?? []).filter((x) => x.box).length;
+    // The rest of their list: the one they are bringing is on the card already.
+    const others = (p.characters ?? []).filter((x) => x.name.toLowerCase() !== c.name.toLowerCase());
     return (
       <li
         key={p.userId}
@@ -208,8 +213,9 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             {c.usual && <span className="font-normal text-text-muted"> ({c.usual})</span>}
           </span>
           {c.tag && <span className="text-xs text-gold">{c.tag}</span>}
-          {c.band && <span className="text-xs text-text-muted tabular-nums">{c.band}</span>}
+          {c.band && <span className="whitespace-nowrap text-xs text-text-muted tabular-nums">{c.band}</span>}
           <span className="ml-auto flex shrink-0 items-center gap-1 text-xs text-text-muted">
+            {boxes > 0 && <span className="text-text-muted" data-boxes aria-label={`${boxes} ${boxes === 1 ? "box" : "boxes"}`}>+{boxes}</span>}
             {c.status === "coming" && <span className="text-net-party" role="img" aria-label="Coming">✓</span>}
             {c.status === "out" && <span className="text-danger">Out</span>}
             {op.eventLeaderId === p.userId && <span className="text-net-broadcast">♛ Lead</span>}
@@ -220,6 +226,13 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
             {op.clans.length > 1 && <ClanMark clanId={p.clanId} tag={p.clanTag} size={16} />}
           </span>
         </button>
+        {/* The selected player's other characters, from their own standing list. */}
+        {selected === p.userId && others.length > 0 && (
+          <div className="flex flex-wrap items-baseline gap-x-3 px-2 pb-1 pt-0.5 text-xs text-text-muted" data-card-characters>
+            also
+            {others.map((x) => <CharacterLine key={x.id} c={x} />)}
+          </div>
+        )}
       </li>
     );
   };

@@ -135,7 +135,10 @@ The app asks everyone in the participating clans whether they are coming, but on
 1. In Discord, open the channel's settings (the cog beside its name), then **Integrations**, **Webhooks**, **New Webhook**, and **Copy Webhook URL**. You need the Manage Webhooks permission on that Discord server.
 2. In the app, paste the address under **Discord announcements** and click **Connect**. A first message is posted at once, so you can see it arrive.
 
-A message names the operation, its start (shown to each reader in their own time zone), the clans and the event leader, and pings nobody. **Send a test message** checks the channel; **Disconnect** stops the messages. The address is a secret and is never shown again.
+A message names the operation, its start (shown to each reader in their own time zone), the clans and the event leader. **Send a test message** checks the channel; **Disconnect** stops the messages. The address is a secret and is never shown again.
+
+- **Reminder:** some time before an operation starts, every connected channel gets a reminder with how many have said they are coming. Choose how long before under **Reminder** (15 minutes to 2 hours; 30 minutes unless you change it), or **Off**. It is one setting for the whole alliance, clans' own channels included. An operation created or moved to start sooner than that is not reminded of again: the message just posted says it.
+- **Ping:** nobody is pinged unless you choose a role under **Ping**: `@everyone`, `@here`, or a role's ID (in Discord: Settings → Advanced → Developer Mode, then right-click the role in the server's settings → Copy Role ID). The channel is told which role it is. That role is pinged when an operation is announced, by the reminder, when it starts and if it is cancelled, and not by a change of detail. Each clan's leader chooses the role for the clan's own channel.
 
 Each clan's leader can connect a channel of their own on the Clan tab, for the operations that clan takes part in. If a clan uses the same channel as the alliance, it gets each message once.
 

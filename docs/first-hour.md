@@ -49,7 +49,7 @@ Groups that always play together are saved once. On the **Clan** tab, under **Co
 1. On the **Operations** tab, **New operation**: a name, a kind of event, a start time, the event leader, and the clans taking part.
 2. On its board, click **Add all** to place every constant party at once. Drag the rest from Reserve, or leave them: Reserve has its own net.
 3. Everyone in those clans is asked whether they are coming. Watch the count on the board, and what each party still needs.
-4. Optional: on the **Alliance** tab, connect a Discord channel under **Discord announcements**, so players without the app open hear about it too.
+4. Optional: on the **Alliance** tab, connect a Discord channel under **Discord announcements**, so players without the app open hear about it too. It also reminds them half an hour before the start, and can ping a role.
 
 ## 8. Before the first real fight
 
@@ -59,4 +59,4 @@ Groups that always play together are saved once. On the **Clan** tab, under **Co
 
 ## If something does not work
 
-Ask on the [Warcryer Discord](https://discord.gg/qf4meEMfhp). Say what you did and what you saw; a screenshot helps.
+First look at the [status page](https://ignite.v1rtopia.com/status), which says whether the service itself is working; the app links to it under **Settings → Help**. Then ask on the [Warcryer Discord](https://discord.gg/qf4meEMfhp). Say what you did and what you saw; a screenshot helps.

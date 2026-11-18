@@ -81,7 +81,8 @@ When an event is planned for your clan, the app asks whether you are coming. The
 
 - **Where:** a line at the top of the **Voice** tab names the event and its time, with two buttons. The same buttons are on the **Operations** tab beside each event, and a **?** on that tab means an event is still waiting for your answer.
 - **Coming:** you go to the top of the organiser's list of players to place. **Can't come:** the organiser knows not to count on you. Change your answer whenever you like.
-- **Another character:** open the event (click it on the Operations tab) and choose **Another character or a note**. Enter that character's name, class and level, for this event only; your profile stays as it is. The note is for the organiser, for example that you will be late.
+- **Another character:** open the event (click it on the Operations tab) and choose **Another character or a note**. Pick one from your list of other characters, or enter a name, class and level, for this event only; your profile stays as it is. The note is for the organiser, for example that you will be late.
+- **Your other characters:** in **Settings**, under **Account**, **Other characters** keeps a standing list of the characters you play beside your main: name, class and level, and a tick for a **box** (one you play at the same time as your main, on a second game client). Your clan sees the list on its roster and organisers see it on an operation's board, so they know what you can bring without asking.
 - **If you lead a constant party,** the event's board offers **Sign up the whole party**. It marks every member as coming in one go. Members who already answered keep their own answer.
 - Your answer does not change your voice. When the event starts, everyone on its roster is pulled in as before, whatever they answered.
 
@@ -168,10 +169,10 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | **Sounds** | The cue you hear when you are moved, and its volume. |
 | **Key capture** | How keys are read while the game is in front. Leave it on **Polling** unless told otherwise. |
 | **Window and updates** | The compact strip, keeping the app running in the tray, automatic updates, and **Check for updates**. |
-| **Help** | Opens these guides. |
-| **Account** | Your in-game name, class and level, **Sign out**, and **Delete my account**. |
+| **Help** | Opens these guides, and **Is the service working?** opens the status page, which says whether the service itself is up. |
+| **Account** | Your in-game name, class and level, your other characters, **Sign out**, and **Delete my account**. |
 
-Everything here is kept on your computer, except your name, class and level.
+Everything here is kept on your computer, except your name, class and level and your other characters.
 
 ## Troubleshooting
 
@@ -193,6 +194,6 @@ Everything here is kept on your computer, except your name, class and level.
 
 ## What is stored about you
 
-On the server: your Discord account ID and name, your in-game name, class and level, your clan membership and who approved you, your constant party, your answer to each event (coming or not, and another character or a note if you gave one), your place in each operation's roster, and when you joined and left each net. From those times, the organisers of an operation and your clan's leader and officers can see how long you were in voice during it. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
+On the server: your Discord account ID and name, your in-game name, class and level, the other characters you list, your clan membership and who approved you, your constant party, your answer to each event (coming or not, and another character or a note if you gave one), your place in each operation's roster, and when you joined and left each net. From those times, the organisers of an operation and your clan's leader and officers can see how long you were in voice during it. Voice is never recorded. Key bindings, audio settings and your per-player volumes stay on your computer.
 
 To remove all of it, open **Settings → Account → Delete my account**. It asks once more before deleting, and cannot be undone. The full details are in the [privacy policy](../PRIVACY.md).

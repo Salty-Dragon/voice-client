@@ -318,7 +318,7 @@ export function AllianceView() {
 
       {data.discord !== undefined && (
         <Section title="Discord announcements" help={DISCORD_HELP(t("any operation of the alliance")) + t("\nEach clan's leader can also set up a channel of their own on the Clan screen, for the operations that clan takes part in.")}>
-          <DiscordSetup clanId={null} connected={data.discord} onChange={reload} />
+          <DiscordSetup clanId={null} connected={data.discord} role={data.discordRole} remind={data.remindMinutes === undefined ? undefined : { minutes: data.remindMinutes, choices: data.remindChoices ?? [0, 15, 30, 60, 120] }} onChange={reload} />
         </Section>
       )}
 

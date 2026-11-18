@@ -98,9 +98,11 @@ export type JoinRequest = { opId: number; opName: string; partyId: number; party
 /** `crest` is 0 when the clan has none. */
 export type ClanSummary = { id: number; name: string; tag: string; crest: number; leaderName: string | null; members: number };
 /** `discordName`: only on a player waiting to be let in, and only for those who may approve them. */
-export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active"; discordName?: string | null };
+export type ClanMember = { userId: number; name: string; classTag: string | null; role: ClanRole; status: "pending" | "active"; discordName?: string | null; /** Their other characters, if they have listed any. */ characters?: Character[] };
+/** One of a player's other characters, beside the one on their profile. `box`: played at the same time as the main. */
+export type Character = { id: number; name: string; className: string | null; classTag: string | null; levelBand: string | null; box: boolean };
 /** `discord`: whether the clan's Discord announcements are set up. Only sent to the clan's leader and alliance admins. */
-export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[]; discord?: boolean };
+export type ClanView = { clan: { id: number; name: string; tag: string }; myRole: ClanRole | null; members: ClanMember[]; onlineIds: number[]; discord?: boolean; /** The role the clan's announcements ping, if one is chosen. */ discordRole?: string | null };
 
 export type OpState = "planned" | "live" | "ended";
 export type OpSummary = {
@@ -126,6 +128,8 @@ export type Person = {
   clanId: number | null;
   clanTag: string | null;
   clanRole: ClanRole | null;
+  /** Their other characters, if they have listed any. */
+  characters?: Character[];
 };
 /** A player's answer to "are you coming?". The character fields are set only when they bring a character other than their profile's. */
 export type Signup = {
@@ -183,7 +187,7 @@ export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: strin
 export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean; isOwner?: boolean };
 /** A player banned from the alliance. `id` names the ban for lifting it. */
 export type Ban = { id: string; name: string; at: string };
-export type AllianceView = { plan?: PlanState | null; alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean };
+export type AllianceView = { plan?: PlanState | null; alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean; discordRole?: string | null; /** Minutes before an operation's start that Discord is reminded; 0: never. */ remindMinutes?: number; remindChoices?: number[] };
 
 /** One player's time in voice during an operation. `seconds` is 0 when they never joined. */
 export type AttendanceRow = {

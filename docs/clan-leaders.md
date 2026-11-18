@@ -111,7 +111,9 @@ Players who do not have the app open do not see that an event has been planned. 
 1. In Discord, open the channel's settings (the cog beside its name), then **Integrations**, **Webhooks**, **New Webhook**, and **Copy Webhook URL**. You need the Manage Webhooks permission on that Discord server.
 2. In the app, paste the address under **Discord announcements** and click **Connect**. A first message is posted at once, so you can see it arrive.
 
-From then on the channel gets a message when an operation your clan takes part in is created, when its name, start time, leader or clans change, when it starts, and when one that had not started is cancelled. A message names the operation, its start (Discord shows it to each reader in their own time zone), the clans and the event leader. Nobody is pinged.
+From then on the channel gets a message when an operation your clan takes part in is created, when its name, start time, leader or clans change, when it starts, and when one that had not started is cancelled. A message names the operation, its start (Discord shows it to each reader in their own time zone), the clans and the event leader. Some time before an operation starts, a reminder is posted too, with how many have said they are coming; your alliance's admins choose how long before, or switch it off.
+
+Nobody is pinged unless you choose a role. Under **Ping**, type `@everyone` or `@here`, or paste a role's ID, and click **Save**: the channel is told which role it is, by name, so you can see you picked the right one. That role is then pinged when an operation is announced, by the reminder, when it starts and if it is cancelled, and not by a change of detail. To copy a role's ID in Discord: switch on **Developer Mode** under Settings → Advanced, then in the server's settings right-click the role and choose **Copy Role ID**. If the ping does not light up for your members, allow the role to be mentioned in its settings. Empty the box and save to ping nobody again.
 
 - **Send a test message** checks the channel still works.
 - **Disconnect** stops the messages. Deleting the webhook in Discord does too.
