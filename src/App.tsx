@@ -140,6 +140,7 @@ export default function App() {
       leave(isDesktop ? "You were signed out. Sign in again to continue." : "");
     };
     engine.onNeedRefresh = () => c.refresh();
+    engine.onVoiceDropped = (what) => c.reportVoice(what);
     c.start();
     return () => {
       window.clearTimeout(noticeTimer);

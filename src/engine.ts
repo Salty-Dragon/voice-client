@@ -13,11 +13,38 @@ import {
   LocalAudioTrack,
   type Participant,
   type RemoteAudioTrack,
+  LoggerNames,
+  LogLevel,
   Room,
   RoomEvent,
+  setLogExtension,
+  setLogLevel,
   Track,
 } from "livekit-client";
 import type { NetGrant, NetSet } from "./control";
+
+// The voice library's own account of its signalling connection: when one drops, the library logs
+// whether the socket was closed (and with which code) or its ping went unanswered. The last few
+// such lines are kept, so that a drop can be reported with its reason. Nothing else is kept, and
+// nothing of it says who was speaking or what was said.
+const VOICE_LOG: { at: number; text: string }[] = [];
+const brief = (context: unknown): string => {
+  if (!context || typeof context !== "object") return "";
+  const c = context as Record<string, unknown>;
+  const kept = Object.fromEntries(["code", "reason", "state", "error"].filter((k) => c[k] !== undefined).map((k) => [k, typeof c[k] === "object" ? String(c[k]) : c[k]]));
+  return Object.keys(kept).length ? ` ${JSON.stringify(kept).slice(0, 140)}` : "";
+};
+setLogLevel(LogLevel.debug, LoggerNames.Signal);
+setLogExtension((level, msg, context) => {
+  if (level < LogLevel.warn && !/websocket closed|ping timeout|closing|reconnect|disconnect/i.test(msg)) return;
+  VOICE_LOG.push({ at: Date.now(), text: `${msg.slice(0, 120)}${brief(context)}` });
+  if (VOICE_LOG.length > 30) VOICE_LOG.shift();
+});
+/**
+ * What the library said from `since` on, oldest first, each with how long ago in seconds. The first
+ * lines are the ones kept: the cause comes first, and what follows is the library trying again.
+ */
+const voiceSaid = (since: number): string[] => VOICE_LOG.filter((l) => l.at >= since).slice(0, 8).map((l) => `${((Date.now() - l.at) / 1000).toFixed(1)}s ago: ${l.text}`);
 import { getSettings, onSettings, type NetKind, type Settings } from "./settings";
 
 export type Member = {
@@ -129,6 +156,8 @@ export class VoiceEngine {
   onChange: () => void = () => {};
   /** A room could not get back in with the token it has; fresh ones are needed. */
   onNeedRefresh: () => void = () => {};
+  /** A voice room lost its signalling connection: which kind of net, and the voice library's own words about it. */
+  onVoiceDropped: (what: { net: string; said: string[] }) => void = () => {};
   private levelListeners = new Set<(db: number) => void>();
 
   constructor() {
@@ -305,6 +334,12 @@ export class VoiceEngine {
     const changed = () => this.onChange();
 
     room
+      // A room's signalling connection was lost and is being made again. What the voice library said
+      // about why is passed on, once it has had a moment to say it (see VOICE_LOG).
+      .on(RoomEvent.SignalReconnecting, () => {
+        const at = Date.now();
+        window.setTimeout(() => this.onVoiceDropped({ net: grant.net, said: voiceSaid(at - 5000) }), 1500);
+      })
       .on(RoomEvent.ConnectionStateChanged, changed)
       .on(RoomEvent.ParticipantConnected, changed)
       .on(RoomEvent.ParticipantDisconnected, changed)
