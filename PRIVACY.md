@@ -24,7 +24,7 @@ Apart from that it sends nothing until you sign in. It has no telemetry, analyti
 | Why a connection to the server dropped: which of the server's two addresses it had used, the connection's close code, how long it had been open and silent, whether Windows had just reported a change of network, whether the window was hidden, and the voice library's own line about it | When the app has reconnected | To find faults in the service. It is written to the server's log beside your account's number and says nothing about what you were doing or saying. |
 | Operation announcements on Discord | When an operation is created, changed, started or cancelled, if a clan's leader or an alliance admin has connected a Discord channel | So players without the app open hear about events. A message carries the operation's name and start time, the names of the clans and the event leader's in-game name. It goes to Discord, to the channel that leader chose, and is then subject to Discord's own terms. Nothing else about you is sent. |
 
-Like any internet service, the server and the network in front of it (Cloudflare) see your IP address while you are connected, and it may appear in their access logs.
+Like any internet service, the server sees your IP address while you are connected, and it may appear in its access logs. The site and the app's requests to it pass through Cloudflare, which sees your address too; voice, its signalling and the app's live connection to the server go straight to the server.
 
 ## What stays on your computer
 
@@ -74,5 +74,5 @@ Whoever runs the service has a page listing every alliance: its name, its owner'
 ## Other services involved
 
 - Discord, for sign-in: <https://discord.com/privacy>
-- Cloudflare, in front of the server: <https://www.cloudflare.com/privacypolicy/>
+- Cloudflare, in front of the site (not of voice): <https://www.cloudflare.com/privacypolicy/>
 - The app displays its interface with Microsoft Edge WebView2, part of Windows: <https://privacy.microsoft.com/privacystatement>
