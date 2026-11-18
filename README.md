@@ -2,7 +2,7 @@
 
 # Warcryer
 
-Voice chat for large gaming alliances and clans: a free, open-source alternative to TeamSpeak, where the event roster decides who hears whom. Project page: <https://warcryer.github.io>.
+Voice chat for large gaming alliances and clans: an open-source alternative to TeamSpeak, where the event roster decides who hears whom. The hosted service is in beta and free while it is. Project page: <https://warcryer.github.io>.
 
 This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
@@ -10,7 +10,7 @@ Voice follows the roster: the server tells the client which voice rooms ("nets")
 
 Between events you sit in your clan's lounge. When an operation you belong to goes live you are pulled into it, and returned to the lounge when it ends.
 
-The app is also where the alliance is run: joining a clan (by request or by invite link), approving members, keeping constant parties, creating operations, signing up for them, building the roster on a drag-and-drop board and checking attendance afterwards. Each screen offers only what your role allows, and the server checks every action again.
+The app is also where the alliance is run: starting one (with a beta code from the [Warcryer Discord](https://discord.gg/qf4meEMfhp)), fitting it to your game, bringing clans and their members in by invite link, approving members, keeping constant parties, creating operations, signing up for them, building the roster on a drag-and-drop board and checking attendance afterwards. Each screen offers only what your role allows, and the server checks every action again.
 
 ## What it does
 
@@ -24,6 +24,8 @@ The app is also where the alliance is run: joining a clan (by request or by invi
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
 - Can announce operations in a Discord channel (a webhook the clan's leader pastes; no bot), for players who do not have the app open.
 - Plans the event as well as carrying it: players set their class and level and answer "are you coming?", the board shows what each party still needs, and afterwards it lists who was in voice and for how long.
+- Each alliance is its own. What is inside one (clans, players, operations, voice, the log) is seen and heard by nobody outside it, and the only way in is an invite link from one of its clans.
+- Fits the game an alliance plays: its classes and roles, party size, what a party should have, level or gear bands and kinds of event are the alliance's own lists, with starting points for a few games. If its players say guild and raid, the app says so too.
 - Updates itself, with every update signed. Sits in the Windows tray; can keep running there when the window is closed.
 - An optional compact strip: a small always-on-top window showing who is speaking on which net. It is an ordinary window, never drawn into the game.
 
@@ -37,7 +39,9 @@ Key bindings and audio settings stay on your computer. The server receives your 
 
 ## Guides
 
-Step-by-step guides for [members](docs/members.md), [clan leaders and officers](docs/clan-leaders.md) and [alliance admins and event leaders](docs/alliance-admins.md).
+Step-by-step guides for [members](docs/members.md), [clan leaders and officers](docs/clan-leaders.md) and [alliance admins and event leaders](docs/alliance-admins.md), and for whoever starts an alliance, [its first hour](docs/first-hour.md). The same guides are inside the app, on the Guides tab.
+
+The hosted service has [terms of use](TERMS.md) and a [privacy policy](PRIVACY.md). Questions go to the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
 
 ## Install
 
@@ -96,6 +100,8 @@ The server address is set at build time with `VITE_SERVER`.
 | `src/update.ts` | Checking for, verifying and installing updates |
 | `src/invite.ts` | Clan invite links opened in the app |
 | `src/strip/` | The compact strip: its own small page, fed by the main window, with no voice of its own |
+| `src/words.ts`, `src/reword.ts` | Saying every sentence in the alliance's own words (`npm run check:words` checks that none is missed) |
+| `src/game.ts` | The alliance's game setup, fetched from the server |
 | `src/api.ts` | Calls to the backend for clans, operations and the roster |
 | `src/ui/` | Screens: voice, operations and roster board, clan, settings |
 | `src-tauri/src/input/` | System-wide key capture (Windows) |
