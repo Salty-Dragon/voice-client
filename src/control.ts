@@ -45,9 +45,14 @@ type HowEnded = {
   wentOffline: boolean;
 };
 
-const PING_MS = 30_000;
+/**
+ * How often the app asks the server for a sign of life. Often enough that a
+ * connection a home router has forgotten is found out within seconds (the
+ * next thing sent on it is refused), and that it never looks idle to one.
+ */
+const PING_MS = 10_000;
 /** How long the server may say nothing, with a ping asked every PING_MS, before the connection counts as dead. */
-const SILENCE_MS = 75_000;
+const SILENCE_MS = 25_000;
 
 export class ControlClient {
   private ws: WebSocket | null = null;

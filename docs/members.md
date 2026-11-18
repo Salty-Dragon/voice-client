@@ -181,6 +181,8 @@ Everything here is kept on your computer, except your name, class and level and 
 | Keys do nothing while the game is in front | Settings → **Key capture**: make sure **Polling** is selected. If it still fails, tick **Always start as administrator** and restart the app. |
 | A banner says the sound is held back | Click **Enable audio**. |
 | Nobody hears you | Check the level bar moves in Settings → Devices, that the right microphone is chosen, and that **Mic muted** is not showing. |
+| A net says **Relinking…** | Your connection to the voice server hiccupped. You still hear the net, and anyone already talking is still heard; a key you press now is not heard until the word is gone, usually within a second or two. Nothing to do. If it happens often, see the next row. |
+| **Relinking…**, **Reconnecting…** or "Server link lost" keep coming back | It is the connection between your computer and the server, most often Wi-Fi or the home router. Try a network cable, or sit closer to the router; switch off a VPN or a "game booster" to see whether it is that. The app gets its connection back by itself each time. |
 | "Microphone problem" banner | Allow microphone access for the app in Windows privacy settings, then click **Try again**. |
 | "Server link lost, retrying…" | Your voice keeps working. The app reconnects by itself; only roster changes wait until it does. |
 | A net shows "Disconnected, retrying…" | It rejoins by itself within a few seconds. If your network blocks voice traffic entirely, tell an admin. |

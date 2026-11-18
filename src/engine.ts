@@ -12,6 +12,7 @@ import {
   ConnectionState,
   LocalAudioTrack,
   type Participant,
+  type ReconnectPolicy,
   type RemoteAudioTrack,
   LoggerNames,
   LogLevel,
@@ -68,7 +69,8 @@ export type NetView = {
   net: NetKind;
   label: string;
   room: string;
-  state: "connecting" | "connected" | "reconnecting" | "disconnected";
+  /** "relinking": the room's signalling connection is being made again; what is being said is still heard. */
+  state: "connecting" | "connected" | "relinking" | "reconnecting" | "disconnected";
   speak: boolean;
   /** Our mic is open on this net right now. */
   live: boolean;
@@ -124,6 +126,28 @@ function meta(p: Participant): { classTag: string | null; clanTag: string | null
     return { classTag: null, clanTag: null, clanId: null, senior: false };
   }
 }
+
+
+/**
+ * How a lost signalling connection is made again. Sound that is already
+ * flowing keeps flowing meanwhile (it does not travel over that connection),
+ * but a key pressed or a player joining is not heard of until it is back, so
+ * it should be back soon. The voice library's own way waits up to ten seconds
+ * between tries; a home network that hiccups is usually fine again within a
+ * second or two. So: at once, then quickly, then every second and a half, and
+ * after half a minute every three seconds, so that a server that is really
+ * down is not hammered by everyone at once. After three quarters of a minute
+ * it gives up, as the library itself would, and the app asks the control
+ * service where it should be.
+ */
+const RELINK: ReconnectPolicy = {
+  nextRetryDelayInMs({ retryCount, elapsedMs }) {
+    if (elapsedMs > 45_000) return null;
+    const base = retryCount < 4 ? 300 * retryCount : elapsedMs < 30_000 ? 1500 : 3000;
+    // Spread out, so that players who lost it at the same moment do not all come back at the same one.
+    return Math.round(base * (0.75 + Math.random() * 0.5) + Math.random() * 150);
+  },
+};
 
 export class VoiceEngine {
   private nets = new Map<string, Net>();
@@ -326,6 +350,7 @@ export class VoiceEngine {
     const room = new Room({
       adaptiveStream: false,
       dynacast: false,
+      reconnectPolicy: RELINK,
       publishDefaults: { dtx: true, red: true, audioPreset: AudioPresets.speech },
       audioOutput: this.settings.outputDeviceId ? { deviceId: this.settings.outputDeviceId } : undefined,
     });
@@ -711,13 +736,16 @@ export class VoiceEngine {
           muted: this.settings.playerMuted[p.identity] === true,
         });
         const members = [...net.room.remoteParticipants.values()].map((p) => person(p, false));
-        if (net.room.state === ConnectionState.Connected) members.push(person(net.room.localParticipant, true));
+        const relinking = net.room.state === ConnectionState.SignalReconnecting;
+        if (net.room.state === ConnectionState.Connected || relinking) members.push(person(net.room.localParticipant, true));
         members.sort((a, b) => a.name.localeCompare(b.name));
         const state: NetView["state"] = net.failed
           ? "disconnected"
           : net.room.state === ConnectionState.Connected
             ? "connected"
-            : net.room.state === ConnectionState.Connecting
+            : relinking
+              ? "relinking"
+              : net.room.state === ConnectionState.Connecting
               ? "connecting"
               : net.room.state === ConnectionState.Disconnected
                 ? "disconnected"

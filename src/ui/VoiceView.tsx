@@ -14,6 +14,7 @@ import { Help } from "./tips";
 const STATE_TEXT: Record<NetView["state"], string> = {
   connecting: "Connecting…",
   connected: "",
+  relinking: "Relinking… you still hear this net; a key pressed now is not heard until it is back.",
   reconnecting: "Reconnecting…",
   disconnected: "Disconnected, retrying…",
 };
@@ -122,7 +123,7 @@ function NetCard({
         <Help text={help} />
       </div>
       {net.state !== "connected" ? (
-        <span className="text-xs text-danger">{STATE_TEXT[net.state]}</span>
+        <span className={`text-xs ${net.state === "relinking" ? "text-gold" : "text-danger"}`} data-net-state={net.state}>{STATE_TEXT[net.state]}</span>
       ) : (
         <div className={`min-h-5 truncate transition-opacity duration-150 ${net.lowered ? "opacity-50" : ""}`}>
           {net.live && <span className={`font-semibold ${NET_TEXT[net.net]}`}>You </span>}
