@@ -9,7 +9,18 @@ export const APP_NAME: string = import.meta.env.VITE_APP_NAME ?? "Warcryer";
 /** The site. In the browser the client is served from it, so it is simply our own origin. */
 export const SERVER: string = (isDesktop ? (import.meta.env.VITE_SERVER ?? "https://ignite.v1rtopia.com") : location.origin).replace(/\/$/, "");
 
-export const CONTROL_URL: string = import.meta.env.VITE_CONTROL_URL ?? `${SERVER.replace(/^http/, "ws")}/control`;
+/**
+ * Where the control service is reached, in order of preference. On the hosted
+ * service the first is the voice host, which players reach directly; the
+ * second is the site's own address, which is behind a CDN. Long-lived
+ * connections through the CDN were being cut every few minutes, so that way
+ * in is only the fallback: the app uses it when the direct one does not answer.
+ */
+const VIA_SITE = `${SERVER.replace(/^http/, "ws")}/control`;
+const DIRECT: Record<string, string> = { "ignite.v1rtopia.com": "wss://ignite-rtc.v1rtopia.com/control" };
+export const CONTROL_URLS: string[] = import.meta.env.VITE_CONTROL_URL
+  ? [import.meta.env.VITE_CONTROL_URL]
+  : [...(DIRECT[new URL(SERVER).hostname] ? [DIRECT[new URL(SERVER).hostname]] : []), VIA_SITE];
 
 export const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? "dev";
 

@@ -29,6 +29,8 @@ export type Ended = "replaced" | "signed_out";
  * network changed under it. It carries nothing about the player or what they were doing.
  */
 type HowEnded = {
+  /** The host the connection went to: the voice host (direct) or the site's own (behind the CDN). */
+  via: string;
   /** The WebSocket close code (1006: cut off without a goodbye), or "silent" when the app itself gave the connection up. */
   code: number | "silent";
   clean: boolean;
@@ -80,8 +82,15 @@ export class ControlClient {
   /** The roster changed. `operationId` is set when the change is inside one operation, null when it may be wider (clans, crests, lounges). */
   onChanged: (operationId: number | null) => void = () => {};
 
-  /** `token` is the desktop session token; the browser passes null and is recognised by its cookie. */
-  constructor(private url: string, private token: string | null) {}
+  /** Which of the ways in is being used, and how many attempts on it in a row have ended before the server said hello. */
+  private way = 0;
+  private misses = 0;
+
+  /**
+   * `urls`: the ways in to the control service, the preferred one first. `token` is the desktop session
+   * token; the browser passes null and is recognised by its cookie.
+   */
+  constructor(private urls: string[], private token: string | null) {}
 
   start() {
     this.stopped = false;
@@ -132,9 +141,10 @@ export class ControlClient {
   }
 
   /** Notes how the connection that has just ended did so. */
-  private note(code: number | "silent", clean: boolean, reason: string) {
+  private note(code: number | "silent", clean: boolean, reason: string, via: string) {
     const now = Date.now();
     this.last = {
+      via,
       code,
       clean,
       reason: reason.slice(0, 60),
@@ -163,7 +173,9 @@ export class ControlClient {
   private open() {
     this.onState("connecting");
     this.watchNetwork();
-    const ws = new WebSocket(this.url);
+    const url = this.urls[this.way];
+    const via = new URL(url).hostname;
+    const ws = new WebSocket(url);
     this.ws = ws;
     this.openedAt = 0;
     ws.onopen = () => {
@@ -179,6 +191,7 @@ export class ControlClient {
       }
       if (msg.type === "hello") {
         this.retry = 0;
+        this.misses = 0;
         this.openedAt = Date.now();
         this.wentOffline = false;
         if (this.last) {
@@ -203,7 +216,17 @@ export class ControlClient {
       window.clearInterval(this.pingTimer);
       if (this.stopped) return;
       // Only a connection that had come up is worth reporting on; a failed attempt to connect says nothing new.
-      if (this.openedAt) this.note(e.code, e.wasClean, e.reason);
+      if (this.openedAt) {
+        this.note(e.code, e.wasClean, e.reason, via);
+        // After a connection that worked, the preferred way in is tried first again.
+        this.way = 0;
+        this.misses = 0;
+      } else if (++this.misses >= 2 && this.urls.length > 1) {
+        // Twice in a row this way in did not get as far as hello: try the other.
+        this.way = (this.way + 1) % this.urls.length;
+        this.misses = 0;
+        this.retry = 0;
+      }
       // The browser fallback has no token to be refused with a message, so a
       // refusal shows up as the close code.
       if (e.code === 4003) {
@@ -230,7 +253,9 @@ export class ControlClient {
       if (this.ws === ws && ws.readyState === WebSocket.OPEN && Date.now() - this.heardAt > SILENCE_MS) {
         // Not waited for: closing a dead connection politely can itself take a minute. It is dropped
         // and a new one opened at once; the server ends the old one when the new one signs in.
-        this.note("silent", false, "");
+        this.note("silent", false, "", via);
+        this.way = 0;
+        this.misses = 0;
         ws.onclose = null;
         ws.onmessage = null;
         try {

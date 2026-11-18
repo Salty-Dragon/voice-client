@@ -2,7 +2,7 @@ import { d, t } from "./words";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
-import { CONTROL_URL, isDesktop, SERVER } from "./config";
+import { CONTROL_URLS, isDesktop, SERVER } from "./config";
 import { ClassAsk } from "./ui/ClassAsk";
 import { ControlClient, type ControlState, type NetSet } from "./control";
 import { refreshGame, useGame } from "./game";
@@ -89,7 +89,7 @@ export default function App() {
   useEffect(() => {
     if (phase !== "running") return;
     refreshInfo();
-    const c = new ControlClient(CONTROL_URL, token);
+    const c = new ControlClient(CONTROL_URLS, token);
     control.current = c;
     let noticeTimer: number | undefined;
     c.onState = setState;
