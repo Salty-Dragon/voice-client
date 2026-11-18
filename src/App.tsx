@@ -191,7 +191,8 @@ export default function App() {
         })),
       muted: eng.muteAll,
       locked: eng.broadcastLocked,
-      chat: chatView,
+      // The chat window shows the latest lines; the whole of a long evening need not cross to it on every change.
+      chat: { ...chatView, lines: Object.fromEntries(Object.entries(chatView.lines).map(([room, lines]) => [room, lines.slice(-120)])) },
     });
   });
 
