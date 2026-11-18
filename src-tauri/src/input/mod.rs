@@ -141,7 +141,13 @@ pub(crate) fn on_input(src: Source, code: u32, down: bool) {
         }
         return;
     }
+    // While a chat line is being typed, a key that is also a talk key is a letter: it opens no mic.
+    // (Releases still pass, so a key held as the typing began does not stay "down".)
+    let typing = crate::chat::typing();
     for b in st.bindings.iter().filter(|b| b.code == code) {
+        if typing && down && b.net != "chat" {
+            continue;
+        }
         let _ = tx.send(Out::Ptt(PttPayload { net: b.net.clone(), down, t }));
     }
 }
@@ -184,6 +190,13 @@ pub fn start(app: AppHandle) {
     std::thread::spawn(move || {
         for out in rx {
             let _ = match out {
+                // The chat key is not a talk key: it hands the keyboard to the chat line (chat.rs).
+                Out::Ptt(p) if p.net == "chat" => {
+                    if p.down {
+                        crate::chat::on_key(&emit_app);
+                    }
+                    Ok(())
+                }
                 Out::Ptt(p) => emit_app.emit("ptt", p),
                 Out::Captured(code) => emit_app.emit("captured", CapturedPayload { code }),
             };

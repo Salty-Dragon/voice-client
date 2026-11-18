@@ -1,13 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "strip",
-  "description": "The compact always-on-top strip: it only shows what the main window tells it, and can be dragged and sized.",
+  "description": "The compact always-on-top strip, with the chat window it opens into: it only shows what the main window tells it, and can be dragged and sized.",
   "windows": [
     "strip"
   ],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
-    "core:window:allow-set-size"
+    "core:window:allow-start-resize-dragging",
+    "core:window:allow-set-size",
+    "core:window:allow-set-min-size",
+    "core:window:allow-set-resizable"
   ]
 }
