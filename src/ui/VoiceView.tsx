@@ -1,6 +1,9 @@
 import { t } from "../words";
 import { SignupPrompts } from "./Signup";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { chat } from "../chat";
+import { openChatWindow } from "../strip/publish";
+import { ChatPanel } from "./ChatPanel";
 import { isDesktop } from "../config";
 import type { Member, NetView } from "../engine";
 import { keyLabel } from "../keys";
@@ -156,8 +159,18 @@ function NetCard({
   );
 }
 
+// t() where shown.
+const CHAT_HELP = [
+  "Text for this operation. There is a channel for each of your nets, and its lines are read by whoever is on that net.",
+  "Who may write follows who may speak, unless your alliance's admins have opened a channel to everyone.",
+  "Point at a line of your own to remove it. Those who run the operation can remove any line they can read, and switch a player's writing off.",
+  "Lines are kept with the operation for as long as your alliance's admins have chosen, and can be read back on its board afterwards.",
+  "Open as a window: a small window that stays on top of the game, where the game's own chat box is. Bind a Chat key in Settings to type in it without leaving the game.",
+].join("\n");
+
 export function VoiceView() {
   const { info, set, select, go, notice, refreshInfo } = useApp();
+  const chatView = useSyncExternalStore(chat.subscribe, chat.view);
   const act = useAct();
   const answer = (r: { opId: number; partyId: number; userId: number }, accept: boolean) =>
     void act.run(() => rpc("party.answerJoin", { ...r, accept })).then(refreshInfo);
@@ -193,7 +206,7 @@ export function VoiceView() {
         .map((n) => bindTargetOf(n.net)),
     ),
   ];
-  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock">[];
+  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat">[];
 
   // What the footer says when it has no key to list for the nets on screen.
   const speakNets = nets.filter((n) => n.speak);
@@ -327,7 +340,8 @@ export function VoiceView() {
               />
             ))}
           </ul>
-          <section className="panel flex min-w-0 flex-1 flex-col gap-3 p-4 overflow-y-auto">
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <section className="panel flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-4 overflow-y-auto">
             {shown && (
               <>
                 <div className="flex flex-wrap items-baseline gap-3">
@@ -362,6 +376,22 @@ export function VoiceView() {
               </>
             )}
           </section>
+          {/* The operation's text chat: the same lines the chat window shows over the game. */}
+          {op && (
+            <section className="panel flex h-64 shrink-0 flex-col" aria-label="Chat" data-chat-panel>
+              <div className="flex items-center gap-2 border-b border-line px-3 py-1.5">
+                <h2 className="title text-sm text-gold">Chat</h2>
+                <Help text={t(CHAT_HELP)} />
+                {isDesktop && (
+                  <button type="button" className="ml-auto cursor-pointer text-xs text-text-muted hover:text-gold" onClick={openChatWindow} data-chat-window>
+                    Open as a window over the game
+                  </button>
+                )}
+              </div>
+              <ChatPanel view={chatView} act={chat} />
+            </section>
+          )}
+          </div>
         </div>
       )}
 

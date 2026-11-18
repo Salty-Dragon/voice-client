@@ -1,5 +1,6 @@
 import { d, t } from "./words";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { chat } from "./chat";
 import { ApiError, crestUrl, rpc, type ClanSummary, type Info } from "./api";
 import { getToken, signOut } from "./auth";
 import { CONTROL_URLS, isDesktop, SERVER } from "./config";
@@ -91,11 +92,24 @@ export default function App() {
     refreshInfo();
     const c = new ControlClient(CONTROL_URLS, token);
     control.current = c;
+    chat.attach(c);
     let noticeTimer: number | undefined;
+    let me: number | null = null;
+    let wasOffline = false;
+    c.onHello = (who) => {
+      me = who.id;
+      // Back after a gap: what was written meanwhile is asked for once the net set has come.
+      wasOffline = true;
+    };
     c.onState = setState;
     c.onNetSet = (next) => {
       setSet(next);
       void engine.apply(next);
+      chat.onNetSet(next, me);
+      if (wasOffline) {
+        wasOffline = false;
+        chat.resync();
+      }
       if (next.notice) {
         engine.cue("moved");
         setNotice(
@@ -148,10 +162,13 @@ export default function App() {
       window.clearTimeout(retry.current);
       c.stop();
       control.current = null;
+      chat.attach(null);
       void engine.stop();
     };
   }, [phase, token, attempt, refreshInfo, leave]);
 
+  // The operation's text chat. The chat window (the strip, opened out) is handed it with everything else.
+  const chatView = useSyncExternalStore(chat.subscribe, chat.view);
   // The compact strip shows the nets with someone speaking. It has no connection of its own, so tell it on every change.
   useEffect(() => {
     const nets = phase === "running" && set ? eng.view() : [];
@@ -174,6 +191,7 @@ export default function App() {
         })),
       muted: eng.muteAll,
       locked: eng.broadcastLocked,
+      chat: chatView,
     });
   });
 

@@ -9,6 +9,7 @@ import { rpc, type CpPlaced, type OpDetail, type Party, type Person } from "../a
 import { partySizeOf, roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { AttendancePanel } from "./Attendance";
+import { ChatRecord } from "./ChatRecord";
 import { EditOperation } from "./EditOperation";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
@@ -333,6 +334,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
 
       {/* Who was in voice, once it has started: for the organisers, and clan leadership about their own */}
       {op.state !== "planned" && (perms.isOrganiser || perms.leadClanIds.length > 0) && <AttendancePanel key={op.state} opId={opId} live={op.state === "live"} />}
+      {/* What was written during it, for whoever was on those nets. While it runs, the chat is on the Voice tab. */}
+      {op.state === "ended" && <ChatRecord opId={opId} />}
 
       {/* My own answer, and for the leader of a constant party, the party's */}
       {open && self && (

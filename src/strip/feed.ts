@@ -2,6 +2,7 @@
 // same site in the same browser, so a BroadcastChannel reaches from one to the
 // other without going through the native side or the server.
 
+import type { ChatView } from "../chat";
 import type { NetKind } from "../settings";
 
 export const CHANNEL = "warcryer-strip";
@@ -18,7 +19,16 @@ export type StripState = {
   muted: boolean;
   /** Broadcast is locked open for a briefing. */
   locked: boolean;
+  /** The operation's text chat, for the chat window the strip opens into. */
+  chat?: ChatView;
 };
 
 export type ToStrip = { type: "state"; state: StripState };
-export type FromStrip = { type: "hello" } | { type: "close" };
+export type FromStrip =
+  | { type: "hello" }
+  | { type: "close" }
+  // What the player did in the chat window; the main window has the connection.
+  | { type: "chat-say"; room: string; text: string }
+  | { type: "chat-watch"; room: string | null }
+  | { type: "chat-remove"; id: number }
+  | { type: "chat-mute"; userId: number; on: boolean };

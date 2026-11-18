@@ -1,9 +1,11 @@
 // The main window's side of the compact strip: it keeps the strip's window
 // open or closed to match the setting, and sends it what to show.
 
+import { chat } from "../chat";
 import { isDesktop } from "../config";
 import { getSettings, onSettings, setSettings } from "../settings";
 import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } from "./feed";
+import { loadPrefs, savePrefs } from "./prefs";
 
 let channel: BroadcastChannel | null = null;
 let latest: StripState = { where: null, lines: [], muted: false, locked: false };
@@ -40,13 +42,24 @@ async function syncWindow() {
   if (want) sent = "";
 }
 
+/** Opens the chat window: the compact strip, opened out. Both remember it. */
+export function openChatWindow() {
+  savePrefs({ ...loadPrefs(), open: true });
+  setSettings({ strip: true });
+}
+
 /** Starts keeping the strip in step with the setting. Desktop app only. */
 export function startStrip() {
   if (!isDesktop || channel) return;
   channel = new BroadcastChannel(CHANNEL);
   channel.onmessage = (e: MessageEvent<FromStrip>) => {
-    if (e.data?.type === "hello") post();
-    else if (e.data?.type === "close") setSettings({ strip: false });
+    const m = e.data;
+    if (m?.type === "hello") post();
+    else if (m?.type === "close") setSettings({ strip: false });
+    else if (m?.type === "chat-say") chat.say(m.room, m.text);
+    else if (m?.type === "chat-watch") chat.watch(m.room);
+    else if (m?.type === "chat-remove") chat.remove(m.id);
+    else if (m?.type === "chat-mute") chat.mute(m.userId, m.on);
   };
   // The strip treats silence as "the app has gone", so say something regularly.
   window.setInterval(() => {
@@ -54,4 +67,9 @@ export function startStrip() {
   }, 1500);
   void syncWindow().catch(() => {});
   onSettings(() => void syncWindow().catch(() => {}));
+  // The chat key was pressed while the strip's window is closed: open it, chat and all. (With the window
+  // open, the native side puts the keyboard in its line and this window hears nothing of it.)
+  void import("@tauri-apps/api/event")
+    .then(({ listen }) => listen<{ how: string }>("chat-key", (e) => e.payload.how === "closed" && openChatWindow()))
+    .catch(() => {});
 }

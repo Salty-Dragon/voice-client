@@ -3,7 +3,7 @@
 
 import type { NetKind } from "./settings";
 
-export type NetGrant = { net: NetKind; label: string; room: string; speak: boolean; token: string; /** Broadcast only: this player (the event leader) may lock it open for a briefing. */ lock?: boolean };
+export type NetGrant = { net: NetKind; label: string; room: string; speak: boolean; token: string; /** Broadcast only: this player (the event leader) may lock it open for a briefing. */ lock?: boolean; /** May write in this net's chat. Absent on a server older than the chat. */ write?: boolean };
 export type OpInfo = { id: number; name: string; state: "planned" | "live" | "ended" };
 export type NetSet = {
   url: string;
@@ -15,7 +15,19 @@ export type NetSet = {
   notice?: { kind: "moved" | "leader"; party: string | null };
   /** Parties whose leader has dropped out, where this player is asked to pick a new one. */
   leaderLost?: LeaderLost[];
+  /** The operation's text chat, as it stands for this player; null in a lounge, absent on an older server. */
+  chat?: ChatInfo | null;
 };
+/** `moderates`: may remove others' lines and switch writers off (then `mutedIds` lists who is). `muted`: this player's own writing is switched off. */
+export type ChatInfo = { moderates: boolean; muted: boolean; mutedIds?: number[] };
+/** One line of an operation's chat. `room` is its net's room. */
+export type ChatLine = { id: number; room: string; userId: number; name: string; tag: string | null; text: string; at: string };
+/** What the server says about the chat. `n` is the number this app gave a line it sent. */
+export type ChatEvent =
+  | { type: "chat"; line: ChatLine; n?: number }
+  | { type: "chat.history"; room: string; lines: ChatLine[] }
+  | { type: "chat.removed"; room: string; id: number }
+  | { type: "chat.refused"; n: number | null; why: string };
 export type LeaderLost = { partyId: number; party: string; leader: string; members: { id: number; name: string; here: boolean }[] };
 export type Me = { id: number; name: string; classTag: string | null; nameSet: boolean; isAdmin: boolean };
 export type ControlState = "connecting" | "online" | "offline";
@@ -81,6 +93,27 @@ export class ControlClient {
   /** Something in the roster changed; any open roster screen should reload. */
   /** The roster changed. `operationId` is set when the change is inside one operation, null when it may be wider (clans, crests, lounges). */
   onChanged: (operationId: number | null) => void = () => {};
+  /** Something about the operation's text chat. */
+  onChat: (e: ChatEvent) => void = () => {};
+  private chatN = 0;
+
+  /** Writes a line on a net. Answers with the number given to it; a refusal names that number. */
+  say(room: string, text: string): number {
+    const n = ++this.chatN;
+    this.send({ type: "chat", room, text, n });
+    return n;
+  }
+  /** Asks for the last lines of a net: on arriving on it, and after being away. */
+  askHistory(room: string) {
+    this.send({ type: "chat.history", room });
+  }
+  removeLine(id: number) {
+    this.send({ type: "chat.remove", id });
+  }
+  /** Switches a player's writing off, or on again, for the operation. For those who keep order in it. */
+  muteWriter(userId: number, on: boolean) {
+    this.send({ type: "chat.mute", userId, on });
+  }
 
   /** Which of the ways in is being used, and how many attempts on it in a row have ended before the server said hello. */
   private way = 0;
@@ -204,6 +237,8 @@ export class ControlClient {
         this.onHello(msg.user as Me);
       } else if (msg.type === "netset") {
         this.onNetSet(msg as unknown as NetSet);
+      } else if (typeof msg.type === "string" && (msg.type === "chat" || msg.type.startsWith("chat."))) {
+        this.onChat(msg as unknown as ChatEvent);
       } else if (msg.type === "changed") {
         this.onChanged(typeof msg.operationId === "number" ? msg.operationId : null);
       } else if (msg.type === "replaced" || msg.type === "signed_out") {

@@ -187,7 +187,7 @@ export type OpOptions = { clans: ClanSummary[]; users: { id: number; name: strin
 export type AllianceUser = { id: number; name: string; clanId: number | null; clanTag: string | null; banned: boolean; isAdmin: boolean; isAllianceAdmin: boolean; isOwner?: boolean };
 /** A player banned from the alliance. `id` names the ban for lifting it. */
 export type Ban = { id: string; name: string; at: string };
-export type AllianceView = { plan?: PlanState | null; alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean; discordRole?: string | null; /** Minutes before an operation's start that Discord is reminded; 0: never. */ remindMinutes?: number; remindChoices?: number[] };
+export type AllianceView = { plan?: PlanState | null; alliance?: AllianceInfo | null; bans?: Ban[]; loungeOn?: boolean; clans: ClanSummary[]; users: AllianceUser[]; /** Whether the alliance's own Discord announcements are set up. */ discord?: boolean; discordRole?: string | null; /** Minutes before an operation's start that Discord is reminded; 0: never. */ remindMinutes?: number; remindChoices?: number[]; /** The operations' text chat: who may write beyond those who may speak, and how long lines are kept. */ chat?: { clanAll: boolean; operationAll: boolean; keepDays: number }; chatKeepChoices?: number[] };
 
 /** One player's time in voice during an operation. `seconds` is 0 when they never joined. */
 export type AttendanceRow = {

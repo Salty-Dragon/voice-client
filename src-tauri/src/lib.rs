@@ -2,6 +2,7 @@
 //! system-wide key capture, the administrator checks, the tray icon, the
 //! compact strip's window and the updater plugin.
 
+mod chat;
 mod input;
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -39,6 +40,19 @@ fn restart_as_admin(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn set_close_to_tray(enabled: bool) {
     CLOSE_TO_TRAY.store(enabled, Ordering::Relaxed);
+}
+
+/// The chat line in the strip got or lost the keyboard by itself: the player clicked in it, or away.
+#[tauri::command]
+fn chat_typing(on: bool) {
+    chat::set_typing(on);
+}
+
+/// The chat line was sent or given up: the window that had the keyboard before gets it back.
+/// Says whether Windows agreed.
+#[tauri::command]
+fn chat_done() -> bool {
+    chat::give_back()
 }
 
 /// Brings the main window forward. The compact strip calls this when it is double-clicked.
@@ -175,6 +189,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             input::start(app.handle().clone());
+            chat::watch();
             // Whoever started the app wants to see it: come to the front once the window exists.
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -213,7 +228,9 @@ pub fn run() {
             restart_as_admin,
             set_close_to_tray,
             set_strip,
-            show_main_window
+            show_main_window,
+            chat_typing,
+            chat_done
         ])
         .run(context)
         .expect("failed to start the app");

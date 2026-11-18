@@ -5,6 +5,7 @@ import { d, t } from "../words";
 import { useState } from "react";
 import { rpc, type AllianceView as AllianceData, type PlanState } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
+import { CHAT_SETTINGS_HELP, ChatSettings } from "./ChatSettings";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { InviteLinks } from "./ClanView";
@@ -319,6 +320,12 @@ export function AllianceView() {
       {data.discord !== undefined && (
         <Section title="Discord announcements" help={DISCORD_HELP(t("any operation of the alliance")) + t("\nEach clan's leader can also set up a channel of their own on the Clan screen, for the operations that clan takes part in.")}>
           <DiscordSetup clanId={null} connected={data.discord} role={data.discordRole} remind={data.remindMinutes === undefined ? undefined : { minutes: data.remindMinutes, choices: data.remindChoices ?? [0, 15, 30, 60, 120] }} onChange={reload} />
+        </Section>
+      )}
+
+      {data.chat && (
+        <Section title="Chat" help={t(CHAT_SETTINGS_HELP)}>
+          <ChatSettings settings={data.chat} choices={data.chatKeepChoices ?? [0, 7, 30, 365]} onChange={reload} />
         </Section>
       )}
 

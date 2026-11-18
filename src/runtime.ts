@@ -38,6 +38,8 @@ export const inputReady: Promise<InputBackend> = createInput(isDesktop).then((i)
       if (e.down) engine.toggleMuteAll();
     } else if (e.net === "broadcastLock") {
       if (e.down) engine.setBroadcastLock(!engine.broadcastLocked);
+    } else if (e.net === "chat") {
+      // Not a talk key. In the desktop app the native side acts on it and it never arrives here.
     } else {
       engine.ptt(e.net as NetKind, e.down);
     }
