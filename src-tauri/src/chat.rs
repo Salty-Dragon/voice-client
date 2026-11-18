@@ -50,6 +50,13 @@ pub fn on_key(app: &AppHandle) {
     let _ = app.emit_to("strip", "chat-key", KeyPayload { how });
 }
 
+/// A button in the chat window was clicked (an answer to a ready check): that click took the
+/// keyboard from the game, and nothing is going to be typed. The game gets it back.
+pub fn hand_back() -> bool {
+    PREVIOUS.store(LAST_OTHER.load(Ordering::Relaxed), Ordering::Relaxed);
+    give_back()
+}
+
 /// The chat line got or lost the keyboard by itself (the player clicked in it, or away).
 pub fn set_typing(on: bool) {
     if on && !typing() {

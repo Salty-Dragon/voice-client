@@ -7,7 +7,7 @@
 // passes it on to the chat window (the strip), which has no connection of its
 // own.
 
-import type { ChatEvent, ControlClient, NetSet } from "./control";
+import type { ChatEvent, ChatOrder, ControlClient, NetSet, ReadyAsk, ReadyState } from "./control";
 import type { NetKind } from "./settings";
 
 export type ChatChannel = { room: string; net: NetKind; label: string; write: boolean };
@@ -25,9 +25,19 @@ export type ChatView = {
   mutedIds: number[];
   /** The player's own number, to tell their lines from others'. */
   me: number | null;
+  /** Runs the operation: may pin the order and ask whether everyone is ready. */
+  organises: boolean;
+  /** The alliance lets its organisers ask for a ready check. */
+  readyCheck: boolean;
+  /** The order pinned on the operation, if there is one. */
+  order: ChatOrder | null;
+  /** A ready check this player has been asked and has not answered. `endsAt` is on this computer's clock. */
+  ready: ReadyAsk | null;
+  /** How the ready check stands or ended, for a little while after it ends. Names only for those who run the operation. */
+  tally: (ReadyState & { done: boolean }) | null;
 };
 
-const EMPTY: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null };
+const EMPTY: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null };
 /** Tabs in the order a player reaches for them: their own party first, the orders last and always in sight. */
 const ORDER: NetKind[] = ["party", "reserve", "clan", "command", "broadcast"];
 const KEEP = 300;
@@ -39,6 +49,11 @@ let watching: string | null = null;
 /** Lines sent and not yet answered: the number the control client gave each, and where it was meant for. */
 const pending = new Map<number, string>();
 let noteId = -1;
+/** Clears the result of a ready check a while after it ended. */
+let tallyTimer: ReturnType<typeof setTimeout> | undefined;
+/** The server's clock may not be this computer's: a check's end is kept as "half a minute from when we heard". */
+const READY_MS = 30_000;
+const TALLY_STAYS_MS = 20_000;
 const listeners = new Set<() => void>();
 
 const set = (next: ChatView) => {
@@ -70,11 +85,31 @@ function onEvent(e: ChatEvent) {
   } else if (e.type === "chat.refused") {
     const room = e.n === null ? undefined : pending.get(e.n);
     if (e.n !== null) pending.delete(e.n);
-    if (room) add(room, note(`Not sent. ${e.why}`), false);
+    // A refusal that names no line is about an order or a ready check: say it where the organiser is looking.
+    const where = room ?? view.channels.find((c) => c.net === "broadcast")?.room;
+    if (where) add(where, note(room ? `Not sent. ${e.why}` : e.why), false);
+  } else if (e.type === "order") {
+    if (!view.operation) return;
+    const fresh = e.order !== null && e.order.at !== view.order?.at;
+    set({ ...view, order: e.order });
+    if (fresh) chat.onCue("order");
+  } else if (e.type === "ready") {
+    if (!view.operation) return;
+    set({ ...view, ready: { ...e.check, endsAt: Date.now() + READY_MS } });
+    chat.onCue("ready");
+  } else if (e.type === "ready.state" || e.type === "ready.done") {
+    if (!view.operation) return;
+    const done = e.type === "ready.done";
+    clearTimeout(tallyTimer);
+    const { type: _type, ...state } = e;
+    set({ ...view, ready: done && view.ready?.id === e.id ? null : view.ready, tally: { ...state, ...(done ? {} : { endsAt: Date.now() + READY_MS }), done } });
+    if (done) tallyTimer = setTimeout(() => view.tally?.done && set({ ...view, tally: null }), TALLY_STAYS_MS);
   }
 }
 
 export const chat = {
+  /** A sound for a new order or a ready check; the app sets it (the sounds live with the voice engine). */
+  onCue: (_kind: "order" | "ready") => {},
   view: () => view,
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -122,6 +157,12 @@ export const chat = {
       muted: next.chat?.muted === true,
       mutedIds: next.chat?.mutedIds ?? [],
       me,
+      organises: next.chat?.organises === true,
+      readyCheck: next.chat?.readyCheck === true,
+      // As the net set says, when it says: an older server says nothing, and what the app knows stays.
+      order: !op ? null : next.chat && "order" in next.chat ? (next.chat.order ?? null) : sameOp ? view.order : null,
+      ready: !op ? null : next.chat?.ready ? { ...next.chat.ready, endsAt: view.ready?.id === next.chat.ready.id ? view.ready.endsAt : Date.now() + READY_MS } : sameOp ? view.ready : null,
+      tally: sameOp ? view.tally : null,
     });
   },
   /** The connection is back after a gap: ask again for what was said meanwhile. */
@@ -140,4 +181,14 @@ export const chat = {
   },
   remove: (id: number) => control?.removeLine(id),
   mute: (userId: number, on: boolean) => control?.muteWriter(userId, on),
+  /** Pins an order for the whole operation; empty clears it. */
+  order: (text: string) => control?.setOrder(text),
+  /** Starts a ready check, or ends the one running. */
+  readyCheck: (start: boolean) => control?.readyCheck(start),
+  /** Answers the ready check on screen. */
+  answer(ready: boolean) {
+    if (!view.ready) return;
+    control?.answerReady(view.ready.id, ready);
+    set({ ...view, ready: null });
+  },
 };

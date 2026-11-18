@@ -206,7 +206,7 @@ export function VoiceView() {
         .map((n) => bindTargetOf(n.net)),
     ),
   ];
-  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat">[];
+  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat" | "ready">[];
 
   // What the footer says when it has no key to list for the nets on screen.
   const speakNets = nets.filter((n) => n.speak);

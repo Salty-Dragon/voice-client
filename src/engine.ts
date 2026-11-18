@@ -693,11 +693,12 @@ export class VoiceEngine {
   }
 
   /** A short two-note cue, generated here (no sound files, nothing borrowed). */
-  cue(kind: "moved" | "locked" | "released") {
+  cue(kind: "moved" | "locked" | "released" | "order" | "ready") {
     const s = this.settings;
     if (!s.cues || s.cueVolume <= 0) return;
     const ctx = (this.ctx ??= new AudioContext());
-    const notes = kind === "moved" ? [660, 880] : kind === "locked" ? [523, 659, 784] : [784, 523];
+    // A new order: one low note twice, hard to mistake for anything else. A ready check: a rising question.
+    const notes = kind === "moved" ? [660, 880] : kind === "locked" ? [523, 659, 784] : kind === "order" ? [392, 392] : kind === "ready" ? [587, 740, 880] : [784, 523];
     notes.forEach((freq, i) => {
       const t = ctx.currentTime + i * 0.12;
       const osc = ctx.createOscillator();

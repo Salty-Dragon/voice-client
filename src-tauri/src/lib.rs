@@ -55,6 +55,12 @@ fn chat_done() -> bool {
     chat::give_back()
 }
 
+/// A button in the chat window was clicked, not its line: the game gets the keyboard back at once.
+#[tauri::command]
+fn chat_return() -> bool {
+    chat::hand_back()
+}
+
 /// Brings the main window forward. The compact strip calls this when it is double-clicked.
 #[tauri::command]
 fn show_main_window(app: tauri::AppHandle) {
@@ -230,7 +236,8 @@ pub fn run() {
             set_strip,
             show_main_window,
             chat_typing,
-            chat_done
+            chat_done,
+            chat_return
         ])
         .run(context)
         .expect("failed to start the app");

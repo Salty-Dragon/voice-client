@@ -14,7 +14,7 @@ import { ChatPanel, type ChatActions } from "../ui/ChatPanel";
 import { loadPrefs, PREFS_KEY, savePrefs, type ChatPrefs } from "./prefs";
 import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } from "./feed";
 
-const NO_CHAT: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null };
+const NO_CHAT: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null };
 const invoke = (cmd: string, args?: Record<string, unknown>) =>
   import("@tauri-apps/api/core").then(({ invoke }) => invoke<unknown>(cmd, args)).catch(() => undefined);
 const WIDTH = 300;
@@ -116,9 +116,18 @@ function Strip() {
     watch: (room) => channel.current?.postMessage({ type: "chat-watch", room } satisfies FromStrip),
     remove: (id) => channel.current?.postMessage({ type: "chat-remove", id } satisfies FromStrip),
     mute: (userId, on) => channel.current?.postMessage({ type: "chat-mute", userId, on } satisfies FromStrip),
+    order: (text) => channel.current?.postMessage({ type: "chat-order", text } satisfies FromStrip),
+    readyCheck: (start) => channel.current?.postMessage({ type: "ready-check", start } satisfies FromStrip),
+    answer: (ready) => channel.current?.postMessage({ type: "ready-answer", ready } satisfies FromStrip),
+  };
+  const chatNow = !stale && state?.chat ? state.chat : NO_CHAT;
+  // Folded, the strip still shows the order that stands and asks a ready check: neither should need the chat open.
+  const answer = (ready: boolean) => {
+    act.answer(ready);
+    void invoke("chat_return");
   };
   const lines = !stale && state ? state.lines : [];
-  const rows = Math.max(1, lines.length) + (state?.locked && !stale ? 1 : 0);
+  const rows = Math.max(1, lines.length) + (state?.locked && !stale ? 1 : 0) + (chatNow.order ? 1 : 0) + (chatNow.ready ? 1 : 0);
 
   // Closed, the window is as tall as what it shows. Open, it is the size the player gave it.
   useEffect(() => {
@@ -188,7 +197,7 @@ function Strip() {
       style={{ background: prefs.open ? `rgba(11, 12, 15, ${prefs.alpha})` : "var(--color-bg-0)" }}
     >
     <div
-      className={`flex cursor-grab select-none flex-col justify-center px-2 leading-[22px] ${prefs.open ? "shrink-0 py-0.5" : "h-full"}`}
+      className={`flex cursor-grab select-none flex-col justify-center px-2 leading-[22px] ${prefs.open ? "shrink-0 py-0.5" : "min-h-0 flex-1"}`}
       onMouseDown={drag}
       onDoubleClick={openMain}
       role="status"
@@ -223,15 +232,26 @@ function Strip() {
         ))
       )}
     </div>
+    {!prefs.open && chatNow.order && (
+      <div className="truncate px-2 font-semibold leading-[22px] text-net-broadcast" data-strip-order>{chatNow.order.text}</div>
+    )}
+    {!prefs.open && chatNow.ready && (
+      <div className="flex items-center gap-2 px-2 leading-[22px]" data-strip-ready>
+        <span className="min-w-0 flex-1 truncate font-semibold text-gold-bright">{chatNow.ready.by}: ready?</span>
+        <button type="button" className="cursor-pointer rounded-sm border border-gold px-1.5 text-[11px] leading-4 text-gold-bright" onClick={() => answer(true)}>Ready</button>
+        <button type="button" className="cursor-pointer rounded-sm border border-line px-1.5 text-[11px] leading-4 text-text-muted" onClick={() => answer(false)}>Not</button>
+      </div>
+    )}
     {prefs.open && (
       <>
         <ChatPanel
-          view={!stale && state?.chat ? state.chat : NO_CHAT}
+          view={chatNow}
           act={act}
           compact
           chatKey={key}
           onTyping={(on) => void invoke("chat_typing", { on })}
           onDone={() => void invoke("chat_done")}
+          onHandBack={() => void invoke("chat_return")}
         />
         <div className="absolute bottom-0 right-0 h-3 w-3 cursor-nwse-resize" onMouseDown={grip} aria-hidden data-chat-grip />
       </>

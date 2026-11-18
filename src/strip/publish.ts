@@ -60,6 +60,9 @@ export function startStrip() {
     else if (m?.type === "chat-watch") chat.watch(m.room);
     else if (m?.type === "chat-remove") chat.remove(m.id);
     else if (m?.type === "chat-mute") chat.mute(m.userId, m.on);
+    else if (m?.type === "chat-order") chat.order(m.text);
+    else if (m?.type === "ready-check") chat.readyCheck(m.start);
+    else if (m?.type === "ready-answer") chat.answer(m.ready);
   };
   // The strip treats silence as "the app has gone", so say something regularly.
   window.setInterval(() => {

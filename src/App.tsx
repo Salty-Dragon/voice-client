@@ -93,6 +93,7 @@ export default function App() {
     const c = new ControlClient(CONTROL_URLS, token);
     control.current = c;
     chat.attach(c);
+    chat.onCue = (kind) => engine.cue(kind);
     let noticeTimer: number | undefined;
     let me: number | null = null;
     let wasOffline = false;

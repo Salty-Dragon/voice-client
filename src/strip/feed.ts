@@ -31,4 +31,7 @@ export type FromStrip =
   | { type: "chat-say"; room: string; text: string }
   | { type: "chat-watch"; room: string | null }
   | { type: "chat-remove"; id: number }
-  | { type: "chat-mute"; userId: number; on: boolean };
+  | { type: "chat-mute"; userId: number; on: boolean }
+  | { type: "chat-order"; text: string }
+  | { type: "ready-check"; start: boolean }
+  | { type: "ready-answer"; ready: boolean };

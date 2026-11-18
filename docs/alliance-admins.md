@@ -144,10 +144,11 @@ Each clan's leader can connect a channel of their own on the Clan tab, for the o
 
 ### The chat, and who may write in it
 
-Every operation has a text chat, with a channel for each net ([members' guide](members.md#chat)). On the **Alliance** tab, **Chat** has its three settings:
+Every operation has a text chat, with a channel for each net ([members' guide](members.md#chat)). On the **Alliance** tab, **Chat** has its four settings:
 
 - **Members may write in their clan's channel.** Off, only a clan's leader and officers write there, as only they speak on the Clan net.
 - **Members may write to the whole operation.** Off, only the event leader and deputies write on Broadcast. With hundreds of players an operation-wide channel that everyone writes in moves fast: try it on a small event first.
+- **Whoever runs an operation may ask for a ready check.** On unless you switch it off. Off, the event leader and deputies are not offered the button ([During the event](#during-the-event)).
 - **Kept:** how long an operation's lines stay after it has ended: until it ends, 7 days, 30 days (unless you change it), or as long as the operation's own record. Choosing a shorter time removes older lines at once.
 
 Keeping order: the event leader, the deputies and you can remove any line you can read (point at it), and switch a player's writing off for that operation; they go on reading, and it ends with the operation. Both are written to the log, without what the line said. A party's channel is read only by that party, during and after: you do not see it unless you are in it.
@@ -194,6 +195,8 @@ Click **Start operation** and confirm. Every participant with the app open is mo
 
 - **Broadcast** is yours and your deputies'. Hold your Broadcast key for calls to everyone: push, fall back, target, regroup. While you speak, everyone's lower nets are made quieter for them.
 - **Briefings: lock Broadcast open.** As the event leader you can hold Broadcast open without a key. Click **Lock open** on your Broadcast card and talk; everyone in the operation hears you, and a red bar across the app reminds you that they do. Click **Release** when you are done. Pressing your Broadcast key or your Mute all key releases it too, as does ending the operation, and it releases by itself after ten minutes in case you forget. To switch it without leaving the game, bind a **Broadcast lock** key in **Settings → Keys**. Deputies speak on Broadcast with their key but cannot lock it.
+- **Pin the order.** In the chat's Broadcast channel, click **Pin as order**, type one line (up to 200 characters) and press Enter. It stays at the top of everyone's chat and on their strip until you pin another or click **clear**; a new one comes with a sound. Deputies can pin too. Each order is also kept as a line on Broadcast.
+- **Ready check.** Click **Ready check** in the chat. Everyone else on the operation is asked and has half a minute. You and your deputies see the count as it comes in, with the names of those not ready and those who have not answered; **End now** closes it early. The result is written on Broadcast. Only players whose app is on the operation at that moment are asked. One check at a time. Your alliance's admins can switch this off on the Alliance tab.
 - **Command** links you with the clan leaders and party leaders. You are a senior voice there, so party leaders are made quieter while you speak.
 - **Moves take effect at once.** Drag a player to another party and they hear a cue, see where they went, and are talking to the new party within a second or two.
 - **Late arrivals** sit in Reserve, where they can talk to each other and to you. They still hear Broadcast and their Clan net.

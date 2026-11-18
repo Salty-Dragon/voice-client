@@ -18,8 +18,19 @@ export type NetSet = {
   /** The operation's text chat, as it stands for this player; null in a lounge, absent on an older server. */
   chat?: ChatInfo | null;
 };
-/** `moderates`: may remove others' lines and switch writers off (then `mutedIds` lists who is). `muted`: this player's own writing is switched off. */
-export type ChatInfo = { moderates: boolean; muted: boolean; mutedIds?: number[] };
+/**
+ * `moderates`: may remove others' lines and switch writers off (then `mutedIds` lists who is). `muted`: this
+ * player's own writing is switched off. `organises`: runs the operation, so may pin the order and, if the
+ * alliance allows it (`readyCheck`), ask whether everyone is ready. `order` and `ready` are how things stand
+ * as the net set is sent; changes after that come as events. The last four are absent on a server before 0.23.
+ */
+export type ChatInfo = { moderates: boolean; muted: boolean; mutedIds?: number[]; organises?: boolean; readyCheck?: boolean; order?: ChatOrder | null; ready?: ReadyAsk | null };
+/** The order pinned on the operation. */
+export type ChatOrder = { text: string; by: string; at: string };
+/** A ready check this player is asked to answer. `endsAt` is the server's clock, in milliseconds. */
+export type ReadyAsk = { id: number; by: string; endsAt: number };
+/** Where a ready check stands. Names only reach those who run the operation. */
+export type ReadyState = { id: number; ready: number; notReady: number; waiting: number; names?: { notReady: string[]; waiting: string[] }; endsAt?: number };
 /** One line of an operation's chat. `room` is its net's room. */
 export type ChatLine = { id: number; room: string; userId: number; name: string; tag: string | null; text: string; at: string };
 /** What the server says about the chat. `n` is the number this app gave a line it sent. */
@@ -27,7 +38,11 @@ export type ChatEvent =
   | { type: "chat"; line: ChatLine; n?: number }
   | { type: "chat.history"; room: string; lines: ChatLine[] }
   | { type: "chat.removed"; room: string; id: number }
-  | { type: "chat.refused"; n: number | null; why: string };
+  | { type: "chat.refused"; n: number | null; why: string }
+  | { type: "order"; order: ChatOrder | null }
+  | { type: "ready"; check: ReadyAsk }
+  | ({ type: "ready.state" } & ReadyState)
+  | ({ type: "ready.done" } & ReadyState);
 export type LeaderLost = { partyId: number; party: string; leader: string; members: { id: number; name: string; here: boolean }[] };
 export type Me = { id: number; name: string; classTag: string | null; nameSet: boolean; isAdmin: boolean };
 export type ControlState = "connecting" | "online" | "offline";
@@ -113,6 +128,17 @@ export class ControlClient {
   /** Switches a player's writing off, or on again, for the operation. For those who keep order in it. */
   muteWriter(userId: number, on: boolean) {
     this.send({ type: "chat.mute", userId, on });
+  }
+  /** Pins an order for the whole operation; empty text clears it. For those who run it. */
+  setOrder(text: string) {
+    this.send({ type: "order.set", text });
+  }
+  /** Asks everyone on the operation whether they are ready, or ends the asking early. For those who run it. */
+  readyCheck(start: boolean) {
+    this.send({ type: start ? "ready.start" : "ready.stop" });
+  }
+  answerReady(id: number, ready: boolean) {
+    this.send({ type: "ready.answer", id, ready });
   }
 
   /** Which of the ways in is being used, and how many attempts on it in a row have ended before the server said hello. */
@@ -237,7 +263,7 @@ export class ControlClient {
         this.onHello(msg.user as Me);
       } else if (msg.type === "netset") {
         this.onNetSet(msg as unknown as NetSet);
-      } else if (typeof msg.type === "string" && (msg.type === "chat" || msg.type.startsWith("chat."))) {
+      } else if (typeof msg.type === "string" && /^(chat|order|ready)(\.|$)/.test(msg.type)) {
         this.onChat(msg as unknown as ChatEvent);
       } else if (msg.type === "changed") {
         this.onChanged(typeof msg.operationId === "number" ? msg.operationId : null);

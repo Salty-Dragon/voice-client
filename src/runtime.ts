@@ -1,6 +1,7 @@
 // The long-lived pieces, created once: the voice engine and the key input.
 
 import { isDesktop } from "./config";
+import { chat } from "./chat";
 import { VoiceEngine } from "./engine";
 import { createInput, type Foreground, type InputBackend } from "./input";
 import { getSettings, onSettings, type NetKind } from "./settings";
@@ -40,6 +41,9 @@ export const inputReady: Promise<InputBackend> = createInput(isDesktop).then((i)
       if (e.down) engine.setBroadcastLock(!engine.broadcastLocked);
     } else if (e.net === "chat") {
       // Not a talk key. In the desktop app the native side acts on it and it never arrives here.
+    } else if (e.net === "ready") {
+      // Answers the ready check on screen, without leaving the game. No check, no effect.
+      if (e.down && chat.view().ready) chat.answer(true);
     } else {
       engine.ptt(e.net as NetKind, e.down);
     }

@@ -23,7 +23,7 @@ The app is also where the alliance is run: starting one (with a beta code from t
 - Keeps a party on Command: if its leader drops out, the party is asked to choose another, and the next member is promoted if nobody does.
 - Rosters are reusable: clans keep constant parties that drop onto a board in one click, and a new operation can start from an earlier one.
 - Can announce operations in a Discord channel (a webhook the clan's leader pastes; no bot), for players who do not have the app open: when one is planned, changed or started, and as a reminder before it starts. A leader can choose a role for those messages to ping.
-- Gives every operation a text chat with a channel per net, which can sit on the game as a small see-through window; a Chat key lets you type a line without leaving the game.
+- Gives every operation a text chat with a channel per net, which can sit on the game as a small see-through window; a Chat key lets you type a line without leaving the game. Whoever runs the operation can pin an order at the top of it and ask everyone for a ready check.
 - Keeps each player's other characters as a standing list, boxes included, which the clan sees on its roster, organisers see on the board, and the player picks from when signing up.
 - Plans the event as well as carrying it: players set their class and level and answer "are you coming?", the board shows what each party still needs, and afterwards it lists who was in voice and for how long.
 - Each alliance is its own. What is inside one (clans, players, operations, voice, the log) is seen and heard by nobody outside it, and the only way in is an invite link from one of its clans.

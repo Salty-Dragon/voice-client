@@ -14,6 +14,12 @@ export type ChatActions = {
   watch(room: string | null): void;
   remove(id: number): void;
   mute(userId: number, on: boolean): void;
+  /** Pins an order for the whole operation; empty clears it. For those who run it. */
+  order(text: string): void;
+  /** Starts a ready check, or ends the one running. For those who run the operation. */
+  readyCheck(start: boolean): void;
+  /** Answers the ready check on screen. */
+  answer(ready: boolean): void;
 };
 
 const hhmm = (at: string) => {
@@ -28,6 +34,7 @@ export function ChatPanel({
   chatKey,
   onTyping,
   onDone,
+  onHandBack,
 }: {
   view: ChatView;
   act: ChatActions;
@@ -39,10 +46,14 @@ export function ChatPanel({
   onTyping?: (on: boolean) => void;
   /** The chat window only: the line was sent or given up, and the keyboard should go back to the game. */
   onDone?: (sent: boolean) => void;
+  /** The chat window only: a button in it was clicked (an answer to a ready check), which took the keyboard from the game. */
+  onHandBack?: () => void;
 }) {
   const [room, setRoom] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
+  /** The organiser's next line is the order, not a line. */
+  const [pin, setPin] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLOListElement>(null);
   const channel: ChatChannel | undefined = view.channels.find((c) => c.room === room) ?? view.channels[0];
@@ -69,6 +80,25 @@ export function ChatPanel({
     list.current?.scrollTo({ top: list.current.scrollHeight });
   }, [last, shown]);
 
+  // A new order stands out for a few seconds.
+  const [flash, setFlash] = useState(false);
+  const orderAt = view.order?.at;
+  useEffect(() => {
+    if (!orderAt) return;
+    setFlash(true);
+    const timer = window.setTimeout(() => setFlash(false), 6000);
+    return () => window.clearTimeout(timer);
+  }, [orderAt]);
+  // While a ready check runs, the seconds left are counted down here.
+  const running = view.ready !== null || (view.tally !== null && !view.tally.done);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => tick((n) => n + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [running]);
+  const left = (endsAt: number | undefined) => (endsAt === undefined ? "" : `${Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))} s`);
+
   if (!view.operation || !channel) {
     return (
       <div className={`flex min-h-0 flex-1 items-center justify-center px-3 text-center text-text-muted ${compact ? "text-[12px]" : "text-sm"}`} data-chat="none">
@@ -82,9 +112,49 @@ export function ChatPanel({
     onDone?.(sent);
   };
   const cannot = view.muted ? t("Your writing is switched off for this operation. You can still read.") : !channel.write ? "You read here. You do not write here." : "";
+  // Pinning an order is done from the channel the organisers give their orders on.
+  const canPin = view.organises && channel.net === "broadcast" && !cannot;
+  const pinning = pin && canPin;
+  const tally = view.tally;
+  const answer = (ready: boolean) => {
+    act.answer(ready);
+    onHandBack?.();
+  };
 
   return (
     <div className={`flex min-h-0 flex-1 flex-col ${compact ? "text-[13px]" : "text-sm"}`} data-chat={channel.room}>
+      {view.order && (
+        <div className={`flex shrink-0 items-baseline gap-2 border-b border-gold-dim/40 px-2 py-0.5 text-net-broadcast transition-colors duration-700 ${flash ? "bg-net-broadcast/20" : ""}`} data-chat-order>
+          <span className="min-w-0 flex-1 break-words font-semibold">{view.order.text}</span>
+          {!compact && <span className="shrink-0 text-[11px] text-text-muted">{view.order.by}</span>}
+          {view.organises && (
+            <button type="button" className="shrink-0 cursor-pointer text-[11px] text-text-muted hover:text-danger" onClick={() => act.order("")} aria-label="Clear the order">
+              clear
+            </button>
+          )}
+        </div>
+      )}
+      {view.ready && (
+        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gold-dim/40 bg-gold/10 px-2 py-1" data-ready-ask>
+          <span className="font-semibold text-gold-bright">{view.ready.by} asks: ready?</span>
+          <button type="button" className="btn px-2 py-0 text-xs" onClick={() => answer(true)}>Ready</button>
+          <button type="button" className="btn btn-quiet px-2 py-0 text-xs" onClick={() => answer(false)}>Not ready</button>
+          <span className="ml-auto text-[11px] tabular-nums text-text-muted">{left(view.ready.endsAt)}</span>
+        </div>
+      )}
+      {tally && (
+        <div className="flex shrink-0 flex-wrap items-baseline gap-x-3 border-b border-gold-dim/40 px-2 py-0.5 text-[12px]" data-ready-tally={tally.done ? "done" : "running"}>
+          <span className="font-semibold text-gold">Ready check{tally.done ? "" : ` · ${left(tally.endsAt)}`}</span>
+          <span className="text-net-party">{tally.ready} ready</span>
+          {tally.notReady > 0 && <span className="text-danger">{tally.notReady} not ready{tally.names ? `: ${tally.names.notReady.join(", ")}` : ""}</span>}
+          {tally.waiting > 0 && <span className="text-text-muted">{tally.waiting} no answer{tally.names ? `: ${tally.names.waiting.join(", ")}` : ""}</span>}
+          {view.organises && !tally.done && (
+            <button type="button" className="ml-auto cursor-pointer text-[11px] text-text-muted hover:text-gold" onClick={() => act.readyCheck(false)}>
+              End now
+            </button>
+          )}
+        </div>
+      )}
       <div className="flex shrink-0 flex-wrap items-center gap-1 px-1 pt-1" role="tablist" aria-label="Chat channels">
         {view.channels.map((c) => (
           <button
@@ -100,6 +170,11 @@ export function ChatPanel({
             {view.unread[c.room] && c.room !== channel.room && <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-gold-bright align-middle" role="img" aria-label="New lines" />}
           </button>
         ))}
+        {view.organises && view.readyCheck && (!tally || tally.done) && (
+          <button type="button" className="ml-auto cursor-pointer rounded-sm border border-gold-dim px-2 text-[11px] text-gold hover:border-gold-bright" onClick={() => act.readyCheck(true)} data-ready-start>
+            Ready check
+          </button>
+        )}
       </div>
       <ol ref={list} className={`min-h-0 flex-1 overflow-y-auto px-2 py-1 ${compact ? "leading-[19px]" : "leading-6"}`} data-chat-lines aria-live="polite">
         {lines.length === 0 && <li className="text-[12px] italic text-text-muted">Nothing has been written here yet.</li>}
@@ -134,8 +209,10 @@ export function ChatPanel({
         onSubmit={(e) => {
           e.preventDefault();
           const said = text.trim();
-          if (said && !cannot) act.say(channel.room, said);
+          if (said && pinning) act.order(said);
+          else if (said && !cannot) act.say(channel.room, said);
           setText("");
+          setPin(false);
           done(!!said);
         }}
       >
@@ -160,11 +237,25 @@ export function ChatPanel({
           }}
           maxLength={300}
           readOnly={!!cannot}
-          placeholder={cannot || (typing && onDone ? "Enter sends, Esc gives up" : `Write to ${channel.label}`)}
+          placeholder={cannot || (pinning ? t("The order, pinned for everyone on the operation") : typing && onDone ? "Enter sends, Esc gives up" : `Write to ${channel.label}`)}
           aria-label="Chat line"
           autoComplete="off"
           spellCheck={false}
         />
+        {canPin && (
+          <button
+            type="button"
+            className={`shrink-0 cursor-pointer rounded-sm border px-2 py-0.5 text-[11px] ${pinning ? "border-net-broadcast text-net-broadcast" : "border-line text-text-muted hover:text-text"}`}
+            aria-pressed={pinning}
+            onClick={() => {
+              setPin(!pin);
+              input.current?.focus();
+            }}
+            data-chat-pin
+          >
+            Pin as order
+          </button>
+        )}
       </form>
     </div>
   );
