@@ -8,7 +8,7 @@ import { isDesktop } from "../config";
 import type { Member, NetView } from "../engine";
 import { keyLabel } from "../keys";
 import { engine } from "../runtime";
-import { bindTargetOf, setSettings, useSettings, type BindTarget } from "../settings";
+import { bindTargetOf, setSettings, useSettings, type BindTarget, type CallTarget } from "../settings";
 import { rpc } from "../api";
 import { useAct, useApp } from "./app-context";
 import { ClanCrest, ClanMark, Initial, KeyBind, NET_BORDER, netName, NET_TEXT, netTip, NET_VAR, useEngine } from "./common";
@@ -206,7 +206,7 @@ export function VoiceView() {
         .map((n) => bindTargetOf(n.net)),
     ),
   ];
-  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat" | "ready">[];
+  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat" | "ready" | CallTarget>[];
 
   // What the footer says when it has no key to list for the nets on screen.
   const speakNets = nets.filter((n) => n.speak);

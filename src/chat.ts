@@ -12,7 +12,7 @@ import type { NetKind } from "./settings";
 
 export type ChatChannel = { room: string; net: NetKind; label: string; write: boolean };
 /** `userId` null: a note from the app itself (you were moved here; a line was not sent), not something anyone wrote. */
-export type ChatLineView = { id: number; userId: number | null; name: string; tag: string | null; text: string; at: string };
+export type ChatLineView = { id: number; userId: number | null; name: string; tag: string | null; text: string; at: string; /** Sent as a quick call. */ quick?: true };
 export type ChatView = {
   /** The operation the chat belongs to; null when not in one. */
   operation: { id: number; name: string } | null;
@@ -35,9 +35,13 @@ export type ChatView = {
   ready: ReadyAsk | null;
   /** How the ready check stands or ended, for a little while after it ends. Names only for those who run the operation. */
   tally: (ReadyState & { done: boolean }) | null;
+  /** The alliance's quick calls by slot, "" for one not in use. Known outside operations too, for binding keys. */
+  calls: string[];
+  /** The quick call that has just come in, for a few seconds: the strip shows it without the chat open. */
+  called: { id: number; name: string; text: string; own: boolean } | null;
 };
 
-const EMPTY: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null };
+const EMPTY: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null, calls: [], called: null };
 /** Tabs in the order a player reaches for them: their own party first, the orders last and always in sight. */
 const ORDER: NetKind[] = ["party", "reserve", "clan", "command", "broadcast"];
 const KEEP = 300;
@@ -54,6 +58,9 @@ let tallyTimer: ReturnType<typeof setTimeout> | undefined;
 /** The server's clock may not be this computer's: a check's end is kept as "half a minute from when we heard". */
 const READY_MS = 30_000;
 const TALLY_STAYS_MS = 20_000;
+/** How long a quick call that has just come in stays on the strip. */
+const CALLED_STAYS_MS = 6_000;
+let calledTimer: ReturnType<typeof setTimeout> | undefined;
 const listeners = new Set<() => void>();
 
 const set = (next: ChatView) => {
@@ -72,6 +79,12 @@ function onEvent(e: ChatEvent) {
   if (e.type === "chat") {
     if (e.n !== undefined) pending.delete(e.n);
     add(e.line.room, e.line, e.line.userId !== view.me);
+    if (e.line.quick && view.channels.some((c) => c.room === e.line.room)) {
+      clearTimeout(calledTimer);
+      set({ ...view, called: { id: e.line.id, name: e.line.name, text: e.line.text, own: e.line.userId === view.me } });
+      calledTimer = setTimeout(() => set({ ...view, called: null }), CALLED_STAYS_MS);
+      chat.onCue("call");
+    }
   } else if (e.type === "chat.history") {
     if (!view.channels.some((c) => c.room === e.room)) return;
     // What the server has, in its order; the app's own notes stay where they were said, after it.
@@ -108,8 +121,8 @@ function onEvent(e: ChatEvent) {
 }
 
 export const chat = {
-  /** A sound for a new order or a ready check; the app sets it (the sounds live with the voice engine). */
-  onCue: (_kind: "order" | "ready") => {},
+  /** A sound for a new order, a ready check or a quick call; the app sets it (the sounds live with the voice engine). */
+  onCue: (_kind: "order" | "ready" | "call") => {},
   view: () => view,
   subscribe(listener: () => void) {
     listeners.add(listener);
@@ -163,6 +176,8 @@ export const chat = {
       order: !op ? null : next.chat && "order" in next.chat ? (next.chat.order ?? null) : sameOp ? view.order : null,
       ready: !op ? null : next.chat?.ready ? { ...next.chat.ready, endsAt: view.ready?.id === next.chat.ready.id ? view.ready.endsAt : Date.now() + READY_MS } : sameOp ? view.ready : null,
       tally: sameOp ? view.tally : null,
+      calls: next.calls ?? [],
+      called: sameOp ? view.called : null,
     });
   },
   /** The connection is back after a gap: ask again for what was said meanwhile. */
@@ -181,6 +196,10 @@ export const chat = {
   },
   remove: (id: number) => control?.removeLine(id),
   mute: (userId: number, on: boolean) => control?.muteWriter(userId, on),
+  /** Sends the quick call in that slot (1 to 8) into the player's party. Outside an operation, or for a slot not in use, nothing. */
+  call(slot: number) {
+    if (view.operation && view.calls[slot - 1]) control?.call(slot);
+  },
   /** Pins an order for the whole operation; empty clears it. */
   order: (text: string) => control?.setOrder(text),
   /** Starts a ready check, or ends the one running. */

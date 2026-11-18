@@ -153,6 +153,14 @@ Every operation has a text chat, with a channel for each net ([members' guide](m
 
 Keeping order: the event leader, the deputies and you can remove any line you can read (point at it), and switch a player's writing off for that operation; they go on reading, and it ends with the operation. Both are written to the log, without what the line said. A party's channel is read only by that party, during and after: you do not see it unless you are in it.
 
+### Quick calls: your alliance's own list
+
+On the **Alliance** tab, **Quick calls** holds up to eight short lines (40 characters each) that your players can send into their party's chat with one key ([members' guide](members.md#quick-calls)). A new alliance starts with six: Need res, Need heal, Out of mana, Under attack, On my way, Wait for me. Write the ones that fit your game and click **Save the calls**; every app has the new list at once.
+
+- **A call keeps its line.** Players bind their keys to a line, not to a text: change the text in line 3 and the key a player bound to line 3 sends the new text. So improve a call in place, and put a new call in an empty line.
+- **Empty a line** to take a call away. Keys bound to it then do nothing.
+- Calls go to the caller's party, or to Reserve without one, and are kept with the chat. Changing the list is written to the log.
+
 ### Starting from an earlier operation
 
 You do not have to rebuild the roster for every event. **Start from** lists your recent operations with their size. Pick one and the new operation begins with the same parties in the same order, with the same leaders, members and deputies. The clans and event leader are filled in to match; change them if you need to.

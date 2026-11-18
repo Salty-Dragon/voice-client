@@ -1,10 +1,11 @@
 import { t } from "../words";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { rpc } from "../api";
 import { APP_NAME, APP_VERSION, isDesktop, STATUS_URL } from "../config";
 import { foreground } from "../runtime";
 import { checkForUpdate, installUpdate, useUpdate } from "../update";
-import { setSettings, useSettings, type BindTarget, type InputSource, type NetKind } from "../settings";
+import { CALL_TARGETS, setSettings, useSettings, type BindTarget, type CallTarget, type InputSource, type NetKind } from "../settings";
+import { chat } from "../chat";
 import { useApp } from "./app-context";
 import { DevicePickers, KeyBind, MicTest, netName, NET_TEXT, openInBrowser, PartyMode } from "./common";
 import { MyCharacters } from "./MyCharacters";
@@ -12,7 +13,7 @@ import { ProfileForm } from "./NameStep";
 import { Help } from "./tips";
 
 // Labels and notes: t() where shown.
-const KEYS: { target: BindTarget; label: string; note: string }[] = [
+const KEYS: { target: Exclude<BindTarget, CallTarget>; label: string; note: string }[] = [
   { target: "broadcast", label: "Broadcast", note: "Event leader and deputies" },
   { target: "command", label: "Command", note: "Leaders" },
   { target: "clan", label: "Clan", note: "Clan leader and officers" },
@@ -172,6 +173,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
               </li>
             ))}
           </ul>
+          <QuickCallKeys />
           <p className="text-xs text-text-muted">
             Keys are never taken from the game: it still receives them. Only keys bound here are looked at.
             {!isDesktop && " In the browser, keys only work while this tab has focus."}
@@ -299,6 +301,29 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
 
         <p className="text-center text-xs text-text-muted">{APP_NAME} {APP_VERSION}</p>
       </aside>
+    </div>
+  );
+}
+
+/** A key for each of the alliance's quick calls. The list is the alliance's; the keys are the player's. */
+function QuickCallKeys() {
+  const calls = useSyncExternalStore(chat.subscribe, () => chat.view().calls);
+  const used = calls.map((text, i) => ({ text, target: CALL_TARGETS[i] })).filter((c) => c.text && c.target);
+  if (used.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2 border-t border-line pt-2" data-call-keys>
+      <p className="flex items-center gap-2 font-medium">
+        Quick calls
+        <Help text={t("A quick call is a short line sent into your party's chat with one key, without typing: the others see it in the chat and on their strip, and hear a short sound.\nYour alliance's admins choose the list. Bind a key to the ones you want; the rest stay unused.\nWithout a party your calls go to Reserve. Outside an operation the keys do nothing.")} />
+      </p>
+      <ul className="flex flex-col gap-2">
+        {used.map((c) => (
+          <li key={c.target} className="flex items-center gap-3">
+            <span className="w-40 truncate text-gold" title={c.text}>{c.text}</span>
+            <KeyBind target={c.target} label={`Quick call: ${c.text}`} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

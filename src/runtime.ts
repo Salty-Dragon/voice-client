@@ -41,6 +41,9 @@ export const inputReady: Promise<InputBackend> = createInput(isDesktop).then((i)
       if (e.down) engine.setBroadcastLock(!engine.broadcastLocked);
     } else if (e.net === "chat") {
       // Not a talk key. In the desktop app the native side acts on it and it never arrives here.
+    } else if (/^call[1-8]$/.test(e.net)) {
+      // A quick call: the alliance's line in that slot goes into the party's chat. Once per press.
+      if (e.down) chat.call(Number(e.net.slice(4)));
     } else if (e.net === "ready") {
       // Answers the ready check on screen, without leaving the game. No check, no effect.
       if (e.down && chat.view().ready) chat.answer(true);

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { rpc, type AllianceView as AllianceData, type PlanState } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { CHAT_SETTINGS_HELP, ChatSettings } from "./ChatSettings";
+import { QUICK_CALLS_HELP, QuickCalls } from "./QuickCalls";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { InviteLinks } from "./ClanView";
@@ -326,6 +327,12 @@ export function AllianceView() {
       {data.chat && (
         <Section title="Chat" help={t(CHAT_SETTINGS_HELP)}>
           <ChatSettings settings={data.chat} choices={data.chatKeepChoices ?? [0, 7, 30, 365]} onChange={reload} />
+        </Section>
+      )}
+
+      {data.calls && (
+        <Section title="Quick calls" help={t(QUICK_CALLS_HELP)}>
+          <QuickCalls calls={data.calls} limits={data.callLimits ?? { slots: 8, max: 40 }} onChange={reload} />
         </Section>
       )}
 

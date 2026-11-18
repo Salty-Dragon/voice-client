@@ -8,7 +8,7 @@ import { t } from "../words";
 import { Help } from "./tips";
 import { NET_TEXT } from "./net-style";
 
-type Record = { keepDays: number; channels: { room: string; net: NetKind; label: string; lines: { id: number; name: string; tag: string | null; text: string; at: string }[] }[] };
+type Record = { keepDays: number; channels: { room: string; net: NetKind; label: string; lines: { id: number; name: string; tag: string | null; text: string; at: string; quick?: true }[] }[] };
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 
@@ -57,7 +57,7 @@ export function ChatRecord({ opId }: { opId: number }) {
               <li key={l.id} className="break-words">
                 <span className="text-[11px] tabular-nums text-text-muted">{clock(l.at)} </span>
                 <span className="font-semibold text-gold">{l.name}</span>{" "}
-                {l.text}
+                {l.quick ? <span className="font-semibold text-gold-bright">▸ {l.text}</span> : l.text}
               </li>
             ))}
           </ol>

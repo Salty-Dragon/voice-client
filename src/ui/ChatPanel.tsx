@@ -20,6 +20,8 @@ export type ChatActions = {
   readyCheck(start: boolean): void;
   /** Answers the ready check on screen. */
   answer(ready: boolean): void;
+  /** Sends the alliance's quick call in that slot (1 to 8) into the player's party. */
+  call(slot: number): void;
 };
 
 const hhmm = (at: string) => {
@@ -54,6 +56,8 @@ export function ChatPanel({
   const [typing, setTyping] = useState(false);
   /** The organiser's next line is the order, not a line. */
   const [pin, setPin] = useState(false);
+  /** The alliance's quick calls are laid out for a click. */
+  const [callsOpen, setCallsOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLOListElement>(null);
   const channel: ChatChannel | undefined = view.channels.find((c) => c.room === room) ?? view.channels[0];
@@ -115,6 +119,9 @@ export function ChatPanel({
   // Pinning an order is done from the channel the organisers give their orders on.
   const canPin = view.organises && channel.net === "broadcast" && !cannot;
   const pinning = pin && canPin;
+  // Quick calls go to the party (or Reserve), so that is where they are offered for a click. Keys work on any tab.
+  const canCall = (channel.net === "party" || channel.net === "reserve") && !cannot && view.calls.some(Boolean);
+  const offered = callsOpen && canCall;
   const tally = view.tally;
   const answer = (ready: boolean) => {
     act.answer(ready);
@@ -183,11 +190,11 @@ export function ChatPanel({
           const own = l.userId === view.me;
           const off = view.mutedIds.includes(l.userId);
           return (
-            <li key={l.id} className="group break-words" data-chat-line={l.id}>
+            <li key={l.id} className="group break-words" data-chat-line={l.id} data-quick={l.quick ? "" : undefined}>
               {!compact && <span className="text-[11px] tabular-nums text-text-muted">{hhmm(l.at)} </span>}
               <span className={`font-semibold ${own ? "text-gold-bright" : "text-gold"}`}>{l.name}</span>
               {l.tag && !compact && <span className="text-[11px] text-text-muted"> [{l.tag}]</span>}{" "}
-              {l.text}
+              {l.quick ? <span className="font-semibold text-gold-bright">▸ {l.text}</span> : l.text}
               {(own || view.moderates) && (
                 <span className="ml-2 hidden gap-2 align-middle text-[11px] group-hover:inline-flex group-focus-within:inline-flex">
                   <button type="button" className="cursor-pointer text-text-muted hover:text-danger" onClick={() => act.remove(l.id)} aria-label={`Remove this line of ${l.name}`}>
@@ -204,6 +211,26 @@ export function ChatPanel({
           );
         })}
       </ol>
+      {offered && (
+        <div className="flex shrink-0 flex-wrap gap-1 border-t border-line px-1 py-1" data-calls>
+          {view.calls.map((call, i) =>
+            call ? (
+              <button
+                key={i}
+                type="button"
+                className="cursor-pointer rounded-sm border border-gold-dim px-2 py-0.5 text-[11px] text-gold hover:border-gold-bright"
+                onClick={() => {
+                  act.call(i + 1);
+                  onHandBack?.();
+                }}
+                data-call={i + 1}
+              >
+                {call}
+              </button>
+            ) : null,
+          )}
+        </div>
+      )}
       <form
         className="flex shrink-0 items-center gap-1 px-1 pb-1"
         onSubmit={(e) => {
@@ -242,6 +269,17 @@ export function ChatPanel({
           autoComplete="off"
           spellCheck={false}
         />
+        {canCall && (
+          <button
+            type="button"
+            className={`shrink-0 cursor-pointer rounded-sm border px-2 py-0.5 text-[11px] ${offered ? "border-gold text-gold" : "border-line text-text-muted hover:text-text"}`}
+            aria-expanded={offered}
+            onClick={() => setCallsOpen(!callsOpen)}
+            data-calls-toggle
+          >
+            Calls
+          </button>
+        )}
         {canPin && (
           <button
             type="button"

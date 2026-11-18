@@ -6,6 +6,8 @@ import type { NetKind } from "./settings";
 export type NetGrant = { net: NetKind; label: string; room: string; speak: boolean; token: string; /** Broadcast only: this player (the event leader) may lock it open for a briefing. */ lock?: boolean; /** May write in this net's chat. Absent on a server older than the chat. */ write?: boolean };
 export type OpInfo = { id: number; name: string; state: "planned" | "live" | "ended" };
 export type NetSet = {
+  /** The alliance's quick calls by slot, "" for one not in use. Absent on a server before 0.24. */
+  calls?: string[];
   url: string;
   operation: OpInfo | null;
   operations: OpInfo[];
@@ -32,7 +34,7 @@ export type ReadyAsk = { id: number; by: string; endsAt: number };
 /** Where a ready check stands. Names only reach those who run the operation. */
 export type ReadyState = { id: number; ready: number; notReady: number; waiting: number; names?: { notReady: string[]; waiting: string[] }; endsAt?: number };
 /** One line of an operation's chat. `room` is its net's room. */
-export type ChatLine = { id: number; room: string; userId: number; name: string; tag: string | null; text: string; at: string };
+export type ChatLine = { id: number; room: string; userId: number; name: string; tag: string | null; text: string; at: string; /** Sent as a quick call. */ quick?: true };
 /** What the server says about the chat. `n` is the number this app gave a line it sent. */
 export type ChatEvent =
   | { type: "chat"; line: ChatLine; n?: number }
@@ -128,6 +130,10 @@ export class ControlClient {
   /** Switches a player's writing off, or on again, for the operation. For those who keep order in it. */
   muteWriter(userId: number, on: boolean) {
     this.send({ type: "chat.mute", userId, on });
+  }
+  /** Sends one of the alliance's quick calls, by its slot (1 to 8), into the player's party. */
+  call(slot: number) {
+    this.send({ type: "chat.call", slot });
   }
   /** Pins an order for the whole operation; empty text clears it. For those who run it. */
   setOrder(text: string) {

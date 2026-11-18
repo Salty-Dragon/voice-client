@@ -84,6 +84,16 @@ An operation has a text chat beside its voice: on the **Voice** tab, under the l
 - **The order** is one line that whoever runs the operation pins for everyone: what you are doing right now. It stays at the top of the chat, in red, until it is replaced or cleared, and it shows on the compact strip too, so you see it without the chat open. A new order comes with a short low sound and is lit for a few seconds. Each order is also a line on Broadcast, so you can read back what the orders were.
 - **A ready check** is the organisers asking everyone at once: ready? You get a line with **Ready** and **Not ready**, a short rising sound, and half a minute. Click one, or bind a **Ready** key (Settings → Keys) and answer without leaving the game. The organisers see who is not ready and who has not answered; everyone sees the count, and the result is a line on Broadcast. Not answering counts as no answer, nothing more. Your alliance's admins can switch ready checks off.
 
+### Quick calls
+
+A quick call is a short line you send with one key, without typing: "Need res", "Out of mana". Your alliance's admins choose the list, to fit your game.
+
+- **Bind keys** in **Settings → Keys**, under **Quick calls**: one key for each call you want. Calls you bind no key to stay unused. Pick keys the game does not use, because the game receives them too.
+- **A call goes to your party's chat**, or to Reserve while you have no party. It is marked with **▸**, the others hear a short sound, and it shows on their strip for a few seconds, so nobody needs the chat open to see it.
+- **One press, one call.** Holding the key or hammering it sends it once; calls are at least a second and a half apart.
+- You can also click: in your party's tab of the chat, **Calls** lays the list out as buttons.
+- Outside an operation the keys do nothing. If your writing has been switched off for the operation, so are your calls.
+
 ### The chat window over the game
 
 On the Voice tab, **Open as a window over the game** turns the compact strip into a chat window: who is speaking on top, the chat underneath. It stays on top of the game, so put it where the game's own chat box is.
@@ -189,7 +199,7 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | --- | --- |
 | **Devices** | Your microphone and headset, the three-second test, and three clean-up switches: echo cancellation, noise suppression and auto gain. Leave them on unless something sounds wrong. |
 | **Party, Reserve and lounge** | Push-to-talk or voice activation for the nets you chat on, with the sensitivity marker and how long the mic stays open after you stop. |
-| **Keys** | One key per net you may speak on, plus **Mute all**. Mouse side buttons work. **Broadcast lock** is for event leaders only. **Ready** answers a ready check. **Chat** puts the keyboard in the chat window's line while the game is in front. |
+| **Keys** | One key per net you may speak on, plus **Mute all**. Mouse side buttons work. **Broadcast lock** is for event leaders only. **Ready** answers a ready check. **Quick calls** send one of your alliance's short lines to your party. **Chat** puts the keyboard in the chat window's line while the game is in front. |
 | **Volume** | Your own level for each net. |
 | **Priority** | Whether lower nets get quieter while a higher one is live, and how quiet. |
 | **Sounds** | The cue you hear when you are moved, and its volume. |

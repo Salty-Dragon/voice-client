@@ -33,5 +33,6 @@ export type FromStrip =
   | { type: "chat-remove"; id: number }
   | { type: "chat-mute"; userId: number; on: boolean }
   | { type: "chat-order"; text: string }
+  | { type: "chat-call"; slot: number }
   | { type: "ready-check"; start: boolean }
   | { type: "ready-answer"; ready: boolean };
