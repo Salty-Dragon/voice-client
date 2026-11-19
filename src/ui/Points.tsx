@@ -190,7 +190,7 @@ function PointsForm({ pool, eventTypes, onSaved }: { pool: PoolInfo; eventTypes:
         </>
       )}
       <div className="flex items-center gap-3">
-        <button type="button" className="btn" disabled={!changed || act.busy} onClick={save} data-points-save>Save</button>
+        <button type="button" className="btn" disabled={!changed || act.busy} onClick={save} data-points-save>Save the points</button>
         {saved && !changed && <span className="text-sm text-text-muted" role="status">Saved.</span>}
         {act.error && <span className="text-danger" role="alert">{act.error}</span>}
       </div>
