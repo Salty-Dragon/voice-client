@@ -59,4 +59,4 @@ Groups that always play together are saved once. On the **Clan** tab, under **Co
 
 ## If something does not work
 
-First look at the [status page](https://ignite.v1rtopia.com/status), which says whether the service itself is working; the app links to it under **Settings → Help**. Then ask on the [Warcryer Discord](https://discord.gg/qf4meEMfhp). Say what you did and what you saw; a screenshot helps.
+First look at the [status page](https://app.warcryer.org/status), which says whether the service itself is working; the app links to it under **Settings → Help**. Then ask on the [Warcryer Discord](https://discord.gg/qf4meEMfhp). Say what you did and what you saw; a screenshot helps.

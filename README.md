@@ -43,7 +43,7 @@ Key bindings and audio settings stay on your computer. The server receives your 
 
 Step-by-step guides for [members](docs/members.md), [clan leaders and officers](docs/clan-leaders.md) and [alliance admins and event leaders](docs/alliance-admins.md), and for whoever starts an alliance, [its first hour](docs/first-hour.md). The same guides are inside the app, on the Guides tab.
 
-The hosted service has [terms of use](TERMS.md), a [privacy policy](PRIVACY.md) and a [status page](https://ignite.v1rtopia.com/status). Questions go to the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
+The hosted service has [terms of use](TERMS.md), a [privacy policy](PRIVACY.md) and a [status page](https://warcryer.org/status/). Questions go to the [Warcryer Discord](https://discord.gg/qf4meEMfhp).
 
 ## Install
 

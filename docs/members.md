@@ -172,7 +172,7 @@ The new leader is told ("You now lead Vanguard") and is on Command at once, so b
 
 ## Browser version
 
-`https://ignite.v1rtopia.com/voice` is the same app in a browser, for a quick look or a second PC. Sign in on the site first. Its keys only work while the browser tab has focus, so use the Windows app for events.
+`https://app.warcryer.org/voice` is the same app in a browser, for a quick look or a second PC. Sign in on the site first. Its keys only work while the browser tab has focus, so use the Windows app for events.
 
 ## One connection per account
 

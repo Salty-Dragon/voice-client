@@ -1,6 +1,6 @@
 # Privacy policy
 
-This covers Warcryer, the Windows app built from this repository, and the service the released installer connects to (the server at `ignite.v1rtopia.com`), which is run by Warcryer. The only contact is the [Warcryer Discord](https://discord.gg/qf4meEMfhp). The service's rules are in the [terms of use](TERMS.md). If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
+This covers Warcryer, the Windows app built from this repository, and the service the released installer connects to (the server at `app.warcryer.org`, earlier `ignite.v1rtopia.com`), which is run by Warcryer. The only contact is the [Warcryer Discord](https://discord.gg/qf4meEMfhp). The service's rules are in the [terms of use](TERMS.md). If you build the app yourself and point it at another server (`VITE_SERVER`), that server's operator decides what is kept there.
 
 ## Before you sign in
 
