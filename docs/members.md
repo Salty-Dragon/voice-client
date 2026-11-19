@@ -132,7 +132,7 @@ Choose how far back to look at the top. The record is kept until the operation i
 
 If your alliance keeps points (it may call them DKP, EP or something else), the **History** tab has a tab for them, and one more if your clan keeps its own. **My own lines** lists every change to yours, newest first: what each operation gave you, and anything given or taken by hand, always with the reason and who did it. You always see your own; whether you also see everyone's standings is your alliance's or clan's choice.
 
-Points are earned at operations, from your time in voice: how much is up to your alliance. After an operation, a leader looks over what everyone earned and posts it, so your points for an operation can take a little while to appear.
+Points are earned at operations, from your time in voice: how much is up to your alliance, and **How (your points) are earned**, under the standings, lists every rule. Each line says why, for example "there 10, on time 2, Boss kill 5". After an operation, a leader looks over what everyone earned and posts it, so your points for an operation can take a little while to appear. If your alliance uses decay or seasons, those show as lines of their own too.
 
 ## Being moved, and asking to move
 

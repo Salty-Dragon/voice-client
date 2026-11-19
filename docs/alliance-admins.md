@@ -257,19 +257,36 @@ Someone who was in voice without being in one of the operation's clans (you, loo
 
 ## Points
 
-Points (DKP, EP, or whatever your alliance calls them) are set up on the **Alliance** tab under **Points**, and are off until you switch them on. Earned at operations, from the attendance Warcryer already records:
+Points (DKP, EP, PAP, or whatever your alliance calls them) are set up on the **Alliance** tab under **Points**. Every game and guild runs them differently, so they are built from parts you choose, and you can keep several sets side by side: say **Raid DKP** for raids and **PvP points** for sieges.
 
-- **Earned:** a set amount for being in voice at least a share of the operation (50% unless you change it), or an amount for each hour in voice.
-- **Amount:** one for any operation, and if you like a different one for each of your kinds of event (Game setup on the same tab), so a siege can be worth more than a raid.
-- **Came as they said** adds a bonus for saying "coming" and earning points; **Did not show** takes points from anyone who said "coming" and was never in voice. Both start at 0.
+**Setting up a set.** Click **+ New set of points** and start from the preset closest to how you do it. Each fills in the rules below, and every part can be changed afterwards:
+
+- **Attendance only:** one point per operation attended, as a plain record of who turns up.
+- **Classic DKP:** a set amount per operation, extras for being on time, staying to the end and coming as said, a deduction for not showing, standby, and objectives such as boss kills.
+- **DKP by the hour:** points for each hour in voice, so a long siege earns more than a short raid.
+- **EPGP (effort points):** effort points with standby, decaying 10% a week so recent effort counts most. The gear-point side comes with the loot log, later.
+- **Fleet participation:** one point per fleet or operation a player was in at all, as space and sandbox games count participation.
+- **Custom:** start empty.
+
+A new set starts switched off, so you can look it over first. Then:
+
+- **Called:** the name your players use.
+- **Counts:** which of your kinds of event earn these points (Game setup on the same tab). Nothing picked: every kind.
+- **How they are earned:** a list of rules, each an amount and the kinds of event it is for. **For being there** (in voice at least a share of the operation), **Per hour in voice**, **On time** (in voice within some minutes of the start), **To the end** (still in voice some minutes before the end), **Came as they said**, **Did not show** (a deduction), **Standby** (ticked in the draft for players kept on the bench), and **Objective** (a named event such as a boss kill or a won siege, ticked in the draft and given to everyone who earned for being there). A rule for one kind of event takes the place of the same rule for every kind, so a siege can be worth more than a raid.
+- **Decay:** a share taken every week (Mondays) or month (the 1st), at midnight UTC, never below a floor you set. 0% for none.
+- **Cap** and **May go below zero:** the most a player may have, and whether a deduction can take them below zero. When a limit trims a line, the line says so.
 - **An operation's event leader may post its points:** on by default. Off: only the alliance's admins post.
 - **Everyone sees the standings:** on by default. Off: admins see all, a clan's leader and officers their own clan, every player their own.
+- **Start a new season:** brings everyone's points down to a share you choose (0% for a fresh start), with a line of its own for each player.
+- **Remove these points:** only while they have no lines. Once anyone has points in them, switch them off instead: what everyone has is kept.
 
-**After an operation.** Nothing is added by itself. When an operation ends, its board shows a draft: everyone of its clans with their time in voice, what they had answered, and what the rules suggest, with the reason. Change any amount, use **Add to everyone who was in voice** for a boss kill or a won siege, then **Post**. It asks once, with the number of players and the total. Each operation is posted once. The points tab on **History** lists the operations still waiting for their points, since points were switched on, with **Review and post** beside each.
+Your players can read every rule, decay and cap under the standings.
 
-**Standings and lines.** **History → (your points)** shows the standings, most first, with what came from operations and what was given by hand. Click a player for every line behind their total. As an admin you can give or take points there by hand; a reason is required, and the player sees it. Nothing is ever changed or removed: a mistake is put right with another line. Posting, adjustments and settings are all in the log.
+**After an operation.** Nothing is added by itself. When an operation ends, its board shows a draft for each set it counts for: everyone of its clans with their time in voice, what they had answered, and what the rules suggest, with why. Tick any objectives reached and anyone on standby, use **Add to everyone who earned for being there** for anything else, change any amount, then **Post**. It asks once, with the number of players and the total. Each operation is posted once to each set, and each player's line keeps why. The points tab on **History** lists the operations still waiting for their points, since the set was switched on, with **Review and post** beside each.
 
-**Clans' own points.** **Clans may keep points of their own** lets each clan's leader and officers run points for the clan, on the Clan tab, beside the alliance's. Switching it off hides the clans' points without deleting them.
+**Standings and lines.** **History → (your points)** shows the standings, most first, with what came from operations, what was given by hand, and what decay and seasons took. Click a player for every line behind their total. As an admin you can give or take points there by hand; a reason is required, and the player sees it. Nothing is ever changed or removed: a mistake is put right with another line. Posting, adjustments, decay, seasons and settings are all in the log.
+
+**Clans' own points.** **Clans may keep points of their own** lets each clan's leader and officers run sets of points for the clan, on the Clan tab, beside the alliance's. Switching it off hides the clans' points without deleting them.
 
 A player who leaves the alliance keeps their lines, out of sight; if they come back, they are still there. A deleted account takes its lines with it.
 
