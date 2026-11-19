@@ -18,7 +18,7 @@ import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } 
 const NO_CHAT: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null, calls: [], called: null };
 const invoke = (cmd: string, args?: Record<string, unknown>) =>
   import("@tauri-apps/api/core").then(({ invoke }) => invoke<unknown>(cmd, args)).catch(() => undefined);
-const WIDTH = 300;
+const WIDTH = 340;
 const LINE = 22;
 const PADDING = 12;
 /** With nothing heard from the main window for this long, say so rather than show stale names. */
