@@ -149,7 +149,7 @@ Every operation has a text chat, with a channel for each net ([members' guide](m
 - **Members may write in their clan's channel.** Off, only a clan's leader and officers write there, as only they speak on the Clan net.
 - **Members may write to the whole operation.** Off, only the event leader and deputies write on Broadcast. With hundreds of players an operation-wide channel that everyone writes in moves fast: try it on a small event first.
 - **Whoever runs an operation may ask for a ready check.** On unless you switch it off. Off, the event leader and deputies are not offered the button ([During the event](#during-the-event)).
-- **Kept:** how long an operation's lines stay after it has ended: until it ends, 7 days, 30 days (unless you change it), or as long as the operation's own record. Choosing a shorter time removes older lines at once.
+- **Kept:** how long an operation's lines stay after it has ended: until it ends, 7 days, 30 days (unless you change it), or a year. Choosing a shorter time removes older lines at once.
 
 Keeping order: the event leader, the deputies and you can remove any line you can read (point at it), and switch a player's writing off for that operation; they go on reading, and it ends with the operation. Both are written to the log, without what the line said. A party's channel is read only by that party, during and after: you do not see it unless you are in it.
 
@@ -238,7 +238,9 @@ Each operation's attendance is written down as it ends, a row for every member o
 - **Turnout by operation**, as a chart and as a table, so you can see whether numbers are growing or sliding and which nights work.
 - **Players**, with those who come least listed first, and each player's own record a click away.
 
-Someone who was in voice without being in one of the operation's clans (you, looking in) is not counted as expected. A clan's leader and officers see the same screens for their own clan; members see their own record. A player who deletes their account is removed from the history, and deleting an operation removes its record.
+Someone who was in voice without being in one of the operation's clans (you, looking in) is not counted as expected. A clan's leader and officers see the same screens for their own clan; members see their own record.
+
+**How long it is kept.** An ended operation stays, with its roster and its attendance record, until you delete it (on its board) or the alliance itself is deleted. What goes after a year is only the raw detail behind the record: the exact times each player joined and left each net. A player who deletes their account is removed from the history at once.
 
 ### A checklist for event night
 

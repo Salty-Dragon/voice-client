@@ -25,7 +25,7 @@ export function ChatRecord({ opId }: { opId: number }) {
       .finally(() => setBusy(false));
   };
   const shown = rec?.channels.find((c) => c.room === room) ?? rec?.channels[0];
-  const kept = !rec ? "" : rec.keepDays >= 365 ? t("It is kept as long as the operation's own record.") : rec.keepDays === 0 ? "" : t(`It is kept for ${rec.keepDays} days after the operation ended.`);
+  const kept = !rec ? "" : rec.keepDays >= 365 ? t("It is kept for a year after the operation ended.") : rec.keepDays === 0 ? "" : t(`It is kept for ${rec.keepDays} days after the operation ended.`);
 
   return (
     <section className="panel flex flex-col gap-3 p-4" aria-label="Chat record" data-chat-record>

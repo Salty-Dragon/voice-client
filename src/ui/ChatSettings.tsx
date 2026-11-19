@@ -14,12 +14,12 @@ export const CHAT_SETTINGS_HELP = [
   "Writing follows speaking: everyone writes in their party, leaders on Command, a clan's leader and officers in the clan's channel, and the organisers to the whole operation.",
   "The two switches open the last two to every member. With hundreds of players, an operation-wide channel that everyone writes in moves fast: try it before a big event.",
   "Ready check: whoever runs an operation can ask everyone on it whether they are ready; each player answers with one click, and the organisers see who has not. Switch it off if your alliance does not want it.",
-  "Kept: how long an operation's lines stay after it has ended, for the players who were on those nets to read back on its board. They never outlive the operation itself, and a deleted account's lines go with it.",
+  "Kept: how long an operation's lines stay after it has ended, for the players who were on those nets to read back on its board. A year is the longest, and a deleted account's lines go with it.",
   "Those who run an operation can remove any line they can read and switch a player's writing off for that operation; both are in the log, without what was written.",
 ].join("\n");
 
 // t() where shown.
-const KEEP: Record<number, string> = { 0: "Until the operation ends", 7: "7 days after it", 30: "30 days after it", 365: "As long as the operation's own record" };
+const KEEP: Record<number, string> = { 0: "Until the operation ends", 7: "7 days after it", 30: "30 days after it", 365: "A year after it" };
 
 export function ChatSettings({ settings, choices, onChange }: { settings: ChatSettingsData; choices: number[]; onChange: () => void }) {
   const act = useAct();

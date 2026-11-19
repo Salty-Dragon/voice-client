@@ -139,7 +139,7 @@ The **History** tab reads the attendance that is written down as each operation 
 - **Players:** each member with the operations they attended out of those they were expected at, how often they said they were coming and did not show, and the share of the time they stayed. Those who come least are listed first.
 - **A player's record:** click a name for every operation, newest first.
 
-Choose how far back to look at the top: 30 days, 3 months, a year, or everything kept. You see what a player did as a member of your clan, not what they did in another clan before or after. **My own record** shows yours.
+Choose how far back to look at the top: 30 days, 3 months, a year, or everything. The records are kept for as long as the operation is, which is until an alliance admin deletes it. You see what a player did as a member of your clan, not what they did in another clan before or after. **My own record** shows yours.
 
 ## The clan log
 

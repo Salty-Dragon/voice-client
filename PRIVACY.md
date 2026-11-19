@@ -46,10 +46,11 @@ The server clears old records by itself every night:
 | What | Kept for |
 | --- | --- |
 | Times you sat in a lounge | 30 days |
-| An operation that has ended, with its roster and who attended | 12 months after it ended (an alliance admin can delete one sooner) |
+| An operation that has ended, with its roster and its attendance record (for each member of its clans: how long they were in voice, what they had answered, their party and the character they came as) | Until an alliance admin deletes the operation or the alliance is deleted. Your own lines in it go at once when you delete your account |
+| The exact times you joined and left each voice room during an operation | 12 months after it ended |
 | The log of changes made by leaders and admins | 12 months |
 | Invite links | 30 days after they expire |
-| What was written in an operation's chat | As your alliance's admins have chosen: until the operation ends, or 7 days, 30 days (unless they change it) or 12 months after it. Never longer than the operation itself |
+| What was written in an operation's chat | As your alliance's admins have chosen: until the operation ends, or 7 days, 30 days (unless they change it) or 12 months after it. Never longer than that, and never longer than the operation itself |
 | Sign-in sessions and sign-in codes | Until they expire |
 
 Your account, your in-game name, class and level, your other characters, and your clan membership are kept for as long as you have the account. Nothing is sold or shared with anyone else.
