@@ -173,6 +173,10 @@ export class VoiceEngine {
   /** Latest mic level in dBFS, about every 10 ms. */
   level = -100;
   muteAll = false;
+  /** The headset is off: nobody is heard (the mic is off too, see toggleDeafen). */
+  deafened = false;
+  /** Whether the mic was off when the headset went off, to put it back the same way. */
+  private micBeforeDeafen = false;
   /** When Broadcast was locked open for a briefing; 0 when it is not. */
   private lockedSince = 0;
   micError = "";
@@ -491,9 +495,41 @@ export class VoiceEngine {
     this.update();
   }
 
+  /**
+   * The mic on or off everywhere: the Mute all key and the header's mic
+   * button. Turning the mic on while the headset is off turns the headset on
+   * too, as players expect from other voice apps: you cannot talk unheard-of.
+   */
   toggleMuteAll() {
-    this.muteAll = !this.muteAll;
+    if (this.muteAll && this.deafened) {
+      this.deafened = false;
+      this.muteAll = false;
+      this.applyVolumes(true);
+    } else {
+      this.muteAll = !this.muteAll;
+    }
     if (this.muteAll) this.lockedSince = 0;
+    this.cue(this.muteAll ? "off" : "on");
+    this.update();
+    this.onChange();
+  }
+
+  /**
+   * The headset off or on: off, nobody is heard and the mic is off as well;
+   * on again, the mic is back the way it was before. Only this player's own
+   * playback changes; the others see nothing of it. Not kept over a restart.
+   */
+  toggleDeafen() {
+    this.deafened = !this.deafened;
+    if (this.deafened) {
+      this.micBeforeDeafen = this.muteAll;
+      this.muteAll = true;
+      this.lockedSince = 0;
+    } else {
+      this.muteAll = this.micBeforeDeafen;
+    }
+    this.cue(this.deafened ? "off" : "on");
+    this.applyVolumes(true);
     this.update();
     this.onChange();
   }
@@ -644,7 +680,7 @@ export class VoiceEngine {
       for (const p of net.room.remoteParticipants.values()) {
         const own = s.playerMuted[p.identity] ? 0 : (s.playerVolume[p.identity] ?? 1);
         const duck = ducked || (seniorLive && !meta(p).senior) ? s.duckLevel : 1;
-        const volume = Math.max(0, Math.min(1, base * own * duck));
+        const volume = this.deafened ? 0 : Math.max(0, Math.min(1, base * own * duck));
         p.audioTrackPublications.forEach((pub) => {
           const track = pub.track as RemoteAudioTrack | undefined;
           if (!track) return;
@@ -693,12 +729,15 @@ export class VoiceEngine {
   }
 
   /** A short two-note cue, generated here (no sound files, nothing borrowed). */
-  cue(kind: "moved" | "locked" | "released" | "order" | "ready" | "call") {
+  cue(kind: "moved" | "locked" | "released" | "order" | "ready" | "call" | "off" | "on") {
     const s = this.settings;
     if (!s.cues || s.cueVolume <= 0) return;
     const ctx = (this.ctx ??= new AudioContext());
     // A new order: one low note twice, hard to mistake for anything else. A ready check: a rising question.
-    const notes = kind === "moved" ? [660, 880] : kind === "locked" ? [523, 659, 784] : kind === "order" ? [392, 392] : kind === "ready" ? [587, 740, 880] : kind === "call" ? [1047, 1319] : [784, 523];
+    // Mic or headset off: a short low step down; on again: the same step up.
+    const notes =
+      kind === "moved" ? [660, 880] : kind === "locked" ? [523, 659, 784] : kind === "order" ? [392, 392] : kind === "ready" ? [587, 740, 880] : kind === "call" ? [1047, 1319]
+      : kind === "off" ? [440, 330] : kind === "on" ? [330, 440] : [784, 523];
     notes.forEach((freq, i) => {
       const t = ctx.currentTime + i * 0.12;
       const osc = ctx.createOscillator();

@@ -206,7 +206,7 @@ export function VoiceView() {
         .map((n) => bindTargetOf(n.net)),
     ),
   ];
-  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "broadcastLock" | "chat" | "ready" | CallTarget>[];
+  const hints = [...new Set(nets.filter((n) => n.speak).map((n) => bindTargetOf(n.net)))].filter((t) => s.bindings[t] !== null) as Exclude<BindTarget, "muteAll" | "deafen" | "broadcastLock" | "chat" | "ready" | CallTarget>[];
 
   // What the footer says when it has no key to list for the nets on screen.
   const speakNets = nets.filter((n) => n.speak);
@@ -396,7 +396,7 @@ export function VoiceView() {
       )}
 
       <footer className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-line bg-bg-1/85 px-4 py-2 text-xs text-text-muted">
-        {hints.length === 0 && s.bindings.muteAll === null && <span>{idleHint}</span>}
+        {hints.length === 0 && s.bindings.muteAll === null && s.bindings.deafen === null && <span>{idleHint}</span>}
         {hints.map((t) => (
           <span key={t}>
             <kbd className="kbd">{keyLabel(s.bindings[t] as number)}</kbd>{" "}
@@ -408,8 +408,13 @@ export function VoiceView() {
             <kbd className="kbd">{keyLabel(s.bindings.muteAll)}</kbd> Mute all
           </span>
         )}
-        {(hints.length > 0 || s.bindings.muteAll !== null) && (
-          <Help text={"Your keys. Hold a net's key to speak on it; the game still receives the key.\nMute all: press once to silence your mic on every net, press again to restore it."} />
+        {s.bindings.deafen !== null && (
+          <span>
+            <kbd className="kbd">{keyLabel(s.bindings.deafen)}</kbd> Headset
+          </span>
+        )}
+        {(hints.length > 0 || s.bindings.muteAll !== null || s.bindings.deafen !== null) && (
+          <Help text={"Your keys. Hold a net's key to speak on it; the game still receives the key.\nMute all: press once to silence your mic on every net, press again to restore it.\nHeadset: press once to hear no one (your mic goes off too), again to hear everyone."} />
         )}
         {!isDesktop && <span className="ml-auto">Browser mode: keys only work while this tab has focus.</span>}
       </footer>

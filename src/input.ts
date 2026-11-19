@@ -5,7 +5,7 @@
 import { mouseButtonToVk } from "./keys";
 import type { InputSource } from "./settings";
 
-/** `target` is a net kind or "muteAll". */
+/** `target` is a net kind, or another key's name ("muteAll", "deafen", "chat", ...). */
 export type Binding = { net: string; code: number };
 export type PttEvent = { net: string; down: boolean; /** epoch ms at capture */ t: number };
 export type Foreground = {

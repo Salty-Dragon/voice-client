@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { NET_TEXT } from "../ui/net-style";
 import type { ChatView } from "../chat";
+import { AudioToggles } from "../ui/AudioToggles";
 import { ChatPanel, type ChatActions } from "../ui/ChatPanel";
 import { loadPrefs, PREFS_KEY, savePrefs, type ChatPrefs } from "./prefs";
 import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } from "./feed";
@@ -187,6 +188,15 @@ function Strip() {
           aria-label="How see-through the chat is"
         />
       )}
+      {!stale && state?.where && (
+        <AudioToggles
+          small
+          micOff={state.muted}
+          headsetOff={state.deafened === true}
+          onMic={() => channel.current?.postMessage({ type: "mic-toggle" } satisfies FromStrip)}
+          onHeadset={() => channel.current?.postMessage({ type: "headset-toggle" } satisfies FromStrip)}
+        />
+      )}
       {toggle}
       <Close channel={channel} />
     </>
@@ -207,9 +217,9 @@ function Strip() {
       {state?.locked && !stale && <div className="truncate font-semibold text-net-broadcast">Broadcast locked open</div>}
       {lines.length === 0 ? (
         <div className="flex items-center gap-2">
-          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${stale || !state?.where ? "bg-line" : state.muted ? "bg-danger" : "bg-net-party"}`} />
+          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${stale || !state?.where ? "bg-line" : state.muted || state.deafened ? "bg-danger" : "bg-net-party"}`} />
           <span className="min-w-0 flex-1 truncate text-text-muted">
-            {stale || !state ? "Waiting for the app…" : !state.where ? "Not in voice" : state.muted ? `Mic muted · ${state.where}` : `Quiet · ${state.where}`}
+            {stale || !state ? "Waiting for the app…" : !state.where ? "Not in voice" : state.deafened ? `Headset off · ${state.where}` : state.muted ? `Mic muted · ${state.where}` : `Quiet · ${state.where}`}
           </span>
           {controls}
         </div>

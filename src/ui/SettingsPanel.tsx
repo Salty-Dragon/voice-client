@@ -19,7 +19,8 @@ const KEYS: { target: Exclude<BindTarget, CallTarget>; label: string; note: stri
   { target: "clan", label: "Clan", note: "Clan leader and officers" },
   { target: "party", label: "Party", note: "Your party, and the lounge" },
   { target: "reserve", label: "Reserve", note: "While you have no party" },
-  { target: "muteAll", label: "Mute all", note: "Press once to silence your mic everywhere, again to restore" },
+  { target: "muteAll", label: "Mute all", note: "Press once to silence your mic everywhere, again to restore. The mic button at the top right does the same" },
+  { target: "deafen", label: "Headset", note: "Press once to hear no one (your mic goes off too), again to hear everyone. The headset button at the top right does the same" },
   { target: "broadcastLock", label: "Broadcast lock", note: "Event leader only: press once to hold Broadcast open for a briefing, again to release" },
   { target: "chat", label: "Chat", note: "Puts the keyboard in the chat window's line while the game is in front. Enter sends and returns to the game; Esc, or the key again, gives up. Pick a key the game does not use" },
   { target: "ready", label: "Ready", note: "Answers a ready check with Ready, without leaving the game. It does nothing when nobody is asking" },
@@ -167,7 +168,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           <ul className="flex flex-col gap-2">
             {KEYS.map((k) => (
               <li key={k.target} className="flex items-center gap-3">
-                <span className={`w-24 font-medium ${k.target === "muteAll" || k.target === "chat" || k.target === "ready" ? "" : NET_TEXT[k.target === "broadcastLock" ? "broadcast" : k.target]}`}>{t(k.label)}</span>
+                <span className={`w-24 font-medium ${k.target === "muteAll" || k.target === "deafen" || k.target === "chat" || k.target === "ready" ? "" : NET_TEXT[k.target === "broadcastLock" ? "broadcast" : k.target]}`}>{t(k.label)}</span>
                 <KeyBind target={k.target} label={t(k.label)} />
                 <span className="text-xs text-text-muted">{t(k.note)}</span>
               </li>

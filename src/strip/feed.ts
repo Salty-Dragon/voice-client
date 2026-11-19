@@ -17,6 +17,8 @@ export type StripState = {
   /** Nets with someone speaking right now, highest priority first. */
   lines: StripLine[];
   muted: boolean;
+  /** The headset is off: the player hears no one. */
+  deafened?: boolean;
   /** Broadcast is locked open for a briefing. */
   locked: boolean;
   /** The operation's text chat, for the chat window the strip opens into. */
@@ -35,4 +37,7 @@ export type FromStrip =
   | { type: "chat-order"; text: string }
   | { type: "chat-call"; slot: number }
   | { type: "ready-check"; start: boolean }
-  | { type: "ready-answer"; ready: boolean };
+  | { type: "ready-answer"; ready: boolean }
+  // The mic and headset buttons; the main window has the voice.
+  | { type: "mic-toggle" }
+  | { type: "headset-toggle" };

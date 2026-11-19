@@ -37,6 +37,8 @@ export const inputReady: Promise<InputBackend> = createInput(isDesktop).then((i)
   i.onPtt((e) => {
     if (e.net === "muteAll") {
       if (e.down) engine.toggleMuteAll();
+    } else if (e.net === "deafen") {
+      if (e.down) engine.toggleDeafen();
     } else if (e.net === "broadcastLock") {
       if (e.down) engine.setBroadcastLock(!engine.broadcastLocked);
     } else if (e.net === "chat") {

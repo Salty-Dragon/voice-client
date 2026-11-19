@@ -14,6 +14,7 @@ import { publishStrip } from "./strip/publish";
 import { installUpdate, useUpdate } from "./update";
 import { AppContext, type Tab } from "./ui/app-context";
 import { AllianceView } from "./ui/AllianceView";
+import { AudioToggles } from "./ui/AudioToggles";
 import { ClanView } from "./ui/ClanView";
 import { netName, useEngine, Wordmark } from "./ui/common";
 import { GuidesView } from "./ui/GuidesView";
@@ -193,6 +194,7 @@ export default function App() {
           }),
         })),
       muted: eng.muteAll,
+      deafened: eng.deafened,
       locked: eng.broadcastLocked,
       // The chat window shows the latest lines; the whole of a long evening need not cross to it on every change.
       chat: { ...chatView, lines: Object.fromEntries(Object.entries(chatView.lines).map(([room, lines]) => [room, lines.slice(-120)])) },
@@ -326,13 +328,9 @@ export default function App() {
                 <Help text="The link that delivers roster changes dropped. Your voice keeps working, and it reconnects by itself." />
               </span>
             )}
-            {eng.muteAll && (
-              <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-danger">
-                Mic muted
-                <Help text="Your Mute all key is on. Press it again to speak." />
-              </span>
-            )}
             {info.alliance && <span className="hidden text-text-muted md:inline" data-alliance-name>{info.alliance.name}</span>}
+            <AudioToggles micOff={eng.muteAll} headsetOff={eng.deafened} onMic={() => engine.toggleMuteAll()} onHeadset={() => engine.toggleDeafen()} />
+            <Help text="The mic and the headset. Click either to turn it off or on; red and crossed out means off. With the headset off you hear no one and your mic is off too. The Mute all and Headset keys in Settings do the same from inside the game. The others are not told." />
             <span className="text-text-muted">
               {info.user.name}
               {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}

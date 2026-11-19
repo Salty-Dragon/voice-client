@@ -2,6 +2,7 @@
 // open or closed to match the setting, and sends it what to show.
 
 import { chat } from "../chat";
+import { engine } from "../runtime";
 import { isDesktop } from "../config";
 import { getSettings, onSettings, setSettings } from "../settings";
 import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } from "./feed";
@@ -64,6 +65,8 @@ export function startStrip() {
     else if (m?.type === "chat-call") chat.call(m.slot);
     else if (m?.type === "ready-check") chat.readyCheck(m.start);
     else if (m?.type === "ready-answer") chat.answer(m.ready);
+    else if (m?.type === "mic-toggle") engine.toggleMuteAll();
+    else if (m?.type === "headset-toggle") engine.toggleDeafen();
   };
   // The strip treats silence as "the app has gone", so say something regularly.
   window.setInterval(() => {

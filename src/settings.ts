@@ -12,7 +12,7 @@ export const NET_ORDER: NetKind[] = ["broadcast", "command", "clan", "party", "r
 /** "call1" to "call8" send the alliance's quick call in that slot into the party's chat. */
 export type CallTarget = "call1" | "call2" | "call3" | "call4" | "call5" | "call6" | "call7" | "call8";
 export const CALL_TARGETS: CallTarget[] = ["call1", "call2", "call3", "call4", "call5", "call6", "call7", "call8"];
-export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll" | "broadcastLock" | "chat" | "ready" | CallTarget;
+export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll" | "deafen" | "broadcastLock" | "chat" | "ready" | CallTarget;
 export const bindTargetOf = (net: NetKind): Exclude<NetKind, "lounge"> => (net === "lounge" ? "party" : net);
 export type InputSource = "poll" | "hook" | "raw";
 
@@ -59,7 +59,7 @@ const DEFAULTS: Settings = {
   echoCancellation: true,
   noiseSuppression: true,
   autoGainControl: true,
-  bindings: { broadcast: null, command: null, clan: null, party: null, reserve: null, muteAll: null, broadcastLock: null, chat: null, ready: null, call1: null, call2: null, call3: null, call4: null, call5: null, call6: null, call7: null, call8: null },
+  bindings: { broadcast: null, command: null, clan: null, party: null, reserve: null, muteAll: null, deafen: null, broadcastLock: null, chat: null, ready: null, call1: null, call2: null, call3: null, call4: null, call5: null, call6: null, call7: null, call8: null },
   source: "poll",
   partyMode: "ptt",
   vadThresholdDb: -45,
