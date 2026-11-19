@@ -1,7 +1,7 @@
 // Points (an alliance may call them DKP or anything else): the settings of a
 // pool, its standings, a player's lines, and an operation's points from its
 // draft to being posted. The server decides who may see and do what (its
-// web/lib/points.ts, STATUS decisions 57 and 60); these screens offer only that.
+// web/lib/points.ts, STATUS decisions 57, 60 and 62); these screens offer only that.
 
 import { Fragment, useEffect, useState } from "react";
 import { rpc } from "../api";
@@ -11,7 +11,8 @@ import { Help } from "./tips";
 
 export type RuleKind = "attend" | "hourly" | "onTime" | "toEnd" | "came" | "noShow" | "standby" | "objective";
 export type Rule = { kind: RuleKind; amount: number; kinds: string[]; minShare?: number; minutes?: number; label?: string };
-type PresetId = "attendance" | "dkp" | "dkpHourly" | "epgp" | "fleet" | "custom";
+type PresetId = "attendance" | "dkp" | "dkpHourly" | "epgp" | "zeroSum" | "suicideKings" | "fleet" | "custom";
+type Spending = "none" | "price" | "council" | "epgp" | "zeroSum" | "list";
 export type PoolSettings = {
   enabled: boolean;
   name: string;
@@ -19,7 +20,9 @@ export type PoolSettings = {
   kinds: string[];
   rules: Rule[];
   decay: { pct: number; every: "week" | "month"; floor: number };
-  spending: "none" | "price" | "council";
+  spending: Spending;
+  /** EPGP: base gear points, and the EP needed to be first in line (absent from servers before 2b-2). */
+  gear?: { baseGp: number; minEp: number };
   limits: { negative: boolean; cap: number };
   eventLeaderPosts: boolean;
   open: boolean;
@@ -27,11 +30,27 @@ export type PoolSettings = {
 export type PoolInfo = { id: number; clanId: number | null; clanTag: string | null; clanName: string | null; settings: PoolSettings; season: number; seasonAt: string | null; manage: boolean; seeAll: boolean };
 type Preset = { id: PresetId; title: string; about: string };
 export type PointsOverview = { clanPools: boolean; eventTypes: string[]; presets: Preset[]; canCreate: { alliance: boolean; clans: { id: number; tag: string; name: string }[] }; pools: PoolInfo[] };
-type StandingRow = { userId: number; name: string; clanTag: string | null; points: number; earned: number; adjusted: number; decayed: number; spent?: number; lastAt: string | null };
+type StandingRow = {
+  userId: number;
+  name: string;
+  clanTag: string | null;
+  points: number;
+  earned: number;
+  adjusted: number;
+  decayed: number;
+  spent?: number;
+  /** EPGP (decision 62): gear points, priority, and whether they reach the minimum EP. */
+  gp?: number;
+  priority?: number | null;
+  minReached?: boolean;
+  /** Suicide Kings: the place in the list. */
+  position?: number | null;
+  lastAt: string | null;
+};
 type WaitingOp = { id: number; name: string; eventType: string | null; endedAt: string };
 type Standings = { pool: PoolInfo; rows: StandingRow[]; waiting: WaitingOp[] };
-type Entry = { id: number; at: string; kind: "earned" | "adjust" | "decay" | "reset" | "spent" | "refund"; amount: number; label: string | null; reason: string | null; by: string | null; operationId: number | null };
-type PlayerPoints = { pool: PoolInfo; player: { userId: number; name: string }; points: number; entries: Entry[] };
+type Entry = { id: number; at: string; kind: "earned" | "adjust" | "decay" | "reset" | "spent" | "refund" | "share"; amount: number; gp?: number; label: string | null; reason: string | null; by: string | null; operationId: number | null };
+type PlayerPoints = { pool: PoolInfo; player: { userId: number; name: string }; points: number; gp?: number; entries: Entry[] };
 type Part = { what: string; amount: number };
 type OpRow = { userId: number; name: string; clanTag: string | null; seconds: number; signup: "coming" | "out" | null; suggested: { amount: number; parts: Part[] }; attended: boolean; amount: number | null; why: string | null };
 type OpPool = { pool: PoolInfo; posted: { by: string | null; at: string } | null; canPost: boolean; objectives: { label: string; amount: number }[]; standby: number | null; rows: OpRow[] };
@@ -39,7 +58,7 @@ type OpPointsData = { op: { id: number; name: string; eventType: string | null; 
 
 // t() where shown.
 export const POINTS_HELP = [
-  "Points (call them DKP, EP, PAP or anything else) are earned at operations and, later, spent on loot. An alliance can keep several sets, such as one for raids and one for sieges, and each clan can keep its own if the alliance allows it.",
+  "Points (call them DKP, EP, PAP or anything else) are earned at operations and can be spent on loot: by price, by loot council, by EPGP (gear points and priority), Zero-sum (the price shared among the others there) or a Suicide Kings list. An alliance can keep several sets, such as one for raids and one for sieges, and each clan can keep its own if the alliance allows it.",
   "When an operation ends, what each player earned is worked out from who was in voice, when and for how long, as a draft. Whoever posts the points ticks any objectives reached and anyone on standby, changes what needs changing, and posts it. Nothing is added until then.",
   "How points are earned is a list of rules: for being there, per hour, on time, to the end, coming as said, not showing, standby and named objectives. Each rule can be for every kind of event or only some. A preset fills the rules in to start from.",
   "Points can also be given or taken by hand, always with a reason, and can decay by a share each week or month. Nothing is ever changed or removed: a mistake is put right with another line, and every line is in the log.",
@@ -267,7 +286,7 @@ function PointsForm({ pool, eventTypes, presets, onSaved, onRemoved }: { pool: P
         <input className="field w-40" value={s.name} maxLength={16} onChange={(e) => set({ name: e.target.value })} aria-label="What the points are called" data-points-name />
         <span className="text-xs text-text-muted">DKP, EP, PAP, Raid points: whatever your players say.</span>
       </label>
-      <PresetSwap presets={presets} current={s.preset} onPick={(preset, from) => set({ preset, rules: from.rules, decay: from.decay, limits: from.limits, spending: from.spending })} />
+      <PresetSwap presets={presets} current={s.preset} onPick={(preset, from) => set({ preset, rules: from.rules, decay: from.decay, limits: from.limits, spending: from.spending, ...(from.gear ? { gear: from.gear } : {}) })} />
       {eventTypes.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="w-40 text-text-muted">Counts</span>
@@ -308,9 +327,24 @@ function PointsForm({ pool, eventTypes, presets, onSaved, onRemoved }: { pool: P
             <option value="none">Not spent on loot</option>
             <option value="price">Spent: the item's price is taken from the winner</option>
             <option value="council">Loot council: a record of who got what and why, no cost</option>
+            <option value="epgp">EPGP: the price is added to the winner's gear points; priority is EP divided by GP</option>
+            <option value="zeroSum">{t("Zero-sum: the price is taken from the winner and shared among the others there")}</option>
+            <option value="list">Suicide Kings: no cost; the winner goes to the bottom of a list</option>
           </select>
           <span className="text-xs text-text-muted">{t("Loot is recorded and given out on an operation's board.")}</span>
         </label>
+        {s.spending === "epgp" && (
+          <label className="flex flex-wrap items-center gap-2" data-points-gear>
+            <span className="w-40 text-text-muted">Gear points</span>
+            <span className="text-text-muted">base</span>
+            <input className="field w-24" type="number" min={1} value={s.gear?.baseGp ?? 100} onChange={(e) => set({ gear: { baseGp: Math.max(1, num(e.target.value, 10_000_000)), minEp: s.gear?.minEp ?? 0 } })} aria-label="Base GP" data-points-base-gp />
+            <span className="text-text-muted">GP; first in line needs at least</span>
+            <input className="field w-24" type="number" min={0} value={s.gear?.minEp ?? 0} onChange={(e) => set({ gear: { baseGp: s.gear?.baseGp ?? 100, minEp: num(e.target.value, 10_000_000) } })} aria-label="Minimum EP" data-points-min-ep />
+            <span className="text-text-muted">{`${s.name}`}</span>
+            <span className="text-xs text-text-muted">Everyone starts from the base, so a new player is not first in line for everything. 0 for no minimum.</span>
+          </label>
+        )}
+        {s.spending === "zeroSum" && !s.limits.negative && <p className="text-xs text-gold">{t("Zero-sum works with points that may go below zero: otherwise a player needs points before winning anything.")}</p>}
         <label className="flex flex-wrap items-center gap-2">
           <span className="w-40 text-text-muted">Decay</span>
           <input className="field w-20" type="number" min={0} max={100} value={s.decay.pct} onChange={(e) => set({ decay: { ...s.decay, pct: num(e.target.value, 100) } })} aria-label="Decay in percent" data-points-decay />
@@ -491,6 +525,8 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
   if (player !== null) return <PlayerLines poolId={pool.id} userId={player} manage={data.pool.manage} onBack={() => (setPlayer(null), reload())} />;
   const decays = data.rows.some((r) => r.decayed !== 0);
   const spends = data.rows.some((r) => (r.spent ?? 0) !== 0);
+  const epgp = data.pool.settings.spending === "epgp";
+  if (data.pool.settings.spending === "list") return <ListStandings data={data} onPlayer={setPlayer} onChange={reload} />;
   return (
     <div className="flex flex-col gap-4" data-points-standings={pool.id}>
       {data.waiting.length > 0 && (
@@ -520,7 +556,9 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
               <tr className="text-left text-xs text-text-muted">
                 <th className="py-1 pr-3 font-normal">#</th>
                 <th className="py-1 pr-3 font-normal">Player</th>
+                {epgp && <th className="py-1 pr-3 text-right font-normal">Priority</th>}
                 <th className="py-1 pr-3 text-right font-normal">{name}</th>
+                {epgp && <th className="py-1 pr-3 text-right font-normal">GP</th>}
                 <th className="py-1 pr-3 text-right font-normal">{t("From operations")}</th>
                 <th className="py-1 pr-3 text-right font-normal">By hand</th>
                 {spends && <th className="py-1 pr-3 text-right font-normal">On loot</th>}
@@ -536,7 +574,11 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
                     <button type="button" className="cursor-pointer text-left text-gold hover:text-gold-bright" onClick={() => setPlayer(r.userId)}>{r.name}</button>
                     {r.clanTag && <span className="text-[11px] text-text-muted"> [{r.clanTag}]</span>}
                   </td>
-                  <td className={`py-1 pr-3 text-right font-semibold tabular-nums ${r.points < 0 ? "text-danger" : ""}`} data-points-total>{r.points}</td>
+                  {epgp && (
+                    <td className={`py-1 pr-3 text-right font-semibold tabular-nums ${r.minReached === false ? "text-text-muted" : "text-gold"}`} title={r.minReached === false ? `Below the minimum of ${data.pool.settings.gear?.minEp ?? 0} ${name}` : undefined} data-points-pr>{r.priority ?? ""}</td>
+                  )}
+                  <td className={`py-1 pr-3 text-right ${epgp ? "" : "font-semibold"} tabular-nums ${r.points < 0 ? "text-danger" : ""}`} data-points-total>{r.points}</td>
+                  {epgp && <td className="py-1 pr-3 text-right tabular-nums" data-points-gp>{r.gp ?? 0}</td>}
                   <td className="py-1 pr-3 text-right tabular-nums text-text-muted">{r.earned || ""}</td>
                   <td className="py-1 pr-3 text-right tabular-nums text-text-muted">{r.adjusted ? signed(r.adjusted) : ""}</td>
                   {spends && <td className="py-1 pr-3 text-right tabular-nums text-text-muted" data-points-spent>{r.spent ? signed(r.spent) : ""}</td>}
@@ -547,9 +589,54 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
             </tbody>
           </table>
         </div>
+        {epgp && <p className="text-xs text-text-muted">{`Priority is ${name} divided by (${data.pool.settings.gear?.baseGp ?? 100} + GP), highest first${(data.pool.settings.gear?.minEp ?? 0) > 0 ? `; players under ${data.pool.settings.gear?.minEp} ${name} come after everyone else` : ""}.`}</p>}
         <RulesSummary s={data.pool.settings} />
       </section>
     </div>
+  );
+}
+
+/** A Suicide Kings list: places, and for those who run it, moving players and shuffling. */
+function ListStandings({ data, onPlayer, onChange }: { data: Standings; onPlayer: (id: number) => void; onChange: () => void }) {
+  const { info } = useApp();
+  const act = useAct();
+  const rows = data.rows;
+  const manage = data.pool.manage;
+  const send = (order: number[] | "shuffle") => void act.run(() => rpc("points.setOrder", { poolId: data.pool.id, order })).then((ok) => ok && onChange());
+  const move = (i: number, by: number) => {
+    const ids = rows.map((r) => r.userId);
+    const j = i + by;
+    if (j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    send(ids);
+  };
+  return (
+    <section className="panel flex flex-col gap-3 p-5" data-points-standings={data.pool.id}>
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="title title-rule flex-1 text-sm text-gold">{data.pool.settings.name}</h2>
+        {manage && <button type="button" className="btn btn-quiet text-xs" disabled={act.busy} onClick={() => send("shuffle")} data-points-shuffle>Shuffle</button>}
+      </div>
+      <p className="text-xs text-text-muted">{t("Whoever takes an item goes to the bottom; those below who were in voice at the operation move up one, and those who were not keep their place. Newcomers join at the bottom.")}</p>
+      {!data.pool.seeAll && <p className="text-xs text-text-muted">{t("You see your own place. The list is not open to everyone.")}</p>}
+      <ol className="flex flex-col divide-y divide-line">
+        {rows.map((r, i) => (
+          <li key={r.userId} className={`flex items-center gap-3 py-1 ${r.userId === info.user.id ? "bg-bg-2/60" : ""}`} data-points-row={r.userId}>
+            <span className="w-8 text-right font-semibold tabular-nums text-gold" data-points-place>{r.position ?? i + 1}</span>
+            <button type="button" className="flex-1 cursor-pointer text-left hover:text-gold-bright" onClick={() => onPlayer(r.userId)}>
+              {r.name}
+              {r.clanTag && <span className="text-[11px] text-text-muted"> [{r.clanTag}]</span>}
+            </button>
+            {manage && (
+              <>
+                <button type="button" className="btn btn-quiet px-2 py-0 text-xs" disabled={act.busy || i === 0} onClick={() => move(i, -1)} aria-label={`Move ${r.name} up`} data-points-up>↑</button>
+                <button type="button" className="btn btn-quiet px-2 py-0 text-xs" disabled={act.busy || i === rows.length - 1} onClick={() => move(i, 1)} aria-label={`Move ${r.name} down`} data-points-down>↓</button>
+              </>
+            )}
+          </li>
+        ))}
+      </ol>
+      {act.error && <span className="text-danger" role="alert">{act.error}</span>}
+    </section>
   );
 }
 
@@ -572,10 +659,10 @@ function PlayerLines({ poolId, userId, manage, onBack }: { poolId: number; userI
         {e.label ?? t("An operation")}
         {e.reason && <span className="text-xs text-text-muted"> · {e.reason}</span>}
       </>
-    ) : e.kind === "spent" || e.kind === "refund" ? (
+    ) : e.kind === "spent" || e.kind === "refund" || e.kind === "share" ? (
       <>
         {e.label}
-        <span className="text-xs text-text-muted">{e.kind === "spent" ? " · loot" : " · taken back, refunded"}</span>
+        <span className="text-xs text-text-muted">{e.kind === "spent" ? " · loot" : e.kind === "share" ? ` · ${e.reason === "Taken back" ? t("share taken back") : (e.reason ?? "share")}` : " · taken back"}</span>
       </>
     ) : e.kind === "adjust" ? (
       <>
@@ -595,15 +682,22 @@ function PlayerLines({ poolId, userId, manage, onBack }: { poolId: number; userI
             <h2 className="title flex-1 text-gold-bright">{data.player.name}</h2>
             <span className="text-2xl font-semibold tabular-nums" data-points-balance>{data.points}</span>
             <span className="text-text-muted">{data.pool.settings.name}</span>
+            {data.pool.settings.spending === "epgp" && (
+              <>
+                <span className="text-2xl font-semibold tabular-nums" data-points-gp-balance>{data.gp ?? 0}</span>
+                <span className="text-text-muted">GP</span>
+              </>
+            )}
           </div>
-          {manage && <AdjustForm poolId={poolId} userId={userId} name={data.pool.settings.name} onDone={() => setAgain((n) => n + 1)} />}
+          {manage && <AdjustForm poolId={poolId} userId={userId} name={data.pool.settings.name} gear={data.pool.settings.spending === "epgp"} onDone={() => setAgain((n) => n + 1)} />}
           {data.entries.length === 0 ? (
             <p className="text-text-muted">Nothing yet.</p>
           ) : (
             <ul className="flex flex-col divide-y divide-line" data-points-lines>
               {data.entries.map((e) => (
                 <li key={e.id} className="flex items-baseline gap-3 py-1.5" data-points-line={e.kind}>
-                  <span className={`w-16 text-right font-semibold tabular-nums ${e.amount < 0 ? "text-danger" : "text-net-party"}`}>{signed(e.amount)}</span>
+                  <span className={`w-16 text-right font-semibold tabular-nums ${(e.amount || e.gp || 0) < 0 ? "text-danger" : "text-net-party"}`}>{e.amount === 0 && e.gp ? `${signed(e.gp)} GP` : signed(e.amount)}</span>
+                  {e.amount !== 0 && e.gp ? <span className="text-xs tabular-nums text-text-muted">{`${signed(e.gp)} GP`}</span> : null}
                   <span className="flex-1">{what(e)}</span>
                   <span className="text-xs text-text-muted">{e.by ? `${e.by}, ` : ""}{day(e.at)}</span>
                 </li>
@@ -616,15 +710,16 @@ function PlayerLines({ poolId, userId, manage, onBack }: { poolId: number; userI
   );
 }
 
-function AdjustForm({ poolId, userId, name, onDone }: { poolId: number; userId: number; name: string; onDone: () => void }) {
+function AdjustForm({ poolId, userId, name, gear, onDone }: { poolId: number; userId: number; name: string; gear: boolean; onDone: () => void }) {
   const act = useAct();
+  const [track, setTrack] = useState<"points" | "gp">("points");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const send = () => {
     const asked = Math.trunc(Number(amount));
     let written = asked;
-    void act.run(async () => (written = (await rpc<{ amount: number }>("points.adjust", { poolId, userId, amount: asked, reason })).amount)).then((ok) => {
+    void act.run(async () => (written = (await rpc<{ amount: number }>("points.adjust", { poolId, userId, amount: asked, reason, ...(track === "gp" ? { track } : {}) })).amount)).then((ok) => {
       if (ok) {
         setAmount("");
         setReason("");
@@ -636,7 +731,13 @@ function AdjustForm({ poolId, userId, name, onDone }: { poolId: number; userId: 
   return (
     <form className="flex flex-wrap items-center gap-2 border-y border-line py-2" onSubmit={(e) => (e.preventDefault(), send())} data-points-adjust>
       <span className="text-text-muted">Give or take</span>
-      <input className="field w-32" type="number" placeholder="+10 or -10" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label={`${name} to give (negative to take)`} />
+      <input className="field w-32" type="number" placeholder="+10 or -10" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label={`${track === "gp" ? "GP" : name} to give (negative to take)`} />
+      {gear && (
+        <select className="field w-auto" value={track} onChange={(e) => setTrack(e.target.value as "points" | "gp")} aria-label="Points or gear points" data-points-track>
+          <option value="points">{name}</option>
+          <option value="gp">GP</option>
+        </select>
+      )}
       <input className="field min-w-0 flex-1" maxLength={120} placeholder="Why (the player sees this)" value={reason} onChange={(e) => setReason(e.target.value)} aria-label="Reason" />
       <button type="submit" className="btn text-sm" disabled={act.busy || !amount || Number(amount) === 0 || !reason.trim()}>Add the line</button>
       {note && <span className="w-full text-xs text-text-muted" role="status" data-points-limited>{note}</span>}

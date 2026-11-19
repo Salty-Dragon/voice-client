@@ -1,6 +1,7 @@
-// Loot (STATUS decision 61): an operation's drops on its board (recorded by
-// hand or read from a screenshot, given out, kept, sold, taken back), the loot
-// history on the History tab, and the item list with prices. The server
+// Loot (STATUS decisions 61 and 62): an operation's drops on its board
+// (recorded by hand or read from a screenshot, given out by price, loot
+// council, EPGP, Zero-sum or a Suicide Kings list, kept, sold, taken back),
+// the loot history on the History tab, and the item list with prices. The server
 // decides who may do what (its web/lib/loot.ts); these screens offer only that.
 
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +22,7 @@ type Drop = {
   recipient: { userId: number; name: string; character: string | null } | null;
   pool: { id: number; name: string } | null;
   cost: number | null;
-  method: "price" | "council" | "none" | null;
+  method: Spending | "none" | null;
   note: string | null;
   source: "hand" | "screenshot";
   recordedAt: string;
@@ -29,7 +30,48 @@ type Drop = {
   takenBack: boolean;
 };
 type Person = { userId: number; name: string; clanTag: string | null; characters: string[] };
-type ChargePool = { id: number; name: string; clanTag: string | null; spending: "price" | "council"; prices: Record<number, number> };
+type Spending = "price" | "council" | "epgp" | "zeroSum" | "list";
+type ChargePool = {
+  id: number;
+  name: string;
+  clanTag: string | null;
+  spending: Spending;
+  prices: Record<number, number>;
+  /** Who is in the set (absent from servers before 2b-2: everyone may be chosen). */
+  members?: number[];
+  /** EPGP: first in line first. */
+  priority?: { userId: number; ep: number; gp: number; pr: number; minReached: boolean }[];
+  gear?: { baseGp: number; minEp: number };
+  /** Suicide Kings: the list, first place first. */
+  order?: number[];
+  /** Zero-sum and Suicide Kings: the set's players in voice at the operation so far. */
+  present?: number[];
+};
+/** Ways of spending where the winner is charged: the cost is asked for. */
+const costed = (p: ChargePool | undefined) => p?.spending === "price" || p?.spending === "epgp" || p?.spending === "zeroSum";
+const poolLabel = (p: ChargePool) =>
+  `${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}${
+    p.spending === "council" ? t(" (loot council, no cost)") : p.spending === "epgp" ? " (EPGP: adds gear points)" : p.spending === "zeroSum" ? t(" (zero-sum: shared among those there)") : p.spending === "list" ? " (Suicide Kings list)" : ""
+  }`;
+/** The players to choose from for a set: its members, in the order the set gives (priority, or the list), labelled with it. */
+function choices(people: Person[], pool: ChargePool | undefined): { p: Person; label: string; low?: boolean }[] {
+  const byId = new Map(people.map((x) => [x.userId, x]));
+  const inSet = pool?.members ? people.filter((x) => pool.members!.includes(x.userId)) : people;
+  if (pool?.spending === "epgp" && pool.priority) {
+    return pool.priority.flatMap((r) => {
+      const p = byId.get(r.userId);
+      return p ? [{ p, label: `${personLabel(p)} · PR ${r.pr} (${r.ep} EP, ${r.gp} GP)${r.minReached ? "" : " · below the minimum EP"}`, low: !r.minReached }] : [];
+    });
+  }
+  if (pool?.spending === "list" && pool.order) {
+    const here = new Set(pool.present ?? []);
+    return pool.order.flatMap((id, i) => {
+      const p = byId.get(id);
+      return p ? [{ p, label: `${i + 1}. ${personLabel(p)}${here.has(id) ? "" : " · not here"}` }] : [];
+    });
+  }
+  return inSet.map((p) => ({ p, label: personLabel(p) }));
+}
 type OpLootData = { drops: Drop[]; canRecord: boolean; pools: ChargePool[]; people: Person[]; items: { id: number; name: string }[]; reads: { enabled: boolean; left: number; perMonth: number } };
 type ReadRow = { name: string; quantity: number; sure: boolean; itemId: number | null; character: string | null; userId: number | null };
 type ReadView = { readId: number; readable: boolean; rows: ReadRow[]; note: string | null; left: number };
@@ -38,10 +80,18 @@ type ReadView = { readId: number; readable: boolean; rows: ReadRow[]; note: stri
 export const LOOT_HELP = [
   "Record what dropped at an operation, by hand or from a screenshot, and give it out.",
   "From a screenshot: press Print Screen in the game, then paste it here with Ctrl+V (or upload a picture). The drops are read for you and shown as rows to check; fix anything misread, choose who got each item if you know, and confirm. Nothing is added until you do. The picture is not kept.",
-  "Giving an item out in a set of points that spends by price takes the cost from the player, with the item's name on their lines. A loot council's set records who got it and why, at no cost. With no set, it is only a record of who got it.",
-  "A mistake is put right with Take back: the cost is refunded with a line of its own, and the drop can be given again. Nothing is erased, and everything is in the log.",
+  "How giving an item out counts depends on the set of points: by price, the cost is taken from the player, with the item's name on their lines. A loot council's set records who got it and why, at no cost. EPGP adds the price to the player's gear points (GP), and the players are offered first in line first, by priority (EP divided by GP). Zero-sum takes the price from the player and shares it equally among the set's other players who have been in voice at the operation. A Suicide Kings list sends the player to the bottom; those below who have been in voice move up one, and those who have not keep their place. With no set, it is only a record of who got it.",
+  "A mistake is put right with Take back: every line the item wrote is undone by a line of its own (the cost refunded, the gear points taken off, the shares taken back), and the drop can be given again. A Suicide Kings list is put back as it was, unless it has changed since. Nothing is erased, and everything is in the log.",
 ].join("\n");
 
+/** What a given drop cost, as far as the viewer sees: "50 DKP", "150 GP (EP)", "EP council", "List". */
+const costText = (d: Drop) =>
+  !d.pool ? (d.method === "council" ? "Council" : "")
+  : d.method === "epgp" && d.cost !== null ? `${d.cost} GP (${d.pool.name})`
+  : d.cost !== null ? `${d.cost} ${d.pool.name}`
+  : d.method === "council" ? `${d.pool.name} council`
+  : d.method === "list" ? `${d.pool.name} list`
+  : "";
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 const qty = (d: { quantity: number; item: string }) => (d.quantity > 1 ? `${d.quantity} × ${d.item}` : d.item);
 const personLabel = (p: Person) => `${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}`;
@@ -118,10 +168,11 @@ export function OpLoot({ opId }: { opId: number }) {
 function DropLine({ d, data, onChange }: { d: Drop; data: OpLootData; onChange: () => void }) {
   const act = useAct();
   const [giving, setGiving] = useState(false);
+  const [notice, setNotice] = useState("");
   const mayGive = data.canRecord || data.pools.length > 0;
   const status =
     d.state === "given" && d.recipient
-      ? `${d.recipient.name}${d.recipient.character && d.recipient.character !== d.recipient.name ? ` (${d.recipient.character})` : ""}${d.cost !== null && d.pool ? ` · ${d.cost} ${d.pool.name}` : d.method === "council" && d.pool ? ` · ${d.pool.name} council` : ""}`
+      ? `${d.recipient.name}${d.recipient.character && d.recipient.character !== d.recipient.name ? ` (${d.recipient.character})` : ""}${costText(d) ? ` · ${costText(d)}` : ""}`
       : d.state === "kept"
         ? t("Kept for the guild")
         : d.state === "sold"
@@ -146,11 +197,18 @@ function DropLine({ d, data, onChange }: { d: Drop; data: OpLootData; onChange: 
           </>
         )}
         {mayGive && d.state !== "open" && (
-          <button type="button" className="btn btn-quiet text-xs" disabled={act.busy} onClick={() => void act.run(() => rpc("loot.takeBack", { dropId: d.id })).then((ok) => ok && onChange())} data-loot-takeback>Take back</button>
+          <button type="button" className="btn btn-quiet text-xs" disabled={act.busy} onClick={() =>
+              void act.run(async () => {
+                const r = await rpc<{ listRestored?: boolean | null } | null>("loot.takeBack", { dropId: d.id });
+                setNotice(r?.listRestored === false ? t("Taken back. The list has changed since the item was given, so it was left as it is: put it in order on the Points tab if needed.") : "");
+                onChange();
+              })
+            } data-loot-takeback>Take back</button>
         )}
       </div>
       {giving && <GiveForm d={d} data={data} onDone={() => (setGiving(false), onChange())} onCancel={() => setGiving(false)} />}
       {act.error && <span className="text-sm text-danger" role="alert">{act.error}</span>}
+      {notice && <span className="text-sm text-gold" data-loot-notice>{notice}</span>}
     </li>
   );
 }
@@ -161,19 +219,23 @@ function GiveForm({ d, data, onDone, onCancel }: { d: Drop; data: OpLootData; on
   const [character, setCharacter] = useState("");
   const [poolId, setPoolId] = useState<number | "">(data.pools[0]?.id ?? "");
   const pool = data.pools.find((p) => p.id === poolId);
-  const priced = pool?.spending === "price" && d.itemId !== null ? pool.prices[d.itemId] : undefined;
+  const priced = costed(pool) && d.itemId !== null ? pool!.prices[d.itemId] : undefined;
   const [cost, setCost] = useState(priced !== undefined ? String(priced * d.quantity) : "");
   const [note, setNote] = useState("");
   const person = data.people.find((p) => p.userId === userId);
   const pickPool = (id: number | "") => {
     setPoolId(id);
     const p = data.pools.find((x) => x.id === id);
-    const price = p?.spending === "price" && d.itemId !== null ? p.prices[d.itemId] : undefined;
+    const price = costed(p) && d.itemId !== null ? p!.prices[d.itemId] : undefined;
     setCost(price !== undefined ? String(price * d.quantity) : "");
+    // The player chosen may not be in the new set.
+    if (p?.members && userId !== "" && !p.members.includes(userId)) setUserId("");
   };
+  const options = choices(data.people, pool);
+  const others = pool?.spending === "zeroSum" ? (pool.present ?? []).filter((u) => u !== userId).length : 0;
   const send = () =>
     void act
-      .run(() => rpc("loot.give", { dropId: d.id, userId, character: character || null, poolId: poolId === "" ? null : poolId, cost: pool?.spending === "price" ? Math.trunc(Number(cost) || 0) : null, note: note || null }))
+      .run(() => rpc("loot.give", { dropId: d.id, userId, character: character || null, poolId: poolId === "" ? null : poolId, cost: costed(pool) ? Math.trunc(Number(cost) || 0) : null, note: note || null }))
       .then((ok) => ok && onDone());
   return (
     <div className="flex flex-col gap-2 rounded-sm border border-line p-3" data-loot-give-form>
@@ -181,8 +243,8 @@ function GiveForm({ d, data, onDone, onCancel }: { d: Drop; data: OpLootData; on
         <span className="w-24 text-text-muted">To</span>
         <select className="field w-auto" value={userId} onChange={(e) => (setUserId(e.target.value ? Number(e.target.value) : ""), setCharacter(""))} aria-label="Who got it" data-loot-to>
           <option value="">Choose a player…</option>
-          {data.people.map((p) => (
-            <option key={p.userId} value={p.userId}>{personLabel(p)}</option>
+          {options.map((o) => (
+            <option key={o.p.userId} value={o.p.userId}>{o.label}</option>
           ))}
         </select>
         {person && person.characters.length > 0 && (
@@ -198,23 +260,31 @@ function GiveForm({ d, data, onDone, onCancel }: { d: Drop; data: OpLootData; on
         <span className="w-24 text-text-muted">Paid with</span>
         <select className="field w-auto" value={poolId} onChange={(e) => pickPool(e.target.value ? Number(e.target.value) : "")} aria-label="Which set of points" data-loot-pool>
           {data.pools.map((p) => (
-            <option key={p.id} value={p.id}>{`${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}${p.spending === "council" ? t(" (loot council, no cost)") : ""}`}</option>
+            <option key={p.id} value={p.id}>{poolLabel(p)}</option>
           ))}
           {data.canRecord && <option value="">{t("Nothing: just record who got it")}</option>}
         </select>
-        {pool?.spending === "price" && (
+        {costed(pool) && (
           <>
+            <span className="text-xs text-text-muted" data-loot-cost-label>{pool!.spending === "epgp" ? "GP" : pool!.name}</span>
             <input className="field w-28" type="number" min={0} value={cost} onChange={(e) => setCost(e.target.value)} placeholder="Cost" aria-label="Cost" data-loot-cost />
             <span className="text-xs text-text-muted">{priced !== undefined ? `${priced} each on the price list` : "No price on the list: enter the winning bid or the price."}</span>
           </>
         )}
       </div>
+      {pool?.spending === "zeroSum" && (
+        <p className="text-xs text-text-muted" data-loot-share>
+          {others > 0 ? `The price is taken from the winner and shared among ${others} ${others === 1 ? "other" : "others"} in voice at this operation.` : t("Nobody else in these points has been in voice at this operation yet, so it can only be given at no cost.")}
+        </p>
+      )}
+      {pool?.spending === "list" && <p className="text-xs text-text-muted" data-loot-list-note>{t("The winner goes to the bottom of the list; those below who have been in voice move up one, those who have not keep their place.")}</p>}
+      {pool?.spending === "epgp" && <p className="text-xs text-text-muted">{`First in line first: priority is EP divided by GP (with a base of ${pool.gear?.baseGp ?? 100} GP). The price is added to the winner's gear points.`}</p>}
       <div className="flex flex-wrap items-center gap-2">
         <span className="w-24 text-text-muted">Note</span>
         <input className="field min-w-0 flex-1" maxLength={120} value={note} onChange={(e) => setNote(e.target.value)} placeholder={pool?.spending === "council" ? "Why (the council's reason)" : "Optional"} aria-label="Note" data-loot-note />
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="btn" disabled={act.busy || userId === "" || (pool?.spending === "price" && cost === "")} onClick={send} data-loot-give-go>Give it</button>
+        <button type="button" className="btn" disabled={act.busy || userId === "" || (costed(pool) && cost === "")} onClick={send} data-loot-give-go>Give it</button>
         <button type="button" className="btn btn-quiet" onClick={onCancel}>Cancel</button>
         {act.error && <span className="text-danger" role="alert">{act.error}</span>}
       </div>
@@ -232,7 +302,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
   const [note, setNote] = useState<string | null>(null);
   const [left, setLeft] = useState(data.reads.left);
   const [reading, setReading] = useState(false);
-  const [poolId, setPoolId] = useState<number | "">(data.pools.find((p) => p.spending === "price")?.id ?? data.pools[0]?.id ?? "");
+  const [poolId, setPoolId] = useState<number | "">(data.pools.find((p) => costed(p))?.id ?? data.pools[0]?.id ?? "");
   const [costs, setCosts] = useState<Record<number, string>>({});
   const file = useRef<HTMLInputElement>(null);
   const keyN = useRef(0);
@@ -241,7 +311,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
   const itemId = (name: string) => data.items.find((i) => i.name.toLowerCase() === name.trim().toLowerCase())?.id;
   const defaultCost = (r: Draft) => {
     const id = itemId(r.name);
-    const p = pool?.spending === "price" && id !== undefined ? pool.prices[id] : undefined;
+    const p = costed(pool) && id !== undefined ? pool!.prices[id] : undefined;
     return p !== undefined ? String(p * (Math.trunc(Number(r.quantity)) || 1)) : "";
   };
 
@@ -282,7 +352,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
       for (let i = 0; i < chosen.length; i++) {
         const r = chosen[i];
         if (r.userId === "") continue;
-        const cost = pool?.spending === "price" ? Math.trunc(Number(costs[r.key] ?? defaultCost(r)) || 0) : null;
+        const cost = costed(pool) ? Math.trunc(Number(costs[r.key] ?? defaultCost(r)) || 0) : null;
         try {
           await rpc("loot.give", { dropId: res.ids[i], userId: r.userId, character: r.character, poolId: poolId === "" ? null : poolId, cost });
         } catch (e) {
@@ -315,7 +385,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
               <span className="text-text-muted">Items given out are paid with</span>
               <select className="field w-auto" value={poolId} onChange={(e) => setPoolId(e.target.value ? Number(e.target.value) : "")} aria-label="Which set of points pays" data-loot-batch-pool>
                 {data.pools.map((p) => (
-                  <option key={p.id} value={p.id}>{`${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}${p.spending === "council" ? t(" (loot council, no cost)") : ""}`}</option>
+                  <option key={p.id} value={p.id}>{poolLabel(p)}</option>
                 ))}
                 {data.canRecord && <option value="">{t("Nothing: just record who got it")}</option>}
               </select>
@@ -333,7 +403,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
                 <th className="py-1 pr-2 font-normal">Item</th>
                 <th className="py-1 pr-2 font-normal">How many</th>
                 <th className="py-1 pr-2 font-normal">Given to (if known)</th>
-                {pool?.spending === "price" && <th className="py-1 font-normal">Cost</th>}
+                {costed(pool) && <th className="py-1 font-normal">{pool!.spending === "epgp" ? "GP" : "Cost"}</th>}
               </tr>
             </thead>
             <tbody>
@@ -353,7 +423,7 @@ function AddDrops({ opId, data, onAdded }: { opId: number; data: OpLootData; onA
                       ))}
                     </select>
                   </td>
-                  {pool?.spending === "price" && (
+                  {costed(pool) && (
                     <td className="py-1">
                       {r.userId !== "" && <input className="field w-24" type="number" min={0} value={costs[r.key] ?? defaultCost(r)} onChange={(e) => setCosts((c) => ({ ...c, [r.key]: e.target.value }))} aria-label="Cost" data-loot-row-cost />}
                     </td>
@@ -432,7 +502,7 @@ export function LootHistory() {
                   <td className="py-1 pr-3">
                     {d.state === "given" && d.recipient ? `${d.recipient.name}${d.recipient.character && d.recipient.character !== d.recipient.name ? ` (${d.recipient.character})` : ""}` : d.state === "kept" ? t("Kept for the guild") : d.state === "sold" ? "Sold" : <span className="text-text-muted">Not given out</span>}
                   </td>
-                  <td className="py-1 text-text-muted">{d.cost !== null && d.pool ? `${d.cost} ${d.pool.name}` : d.method === "council" ? "Council" : ""}</td>
+                  <td className="py-1 text-text-muted">{costText(d)}</td>
                 </tr>
               ))}
             </tbody>
@@ -464,14 +534,14 @@ export function ItemsSection({ clanId }: { clanId: number | null }) {
   }, [tick, again]);
   if (!data) return null;
   // On the Clan tab, only the clan's own priced sets; on the Alliance tab, the alliance's.
-  const pools = data.pools.filter((p) => p.spending === "price" && p.clanId === clanId);
+  const pools = data.pools.filter((p) => (p.spending === "price" || p.spending === "epgp" || p.spending === "zeroSum") && p.clanId === clanId);
   const manageList = clanId === null && data.manageList;
   if (!manageList && pools.length === 0) return null;
   return (
     <section className="panel flex flex-col gap-3 p-5" data-loot-items={clanId === null ? "alliance" : clanId}>
       <h2 className="title title-rule text-sm text-gold">
         {clanId === null ? "Items and prices" : t("Prices in the clan's points")}
-        <Help text={t("Your own list of items worth recording, so names are spelled one way and screenshots are read right. Add other spellings players use, separated by commas. A price is what an item costs in a set of points that spends by price; leave it empty to enter the price, or the winning bid, each time. Nothing here comes from the game itself.")} />
+        <Help text={t("Your own list of items worth recording, so names are spelled one way and screenshots are read right. Add other spellings players use, separated by commas. A price is what an item costs in a set of points that spends by price or Zero-sum, or the gear points it adds in an EPGP set; leave it empty to enter the price, or the winning bid, each time. Nothing here comes from the game itself.")} />
       </h2>
       {manageList && <AddItem onAdded={reload} />}
       {data.items.length === 0 ? (
@@ -484,7 +554,7 @@ export function ItemsSection({ clanId }: { clanId: number | null }) {
                 <th className="py-1 pr-3 font-normal">Item</th>
                 <th className="py-1 pr-3 font-normal">Other spellings</th>
                 {pools.map((p) => (
-                  <th key={p.id} className="py-1 pr-3 font-normal">{`${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}`}</th>
+                  <th key={p.id} className="py-1 pr-3 font-normal">{`${p.name}${p.clanTag ? ` [${p.clanTag}]` : ""}${p.spending === "epgp" ? " (GP)" : ""}`}</th>
                 ))}
                 {manageList && <th className="py-1 font-normal" />}
               </tr>

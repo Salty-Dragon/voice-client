@@ -138,6 +138,12 @@ Points are earned at operations, from your time in voice: how much is up to your
 
 **History → Loot** lists what dropped at your alliance's operations and who got it; tick **Only mine** for your own. When an item is paid for with points, the cost shows on your points' lines with the item's name, and as **On loot** in the standings. If a leader takes an item back, the cost comes back to you on a line of its own.
 
+Depending on how your alliance hands out loot:
+
+- **EPGP:** an item adds to your gear points (GP) instead of taking points. Your priority, effort points divided by gear points, decides who is first in line; it is in the standings.
+- **Zero-sum:** when someone else wins an item at an operation you were in voice for, you get a share of what they paid, on a line naming whose item it was.
+- **Suicide Kings:** the standings are a list. Taking an item sends you to the bottom; when someone above you takes one and you were there, you move up. Missing an operation does not cost you your place.
+
 ## Being moved, and asking to move
 
 - When an organiser moves you to another party, you hear a short cue, a line tells you where you went, and your voice switches within a second or two. You do nothing.
