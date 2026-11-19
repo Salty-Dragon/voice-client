@@ -274,7 +274,7 @@ function GiveForm({ d, data, onDone, onCancel }: { d: Drop; data: OpLootData; on
       </div>
       {pool?.spending === "zeroSum" && (
         <p className="text-xs text-text-muted" data-loot-share>
-          {others > 0 ? `The price is taken from the winner and shared among ${others} ${others === 1 ? "other" : "others"} in voice at this operation.` : t("Nobody else in these points has been in voice at this operation yet, so it can only be given at no cost.")}
+          {others > 0 ? t(`The price is taken from the winner and shared among ${others} ${others === 1 ? "other" : "others"} in voice at this operation.`) : t("Nobody else in these points has been in voice at this operation yet, so it can only be given at no cost.")}
         </p>
       )}
       {pool?.spending === "list" && <p className="text-xs text-text-muted" data-loot-list-note>{t("The winner goes to the bottom of the list; those below who have been in voice move up one, those who have not keep their place.")}</p>}
