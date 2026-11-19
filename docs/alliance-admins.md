@@ -230,6 +230,16 @@ While the operation is still running, **Attendance so far** on the board shows t
 
 You and the other organisers see everyone. Clan leaders and officers see their own clan. Members do not see it.
 
+### History: turnout over time
+
+Each operation's attendance is written down as it ends, a row for every member of the clans that took part. The **History** tab reads those records across operations, for the whole alliance or one clan at a time:
+
+- **Four figures** for the period you choose: operations, average turnout, how often someone said they were coming and did not show, and how many players are counted.
+- **Turnout by operation**, as a chart and as a table, so you can see whether numbers are growing or sliding and which nights work.
+- **Players**, with those who come least listed first, and each player's own record a click away.
+
+Someone who was in voice without being in one of the operation's clans (you, looking in) is not counted as expected. A clan's leader and officers see the same screens for their own clan; members see their own record. A player who deletes their account is removed from the history, and deleting an operation removes its record.
+
 ### A checklist for event night
 
 1. Create the operation ahead of time. Everyone in its clans is asked in the app whether they are coming, and the Discord channels you have connected are told.

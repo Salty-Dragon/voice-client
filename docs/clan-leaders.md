@@ -131,6 +131,16 @@ After an operation has ended, open it under **Operations**. For you and your off
 
 You see your own clan only; the organisers see everyone.
 
+## History: who comes, and how often
+
+The **History** tab reads the attendance that is written down as each operation ends, for your own clan:
+
+- **Turnout by operation:** a column for each operation your clan took part in, as tall as the members you had then, filled as far as those who were in voice. Point at one for its name, date, how long it ran, how many had said they were coming and how many of those did not show. **Show as a table** gives the same figures as rows.
+- **Players:** each member with the operations they attended out of those they were expected at, how often they said they were coming and did not show, and the share of the time they stayed. Those who come least are listed first.
+- **A player's record:** click a name for every operation, newest first.
+
+Choose how far back to look at the top: 30 days, 3 months, a year, or everything kept. You see what a player did as a member of your clan, not what they did in another clan before or after. **My own record** shows yours.
+
 ## The clan log
 
 The leader has a **Clan log** at the bottom of the **Clan** tab: who changed what in the clan, newest first. It covers requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations (moves, party leadership, bans). Click **Show the log**; use **Filter** to find a name. A line that starts with **The server** was done automatically. Alliance admins can read the whole alliance's log.

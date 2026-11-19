@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { ApiError, type Info } from "../api";
 import type { ControlState, NetSet } from "../control";
 
-export type Tab = "voice" | "roster" | "clan" | "alliance" | "guides";
+export type Tab = "voice" | "roster" | "clan" | "alliance" | "history" | "guides";
 
 export type AppState = {
   info: Info;

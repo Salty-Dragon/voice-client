@@ -121,6 +121,12 @@ When an event is planned for your clan, the app asks whether you are coming. The
 - **If you lead a constant party,** the event's board offers **Sign up the whole party**. It marks every member as coming in one go. Members who already answered keep their own answer.
 - Your answer does not change your voice. When the event starts, everyone on its roster is pulled in as before, whatever they answered.
 
+## Your record
+
+The **History** tab shows what you came to: every operation your clan took part in while you were a member, newest first, with how long it ran, how long you were in voice, what you had answered, and the party and character you came as. Three figures sum it up: operations attended, times you said you were coming and did not show, and the share of the time you stayed.
+
+Choose how far back to look at the top. Your clan's leader and officers see the same record for the time you were in their clan, and your alliance's admins see it all; other members do not.
+
 ## Being moved, and asking to move
 
 - When an organiser moves you to another party, you hear a short cue, a line tells you where you went, and your voice switches within a second or two. You do nothing.

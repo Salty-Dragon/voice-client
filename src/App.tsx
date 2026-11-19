@@ -17,6 +17,7 @@ import { AllianceView } from "./ui/AllianceView";
 import { ClanView } from "./ui/ClanView";
 import { netName, useEngine, Wordmark } from "./ui/common";
 import { GuidesView } from "./ui/GuidesView";
+import { HistoryView } from "./ui/HistoryView";
 import { InviteAsk } from "./ui/InviteAsk";
 import { LeaderLostBar } from "./ui/LeaderLostBar";
 import { Help } from "./ui/tips";
@@ -36,6 +37,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "roster", label: "Operations" },
   { id: "clan", label: "Clan" },
   { id: "alliance", label: "Alliance" },
+  { id: "history", label: "History" },
   { id: "guides", label: "Guides" },
 ];
 
@@ -287,7 +289,7 @@ export default function App() {
         <header className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-gold-dim bg-bg-1/85 px-4 py-2">
           <Wordmark />
           <nav className="flex gap-1" aria-label="Screens">
-            {TABS.filter((x) => x.id !== "alliance" || info.user.runsAlliance).map((x) => (
+            {TABS.filter((x) => (x.id !== "alliance" || info.user.runsAlliance) && (x.id !== "history" || info.user.runsAlliance || info.membership?.status === "active")).map((x) => (
               <button
                 key={x.id}
                 type="button"
@@ -374,6 +376,7 @@ export default function App() {
           {tab === "roster" && <RosterView />}
           {tab === "clan" && <ClanView />}
           {tab === "alliance" && info.user.runsAlliance && <AllianceView />}
+          {tab === "history" && <HistoryView />}
           {tab === "guides" && <GuidesView />}
         </div>
 
