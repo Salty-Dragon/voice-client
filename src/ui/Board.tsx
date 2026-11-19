@@ -10,6 +10,7 @@ import { partySizeOf, roleOf, useGame } from "../game";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { AttendancePanel } from "./Attendance";
 import { ChatRecord } from "./ChatRecord";
+import { OpPoints } from "./Points";
 import { EditOperation } from "./EditOperation";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
@@ -336,6 +337,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       {op.state !== "planned" && (perms.isOrganiser || perms.leadClanIds.length > 0) && <AttendancePanel key={op.state} opId={opId} live={op.state === "live"} />}
       {/* What was written during it, for whoever was on those nets. While it runs, the chat is on the Voice tab. */}
       {op.state === "ended" && <ChatRecord opId={opId} />}
+      {/* Its points, posted or (for whoever may post them) as a draft to review */}
+      {op.state === "ended" && <OpPoints opId={opId} />}
 
       {/* My own answer, and for the leader of a constant party, the party's */}
       {open && self && (

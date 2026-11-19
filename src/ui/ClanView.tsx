@@ -10,6 +10,7 @@ import { SUPPORT_URL } from "../config";
 import { ClanCrest, Initial, openInBrowser } from "./common";
 import { Help } from "./tips";
 import { AuditLog } from "./AuditLog";
+import { PointsSettingsSection } from "./Points";
 
 function Section({ title, help, before, children }: { title: string; help?: string; before?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -581,6 +582,7 @@ function Members({ clanId }: { clanId: number }) {
           <DiscordSetup clanId={clanId} connected={data.discord} role={data.discordRole} onChange={reload} />
         </Section>
       )}
+      {leads && <PointsSettingsSection clanId={clanId} />}
       {data.myRole === "leader" && (
         <AuditLog
           scope="clan"

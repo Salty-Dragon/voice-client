@@ -141,6 +141,14 @@ The **History** tab reads the attendance that is written down as each operation 
 
 Choose how far back to look at the top: 30 days, 3 months, a year, or everything. The records are kept for as long as the operation is, which is until an alliance admin deletes it. You see what a player did as a member of your clan, not what they did in another clan before or after. **My own record** shows yours.
 
+## Your clan's own points
+
+If your alliance's admins allow it, your clan can keep points of its own, for the clan's own loot, beside any the alliance keeps. You and your officers set them up on the **Clan** tab under **The clan's own points**: switch them on, name them (DKP, EP, whatever your members say), and choose how an operation earns them: a set amount for being in voice at least a share of the operation, or an amount for each hour in voice, with a different amount for each kind of event if you like. A bonus for saying "coming" and coming, and a deduction for saying "coming" and not showing, are optional. **Everyone sees the standings** decides whether your members see each other's points or only their own.
+
+When an operation your clan took part in ends, its board, and the points tab on **History**, show a draft: each of your members with their time in voice and what the rules suggest. Change any amount, use **Add to everyone who was in voice** for a boss kill, then **Post**. Nothing is added until you post, and each operation is posted once. Afterwards, give or take points by hand from a member's lines, always with a reason; nothing is ever changed or removed, a mistake is put right with another line. All of it is in the clan log.
+
+If your alliance keeps points too and the standings are not open to everyone, you see your own members' points there.
+
 ## The clan log
 
 The leader has a **Clan log** at the bottom of the **Clan** tab: who changed what in the clan, newest first. It covers requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations (moves, party leadership, bans). Click **Show the log**; use **Filter** to find a name. A line that starts with **The server** was done automatically. Alliance admins can read the whole alliance's log.

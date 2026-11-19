@@ -7,6 +7,7 @@ import { rpc, type AllianceView as AllianceData, type PlanState } from "../api";
 import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { CHAT_SETTINGS_HELP, ChatSettings } from "./ChatSettings";
 import { QUICK_CALLS_HELP, QuickCalls } from "./QuickCalls";
+import { PointsSettingsSection } from "./Points";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { InviteLinks } from "./ClanView";
@@ -335,6 +336,8 @@ export function AllianceView() {
           <QuickCalls calls={data.calls} limits={data.callLimits ?? { slots: 8, max: 40 }} onChange={reload} />
         </Section>
       )}
+
+      <PointsSettingsSection clanId={null} />
 
       <AuditLog
         scope="alliance"
