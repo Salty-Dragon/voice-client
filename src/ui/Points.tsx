@@ -351,7 +351,7 @@ function AdjustForm({ poolId, userId, name, onDone }: { poolId: number; userId: 
   return (
     <form className="flex flex-wrap items-center gap-2 border-y border-line py-2" onSubmit={(e) => (e.preventDefault(), send())} data-points-adjust>
       <span className="text-text-muted">Give or take</span>
-      <input className="field w-24" type="number" placeholder="+10 or -10" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label={`${name} to give (negative to take)`} />
+      <input className="field w-32" type="number" placeholder="+10 or -10" value={amount} onChange={(e) => setAmount(e.target.value)} aria-label={`${name} to give (negative to take)`} />
       <input className="field min-w-0 flex-1" maxLength={120} placeholder="Why (the player sees this)" value={reason} onChange={(e) => setReason(e.target.value)} aria-label="Reason" />
       <button type="submit" className="btn text-sm" disabled={act.busy || !amount || Number(amount) === 0 || !reason.trim()}>Add the line</button>
       {act.error && <span className="w-full text-danger" role="alert">{act.error}</span>}
