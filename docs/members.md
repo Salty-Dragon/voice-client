@@ -65,7 +65,7 @@ Good to know:
 - Your keys are never taken from the game. The game still receives them.
 - Speaking on one net never mutes what you hear on the others.
 - While you hold a Broadcast, Command or Clan key, your voice goes only to that net; voice activation pauses.
-- **Mic and headset buttons**, at the top right of the app: click the microphone to turn your mic off or on, and the headset to stop hearing anyone. Red and crossed out means off. With the headset off your mic is off too; turning the headset on again puts your mic back the way it was. Others are not told either way. The compact strip has the same two buttons.
+- **Mic and headset buttons**, at the top right of the app: click the microphone to turn your mic off or on, and the headset to stop hearing anyone. Red and crossed out means off. With the headset off your mic is off too; turning the headset on again puts your mic back the way it was. While your headset is off, the others in your nets see a red, crossed-out headset beside your name, so they know you cannot hear them; whether your mic is off is not shown. The compact strip has the same two buttons.
 - The **Mute all** key does what the mic button does, and the **Headset** key what the headset button does, without leaving the game. Both are set in Settings → **Keys**.
 
 Change any of this in **Settings**.

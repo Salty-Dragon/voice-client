@@ -95,6 +95,7 @@ export default function App() {
     refreshInfo();
     const c = new ControlClient(CONTROL_URLS, token);
     control.current = c;
+    c.setHeadset(engine.deafened);
     chat.attach(c);
     chat.onCue = (kind) => engine.cue(kind);
     let noticeTimer: number | undefined;
@@ -170,6 +171,12 @@ export default function App() {
       void engine.stop();
     };
   }, [phase, token, attempt, refreshInfo, leave]);
+
+  // The others in the player's rooms see when their headset is off (decision 59).
+  const deafened = eng.deafened;
+  useEffect(() => {
+    control.current?.setHeadset(deafened);
+  }, [deafened]);
 
   // The operation's text chat. The chat window (the strip, opened out) is handed it with everything else.
   const chatView = useSyncExternalStore(chat.subscribe, chat.view);
@@ -330,7 +337,7 @@ export default function App() {
             )}
             {info.alliance && <span className="hidden text-text-muted md:inline" data-alliance-name>{info.alliance.name}</span>}
             <AudioToggles micOff={eng.muteAll} headsetOff={eng.deafened} onMic={() => engine.toggleMuteAll()} onHeadset={() => engine.toggleDeafen()} />
-            <Help text="The mic and the headset. Click either to turn it off or on; red and crossed out means off. With the headset off you hear no one and your mic is off too. The Mute all and Headset keys in Settings do the same from inside the game. The others are not told." />
+            <Help text="The mic and the headset. Click either to turn it off or on; red and crossed out means off. With the headset off you hear no one and your mic is off too. The Mute all and Headset keys in Settings do the same from inside the game. While your headset is off, the others in your nets see it beside your name; your mic being off is not shown." />
             <span className="text-text-muted">
               {info.user.name}
               {info.user.classTag && <span className="ml-1 text-gold">{info.user.classTag}</span>}

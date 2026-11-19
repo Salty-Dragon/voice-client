@@ -170,6 +170,16 @@ export class ControlClient {
     this.ws = null;
   }
 
+  /** Whether this player's headset is off, as last told; told again on every new connection. */
+  private headsetOff = false;
+
+  /** Tells the server the headset went off or on, so the others in the player's rooms see it (decision 59). */
+  setHeadset(off: boolean) {
+    if (off === this.headsetOff) return;
+    this.headsetOff = off;
+    this.send({ type: "headset", off });
+  }
+
   /** Choose where to be: an operation, the lounge, or "auto" to let the server decide. */
   select(target: number | "lounge" | "auto") {
     this.send({ type: "select", operationId: typeof target === "number" ? target : null, lounge: target === "lounge" });
@@ -265,6 +275,8 @@ export class ControlClient {
           // Voice dropped with it, most likely: its reports go now, over the connection that works.
           this.flushVoice();
         }
+        // A new connection starts with the headset on, as far as the server knows.
+        if (this.headsetOff) ws.send(JSON.stringify({ type: "headset", off: true }));
         this.onState("online");
         this.onHello(msg.user as Me);
       } else if (msg.type === "netset") {

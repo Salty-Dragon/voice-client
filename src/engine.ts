@@ -61,6 +61,8 @@ export type Member = {
   /** Your own volume for this player (0 to 1) and whether you muted them. */
   volume: number;
   muted: boolean;
+  /** Their headset is off: they hear no one (set by the control service, decision 59). */
+  headsetOff: boolean;
 };
 
 export type Speaker = { identity: string; name: string; clanId: number | null; clanTag: string | null };
@@ -374,6 +376,7 @@ export class VoiceEngine {
       .on(RoomEvent.ParticipantDisconnected, changed)
       .on(RoomEvent.ParticipantMetadataChanged, changed)
       .on(RoomEvent.ParticipantNameChanged, changed)
+      .on(RoomEvent.ParticipantAttributesChanged, changed)
       .on(RoomEvent.TrackPublished, changed)
       .on(RoomEvent.TrackUnpublished, changed)
       .on(RoomEvent.AudioPlaybackStatusChanged, changed)
@@ -517,7 +520,8 @@ export class VoiceEngine {
   /**
    * The headset off or on: off, nobody is heard and the mic is off as well;
    * on again, the mic is back the way it was before. Only this player's own
-   * playback changes; the others see nothing of it. Not kept over a restart.
+   * playback changes; the control service shows the others a mark beside the
+   * player's name (App tells it, decision 59). Not kept over a restart.
    */
   toggleDeafen() {
     this.deafened = !this.deafened;
@@ -774,6 +778,7 @@ export class VoiceEngine {
           canSpeak: self ? net.grant.speak : (p.permissions?.canPublish ?? false),
           volume: this.settings.playerVolume[p.identity] ?? 1,
           muted: this.settings.playerMuted[p.identity] === true,
+          headsetOff: self ? this.deafened : p.attributes?.headset === "off",
         });
         const members = [...net.room.remoteParticipants.values()].map((p) => person(p, false));
         const relinking = net.room.state === ConnectionState.SignalReconnecting;

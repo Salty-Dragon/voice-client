@@ -3,6 +3,7 @@ import { SignupPrompts } from "./Signup";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { chat } from "../chat";
 import { openChatWindow } from "../strip/publish";
+import { HeadsetIcon } from "./AudioToggles";
 import { ChatPanel } from "./ChatPanel";
 import { isDesktop } from "../config";
 import type { Member, NetView } from "../engine";
@@ -43,6 +44,11 @@ function MemberCard({ m, colour, open, onToggle }: { m: Member; colour: string; 
         <span className="ml-auto flex items-center gap-2 text-xs text-text-muted">
           {quiet && <span>{m.muted ? "muted" : `${Math.round(m.volume * 100)}%`}</span>}
           {!m.canSpeak && <span>listening</span>}
+          {m.headsetOff && (
+            <span className="flex items-center text-danger" role="img" aria-label={m.self ? "Your headset is off: you hear no one" : `${m.name} has their headset off and hears no one`} data-headset-off>
+              <HeadsetIcon off size={15} />
+            </span>
+          )}
           <ClanMark clanId={m.clanId} tag={m.clanTag} size={18} />
         </span>
       </button>
