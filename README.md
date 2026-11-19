@@ -2,7 +2,7 @@
 
 # Warcryer
 
-Voice chat for large gaming alliances and clans: an open-source alternative to TeamSpeak, where the event roster decides who hears whom. The hosted service is in beta and free while it is. Project page: <https://warcryer.github.io>.
+Voice chat for large gaming alliances and clans: an open-source alternative to TeamSpeak, where the event roster decides who hears whom. The hosted service is in beta and free while it is. Website: <https://warcryer.org>.
 
 This is the Windows client, built on [Tauri](https://tauri.app) and [LiveKit](https://livekit.io). MIT licensed.
 
