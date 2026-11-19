@@ -11,6 +11,7 @@ import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { AttendancePanel } from "./Attendance";
 import { ChatRecord } from "./ChatRecord";
 import { OpPoints } from "./Points";
+import { OpLoot } from "./Loot";
 import { EditOperation } from "./EditOperation";
 import { when } from "./RosterView";
 import { ClanCrest, ClanMark } from "./common";
@@ -339,6 +340,8 @@ export function Board({ opId, onBack }: { opId: number; onBack: () => void }) {
       {op.state === "ended" && <ChatRecord opId={opId} />}
       {/* Its points, posted or (for whoever may post them) as a draft to review */}
       {op.state === "ended" && <OpPoints opId={opId} />}
+      {/* What dropped, and who got it: recorded during the operation or after */}
+      {op.state !== "planned" && <OpLoot opId={opId} />}
 
       {/* My own answer, and for the leader of a constant party, the party's */}
       {open && self && (

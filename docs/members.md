@@ -134,6 +134,10 @@ If your alliance keeps points (it may call them DKP, EP or something else), the 
 
 Points are earned at operations, from your time in voice: how much is up to your alliance, and **How (your points) are earned**, under the standings, lists every rule. Each line says why, for example "there 10, on time 2, Boss kill 5". After an operation, a leader looks over what everyone earned and posts it, so your points for an operation can take a little while to appear. If your alliance uses decay or seasons, those show as lines of their own too.
 
+## Loot
+
+**History → Loot** lists what dropped at your alliance's operations and who got it; tick **Only mine** for your own. When an item is paid for with points, the cost shows on your points' lines with the item's name, and as **On loot** in the standings. If a leader takes an item back, the cost comes back to you on a line of its own.
+
 ## Being moved, and asking to move
 
 - When an organiser moves you to another party, you hear a short cue, a line tells you where you went, and your voice switches within a second or two. You do nothing.

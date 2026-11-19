@@ -9,6 +9,7 @@ import { t } from "../words";
 import { useApp } from "./app-context";
 import { Help } from "./tips";
 import { POINTS_HELP, PointsStandings, poolTitle, usePointsOverview } from "./Points";
+import { LOOT_HELP, LootHistory } from "./Loot";
 
 type TurnoutOp = { id: number; name: string; eventType: string | null; endedAt: string; seconds: number; expected: number; attended: number; coming: number; noShow: number };
 type Totals = { expected: number; attended: number; noShow: number; share: number; lastAt: string | null };
@@ -403,26 +404,37 @@ function AttendanceHistory({ tabs }: { tabs: React.ReactNode }) {
 }
 
 /**
- * The History tab: attendance over time and, when the alliance or the
- * player's clan keeps points, a tab for each of those.
+ * The History tab: attendance over time, the loot history and, when the
+ * alliance or the player's clan keeps points, a tab for each of those.
  */
 export function HistoryView() {
   const [points] = usePointsOverview();
-  const [view, setView] = useState<number | null>(null);
+  const [view, setView] = useState<number | "loot" | null>(null);
   const pools = (points?.pools ?? []).filter((p) => p.settings.enabled && p.id !== null);
-  const tabs =
-    pools.length > 0 ? (
-      <div className="flex flex-wrap gap-1" role="tablist" aria-label="What to show" data-history-tabs>
-        <button type="button" role="tab" aria-selected={view === null} className={`btn text-sm ${view === null ? "" : "btn-quiet"}`} onClick={() => setView(null)}>
-          Attendance
+  const tabs = (
+    <div className="flex flex-wrap gap-1" role="tablist" aria-label="What to show" data-history-tabs>
+      <button type="button" role="tab" aria-selected={view === null} className={`btn text-sm ${view === null ? "" : "btn-quiet"}`} onClick={() => setView(null)}>
+        Attendance
+      </button>
+      {pools.map((p, i) => (
+        <button key={p.id} type="button" role="tab" aria-selected={view === i} className={`btn text-sm ${view === i ? "" : "btn-quiet"}`} onClick={() => setView(i)} data-history-tab-points={p.id}>
+          {poolTitle(p)}
         </button>
-        {pools.map((p, i) => (
-          <button key={p.id} type="button" role="tab" aria-selected={view === i} className={`btn text-sm ${view === i ? "" : "btn-quiet"}`} onClick={() => setView(i)} data-history-tab-points={p.id}>
-            {poolTitle(p)}
-          </button>
-        ))}
+      ))}
+      <button type="button" role="tab" aria-selected={view === "loot"} className={`btn text-sm ${view === "loot" ? "" : "btn-quiet"}`} onClick={() => setView("loot")} data-history-tab-loot>
+        Loot
+      </button>
+    </div>
+  );
+  if (view === "loot") {
+    return (
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4" data-history="loot">
+        <h1 className="title flex items-center gap-2 text-gold-bright">History <Help text={t(LOOT_HELP)} /></h1>
+        {tabs}
+        <LootHistory />
       </div>
-    ) : null;
+    );
+  }
   const pool = view === null ? undefined : pools[view];
   if (!pool) return <AttendanceHistory tabs={tabs} />;
   return (

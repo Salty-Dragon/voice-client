@@ -290,6 +290,29 @@ Your players can read every rule, decay and cap under the standings.
 
 A player who leaves the alliance keeps their lines, out of sight; if they come back, they are still there. A deleted account takes its lines with it.
 
+## Loot
+
+What dropped, and who got it, is recorded on the operation's board under **Loot**, during the operation or after. Who may: the alliance's admins, the operation's event leader, and the leaders and officers of its clans.
+
+**Items and prices.** On the **Alliance** tab, **Items and prices** is your own list of items worth recording, so names are spelled one way and screenshots are read right. Add other spellings players use, separated by commas. Nothing comes from the game itself. For each set of points that spends by price there is a price column; leave a price empty to enter it, or the winning bid, each time. A hidden item stays on old drops but is no longer offered.
+
+**How a set of points pays for loot** is chosen in its settings, under **Loot, decay and limits**: **Not spent on loot** (attendance, fleet participation), **Spent** (the item's price is taken from the winner; this also covers auctions held in game chat, where you enter the winning bid), or **Loot council** (a record of who got what and why, at no cost). EPGP's gear points, zero-sum and Suicide Kings lists come later.
+
+**Recording drops.** On the board, **+ Add a drop by hand**, or **Read a screenshot**:
+
+1. In the game, press Print Screen with the loot window, chat line or bag showing.
+2. On the board's Loot panel, paste it with Ctrl+V, or click **Read a screenshot** and choose the picture.
+3. The drops are read for you and shown as rows: names spelled as on your item list, the amount, and who got each item when a chat line names a character (matched to your members' characters). A row the reader is unsure of is marked **Not sure: check this one**.
+4. Untick anything that is not a drop, fix names and amounts, choose who got an item if you know, and **Add**. Nothing is added until you do. Rows with a player chosen are given out at once, paid with the set you choose above the rows.
+
+The picture is shrunk on your computer, sent to our server and on to Anthropic's Claude to be read, and not kept. Each alliance has a number of reads a month by plan (100 in the beta), shown beside the button; when they are used up, enter drops by hand until the 1st. Reading is a help, not a judge: always look the rows over.
+
+**Giving out.** **Give…** on a drop: who got it (and as which character), which set pays, the cost (filled in from the price list, times the amount), and a note (a loot council's reason, say). If a set does not let points go below zero and the player cannot afford it, it is refused with the reason, never trimmed. **Keep** marks a drop kept for the guild, **Sold** as sold.
+
+**Take back** undoes a mistake: the cost is refunded with a line of its own on the player's points, and the drop can be given again. Nothing is erased; every drop, award, take-back and read is in the log.
+
+**The loot history** is on **History → Loot**: every drop, newest first, with who got it; find an item, or only your own. Everyone in the alliance sees what dropped and who got it. The cost shows to those who see that set's standings in full, and to the winner.
+
 ## The log
 
 At the bottom of the **Alliance** tab, **Log** is the record of who changed what, newest first: clans and their leaders, requests, approvals and removals, officers, invite links, constant parties, operations, every roster move, bans and deleted accounts. Click **Show the log**; it loads a hundred entries at a time, with **Older entries** for more and a **Filter** box for a name or a word.

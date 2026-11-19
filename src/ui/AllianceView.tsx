@@ -8,6 +8,7 @@ import { DISCORD_HELP, DiscordSetup } from "./DiscordSetup";
 import { CHAT_SETTINGS_HELP, ChatSettings } from "./ChatSettings";
 import { QUICK_CALLS_HELP, QuickCalls } from "./QuickCalls";
 import { PointsSettingsSection } from "./Points";
+import { ItemsSection } from "./Loot";
 import { GAME_SETUP_HELP, GameSetup } from "./GameSetup";
 import { ConfirmButton, useAct, useApp, useLoad } from "./app-context";
 import { InviteLinks } from "./ClanView";
@@ -338,6 +339,7 @@ export function AllianceView() {
       )}
 
       <PointsSettingsSection clanId={null} />
+      <ItemsSection clanId={null} />
 
       <AuditLog
         scope="alliance"

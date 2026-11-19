@@ -16,10 +16,10 @@ import { openInBrowser } from "./common";
 
 // Labels and descriptions: t() where shown.
 const GUIDES = [
-  { file: "members.md", label: "Members", who: "Everyone: signing in, class and level, invite links, talking, keys, signing up for events, the compact strip, updates, settings", text: members },
-  { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties, your parties in an operation, Discord announcements, attendance, the clan's own points, the clan log", text: leaders },
+  { file: "members.md", label: "Members", who: "Everyone: signing in, class and level, invite links, talking, keys, signing up for events, the compact strip, loot, updates, settings", text: members },
+  { file: "clan-leaders.md", label: "Clan leaders and officers", who: "Approving members, invite links, officers, the crest, constant parties, your parties in an operation, Discord announcements, attendance, the clan's own points, loot, the clan log", text: leaders },
   { file: "first-hour.md", label: "Your alliance's first hour", who: "For whoever starts an alliance: from installing to a first planned operation, step by step", text: firstHour },
-  { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, game setup, operations and changing them, who is coming, what each party needs, the roster board, briefings, attendance, points, bans, the log", text: admins },
+  { file: "alliance-admins.md", label: "Alliance admins and event leaders", who: "Clans, game setup, operations and changing them, who is coming, what each party needs, the roster board, briefings, attendance, points, loot and reading loot screenshots, bans, the log", text: admins },
 ] as const;
 
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);

@@ -149,6 +149,8 @@ When an operation your clan took part in ends, its board, and the points tab on 
 
 If your alliance keeps points too and the standings are not open to everyone, you see your own members' points there.
 
+**Loot.** As a leader or officer of a clan taking part in an operation, you can record its drops on the board, by hand or by reading a screenshot, and give them out in your clan's points (by price, or as a loot council). Prices in your clan's points are set on the Clan tab under **Prices in the clan's points**. The alliance admins' guide explains loot in full.
+
 ## The clan log
 
 The leader has a **Clan log** at the bottom of the **Clan** tab: who changed what in the clan, newest first. It covers requests, approvals and removals, officers, invite links, constant parties, and what was done to your members in operations (moves, party leadership, bans). Click **Show the log**; use **Filter** to find a name. A line that starts with **The server** was done automatically. Alliance admins can read the whole alliance's log.

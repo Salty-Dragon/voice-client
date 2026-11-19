@@ -19,6 +19,7 @@ export type PoolSettings = {
   kinds: string[];
   rules: Rule[];
   decay: { pct: number; every: "week" | "month"; floor: number };
+  spending: "none" | "price" | "council";
   limits: { negative: boolean; cap: number };
   eventLeaderPosts: boolean;
   open: boolean;
@@ -26,10 +27,10 @@ export type PoolSettings = {
 export type PoolInfo = { id: number; clanId: number | null; clanTag: string | null; clanName: string | null; settings: PoolSettings; season: number; seasonAt: string | null; manage: boolean; seeAll: boolean };
 type Preset = { id: PresetId; title: string; about: string };
 export type PointsOverview = { clanPools: boolean; eventTypes: string[]; presets: Preset[]; canCreate: { alliance: boolean; clans: { id: number; tag: string; name: string }[] }; pools: PoolInfo[] };
-type StandingRow = { userId: number; name: string; clanTag: string | null; points: number; earned: number; adjusted: number; decayed: number; lastAt: string | null };
+type StandingRow = { userId: number; name: string; clanTag: string | null; points: number; earned: number; adjusted: number; decayed: number; spent?: number; lastAt: string | null };
 type WaitingOp = { id: number; name: string; eventType: string | null; endedAt: string };
 type Standings = { pool: PoolInfo; rows: StandingRow[]; waiting: WaitingOp[] };
-type Entry = { id: number; at: string; kind: "earned" | "adjust" | "decay" | "reset"; amount: number; label: string | null; reason: string | null; by: string | null; operationId: number | null };
+type Entry = { id: number; at: string; kind: "earned" | "adjust" | "decay" | "reset" | "spent" | "refund"; amount: number; label: string | null; reason: string | null; by: string | null; operationId: number | null };
 type PlayerPoints = { pool: PoolInfo; player: { userId: number; name: string }; points: number; entries: Entry[] };
 type Part = { what: string; amount: number };
 type OpRow = { userId: number; name: string; clanTag: string | null; seconds: number; signup: "coming" | "out" | null; suggested: { amount: number; parts: Part[] }; attended: boolean; amount: number | null; why: string | null };
@@ -266,7 +267,7 @@ function PointsForm({ pool, eventTypes, presets, onSaved, onRemoved }: { pool: P
         <input className="field w-40" value={s.name} maxLength={16} onChange={(e) => set({ name: e.target.value })} aria-label="What the points are called" data-points-name />
         <span className="text-xs text-text-muted">DKP, EP, PAP, Raid points: whatever your players say.</span>
       </label>
-      <PresetSwap presets={presets} current={s.preset} onPick={(preset, from) => set({ preset, rules: from.rules, decay: from.decay, limits: from.limits })} />
+      <PresetSwap presets={presets} current={s.preset} onPick={(preset, from) => set({ preset, rules: from.rules, decay: from.decay, limits: from.limits, spending: from.spending })} />
       {eventTypes.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="w-40 text-text-muted">Counts</span>
@@ -300,7 +301,16 @@ function PointsForm({ pool, eventTypes, presets, onSaved, onRemoved }: { pool: P
       </div>
 
       <div className="flex flex-col gap-2 border-t border-line pt-3">
-        <h3 className="text-sm text-gold">Decay and limits</h3>
+        <h3 className="text-sm text-gold">Loot, decay and limits</h3>
+        <label className="flex flex-wrap items-center gap-2">
+          <span className="w-40 text-text-muted">Loot</span>
+          <select className="field w-auto" value={s.spending ?? "none"} onChange={(e) => set({ spending: e.target.value as PoolSettings["spending"] })} aria-label="How loot is paid for" data-points-spending>
+            <option value="none">Not spent on loot</option>
+            <option value="price">Spent: the item's price is taken from the winner</option>
+            <option value="council">Loot council: a record of who got what and why, no cost</option>
+          </select>
+          <span className="text-xs text-text-muted">{t("Loot is recorded and given out on an operation's board.")}</span>
+        </label>
         <label className="flex flex-wrap items-center gap-2">
           <span className="w-40 text-text-muted">Decay</span>
           <input className="field w-20" type="number" min={0} max={100} value={s.decay.pct} onChange={(e) => set({ decay: { ...s.decay, pct: num(e.target.value, 100) } })} aria-label="Decay in percent" data-points-decay />
@@ -480,6 +490,7 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
   }
   if (player !== null) return <PlayerLines poolId={pool.id} userId={player} manage={data.pool.manage} onBack={() => (setPlayer(null), reload())} />;
   const decays = data.rows.some((r) => r.decayed !== 0);
+  const spends = data.rows.some((r) => (r.spent ?? 0) !== 0);
   return (
     <div className="flex flex-col gap-4" data-points-standings={pool.id}>
       {data.waiting.length > 0 && (
@@ -512,6 +523,7 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
                 <th className="py-1 pr-3 text-right font-normal">{name}</th>
                 <th className="py-1 pr-3 text-right font-normal">{t("From operations")}</th>
                 <th className="py-1 pr-3 text-right font-normal">By hand</th>
+                {spends && <th className="py-1 pr-3 text-right font-normal">On loot</th>}
                 {decays && <th className="py-1 pr-3 text-right font-normal">Decay and seasons</th>}
                 <th className="py-1 font-normal">Last change</th>
               </tr>
@@ -527,6 +539,7 @@ export function PointsStandings({ pool }: { pool: PoolInfo }) {
                   <td className={`py-1 pr-3 text-right font-semibold tabular-nums ${r.points < 0 ? "text-danger" : ""}`} data-points-total>{r.points}</td>
                   <td className="py-1 pr-3 text-right tabular-nums text-text-muted">{r.earned || ""}</td>
                   <td className="py-1 pr-3 text-right tabular-nums text-text-muted">{r.adjusted ? signed(r.adjusted) : ""}</td>
+                  {spends && <td className="py-1 pr-3 text-right tabular-nums text-text-muted" data-points-spent>{r.spent ? signed(r.spent) : ""}</td>}
                   {decays && <td className="py-1 pr-3 text-right tabular-nums text-text-muted" data-points-decayed>{r.decayed ? signed(r.decayed) : ""}</td>}
                   <td className="py-1 text-text-muted">{r.lastAt ? day(r.lastAt) : ""}</td>
                 </tr>
@@ -558,6 +571,11 @@ function PlayerLines({ poolId, userId, manage, onBack }: { poolId: number; userI
       <>
         {e.label ?? t("An operation")}
         {e.reason && <span className="text-xs text-text-muted"> · {e.reason}</span>}
+      </>
+    ) : e.kind === "spent" || e.kind === "refund" ? (
+      <>
+        {e.label}
+        <span className="text-xs text-text-muted">{e.kind === "spent" ? " · loot" : " · taken back, refunded"}</span>
       </>
     ) : e.kind === "adjust" ? (
       <>

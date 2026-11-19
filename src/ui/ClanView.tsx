@@ -11,6 +11,7 @@ import { ClanCrest, Initial, openInBrowser } from "./common";
 import { Help } from "./tips";
 import { AuditLog } from "./AuditLog";
 import { PointsSettingsSection } from "./Points";
+import { ItemsSection } from "./Loot";
 
 function Section({ title, help, before, children }: { title: string; help?: string; before?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -583,6 +584,7 @@ function Members({ clanId }: { clanId: number }) {
         </Section>
       )}
       {leads && <PointsSettingsSection clanId={clanId} />}
+      {leads && <ItemsSection clanId={clanId} />}
       {data.myRole === "leader" && (
         <AuditLog
           scope="clan"
