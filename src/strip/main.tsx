@@ -12,13 +12,12 @@ import { NET_TEXT } from "../ui/net-style";
 import type { ChatView } from "../chat";
 import { AudioToggles } from "../ui/AudioToggles";
 import { ChatPanel, type ChatActions } from "../ui/ChatPanel";
-import { loadPrefs, PREFS_KEY, savePrefs, type ChatPrefs } from "./prefs";
+import { loadPrefs, PREFS_KEY, savePrefs, STRIP_W, type ChatPrefs } from "./prefs";
 import { CHANNEL, POSITION_KEY, type FromStrip, type StripState, type ToStrip } from "./feed";
 
 const NO_CHAT: ChatView = { operation: null, channels: [], lines: {}, unread: {}, moderates: false, muted: false, mutedIds: [], me: null, organises: false, readyCheck: false, order: null, ready: null, tally: null, calls: [], called: null };
 const invoke = (cmd: string, args?: Record<string, unknown>) =>
   import("@tauri-apps/api/core").then(({ invoke }) => invoke<unknown>(cmd, args)).catch(() => undefined);
-const WIDTH = 340;
 const LINE = 22;
 const PADDING = 12;
 /** With nothing heard from the main window for this long, say so rather than show stale names. */
@@ -31,7 +30,12 @@ function Strip() {
   const last = useRef(0);
   // The chat window the strip opens into: whether it is open, its size and how see-through it is.
   const [prefs, setPrefs] = useState<ChatPrefs>(loadPrefs);
-  const size = useRef({ w: prefs.w, h: prefs.h });
+  // The sizes the player gave: the chat window's, and the folded strip's width. Only the player changes them.
+  const size = useRef({ w: prefs.w, h: prefs.h, sw: prefs.sw });
+  /** Whether the window is open as the chat window now, as last set here (null: not set yet). */
+  const shape = useRef<boolean | null>(null);
+  /** Set while this window is changing its own size, so that it is not taken for the player's. */
+  const sizing = useRef(false);
   /** What the chat key did last, and a count so that the same answer twice is still news. */
   const [key, setKey] = useState({ how: "", n: 0 });
   const change = (patch: Partial<ChatPrefs>) =>
@@ -67,12 +71,14 @@ function Strip() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // While open, the window is whatever size the player drags it to; remember it.
+  // The window is whatever size the player drags it to: open, both ways; folded, its width. Remember it.
   useEffect(() => {
-    if (!prefs.open) return;
     let timer: number | undefined;
     const onResize = () => {
-      size.current = { w: window.innerWidth, h: window.innerHeight };
+      if (sizing.current) return;
+      size.current = prefs.open
+        ? { ...size.current, w: window.innerWidth, h: window.innerHeight }
+        : { ...size.current, sw: Math.min(STRIP_W.max, Math.max(STRIP_W.min, window.innerWidth)) };
       window.clearTimeout(timer);
       timer = window.setTimeout(() => savePrefs({ ...prefs, ...size.current }), 400);
     };
@@ -131,19 +137,36 @@ function Strip() {
   const lines = !stale && state ? state.lines : [];
   const rows = Math.max(1, lines.length) + (state?.locked && !stale ? 1 : 0) + (chatNow.order ? 1 : 0) + (chatNow.ready ? 1 : 0) + (chatNow.called ? 1 : 0);
 
-  // Closed, the window is as tall as what it shows. Open, it is the size the player gave it.
+  // Open, the window is the size the player gave it, set once as it opens and then left alone: what
+  // happens in the chat (a call, an order, someone speaking) never resizes it. Folded, it is as tall as
+  // what it shows, as wide as the player made it, and only its width can be dragged.
   useEffect(() => {
+    // The sizes to set, read now: changing the limits below resizes the window on the way.
+    const want = { ...size.current };
+    const open = prefs.open;
+    if (open && shape.current === true) return;
+    shape.current = open;
     void (async () => {
       const { getCurrentWindow, LogicalSize } = await import("@tauri-apps/api/window");
       const w = getCurrentWindow();
-      if (prefs.open) {
+      sizing.current = true;
+      try {
         await w.setResizable(true);
-        await w.setMinSize(new LogicalSize(260, 170));
-        await w.setSize(new LogicalSize(size.current.w, size.current.h));
-      } else {
-        await w.setMinSize(null);
-        await w.setSize(new LogicalSize(WIDTH, rows * LINE + PADDING));
-        await w.setResizable(false);
+        if (open) {
+          await w.setMaxSize(null);
+          await w.setMinSize(new LogicalSize(260, 170));
+          await w.setSize(new LogicalSize(want.w, want.h));
+        } else {
+          const h = rows * LINE + PADDING;
+          await w.setMinSize(null);
+          await w.setMaxSize(null);
+          await w.setSize(new LogicalSize(want.sw, h));
+          await w.setMinSize(new LogicalSize(STRIP_W.min, h));
+          await w.setMaxSize(new LogicalSize(STRIP_W.max, h));
+        }
+      } finally {
+        // The resize events of these changes arrive after them; let them pass before listening again.
+        window.setTimeout(() => (sizing.current = false), 300);
       }
     })().catch(() => {});
   }, [rows, prefs.open]);
@@ -153,9 +176,10 @@ function Strip() {
     void import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().startDragging()).catch(() => {});
   };
   const openMain = () => void import("@tauri-apps/api/core").then(({ invoke }) => invoke("show_main_window")).catch(() => {});
-  const grip = (e: React.MouseEvent) => {
+  const grip = (e: React.MouseEvent, side: "SouthEast" | "East" | "West") => {
+    if (e.button !== 0) return;
     e.stopPropagation();
-    void import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().startResizeDragging("SouthEast")).catch(() => {});
+    void import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().startResizeDragging(side)).catch(() => {});
   };
   const toggle = (
     <button
@@ -226,7 +250,7 @@ function Strip() {
       ) : (
         lines.map((line, i) => (
           <div key={`${line.net}-${line.label}`} className={`flex items-center gap-2 ${line.lowered ? "opacity-60" : ""}`}>
-            <span className={`w-[5.5rem] shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider ${NET_TEXT[line.net]}`}>
+            <span className={`w-[5.5rem] shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider max-[300px]:w-14 max-[240px]:w-9 ${NET_TEXT[line.net]}`}>
               {line.short}
             </span>
             <span className="min-w-0 flex-1 truncate">
@@ -259,6 +283,13 @@ function Strip() {
         <button type="button" className="cursor-pointer rounded-sm border border-line px-1.5 text-[11px] leading-4 text-text-muted" onClick={() => answer(false)}>Not</button>
       </div>
     )}
+    {!prefs.open && (
+      <>
+        {/* The folded strip's edges: drag either to make it narrower or wider. */}
+        <div className="absolute inset-y-0 left-0 w-1 cursor-ew-resize" onMouseDown={(e) => grip(e, "West")} aria-hidden data-strip-grip="left" />
+        <div className="absolute inset-y-0 right-0 w-1 cursor-ew-resize" onMouseDown={(e) => grip(e, "East")} aria-hidden data-strip-grip="right" />
+      </>
+    )}
     {prefs.open && (
       <>
         <ChatPanel
@@ -270,7 +301,7 @@ function Strip() {
           onDone={() => void invoke("chat_done")}
           onHandBack={() => void invoke("chat_return")}
         />
-        <div className="absolute bottom-0 right-0 h-3 w-3 cursor-nwse-resize" onMouseDown={grip} aria-hidden data-chat-grip />
+        <div className="absolute bottom-0 right-0 h-3 w-3 cursor-nwse-resize" onMouseDown={(e) => grip(e, "SouthEast")} aria-hidden data-chat-grip />
       </>
     )}
     </div>
