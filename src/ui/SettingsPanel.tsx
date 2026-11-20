@@ -27,7 +27,8 @@ const KEYS: { target: Exclude<BindTarget, CallTarget>; label: string; note: stri
 ];
 
 const SOURCES: { id: InputSource; label: string; note: string }[] = [
-  { id: "poll", label: "Polling", note: "Works with the game running as administrator. Recommended." },
+  { id: "auto", label: "Automatic", note: "Polling and Raw Input together: a key counts when either sees it. Recommended." },
+  { id: "poll", label: "Polling", note: "Works with the game running as administrator, but some games' protection hides keys from it." },
   { id: "hook", label: "Low-level hook", note: "Needs this app to run as administrator if the game does." },
   { id: "raw", label: "Raw Input", note: "Same limit as the hook." },
 ];

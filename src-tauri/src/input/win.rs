@@ -218,7 +218,8 @@ impl Capture {
                 self.set_raw(false);
                 self.set_hooks(true);
             }
-            Source::Raw => {
+            // Automatic: Raw Input here, and the poll thread alongside.
+            Source::Raw | Source::Auto => {
                 self.set_hooks(false);
                 self.set_raw(true);
             }
@@ -248,7 +249,8 @@ fn poll_loop() {
     let mut held = [false; 256];
     loop {
         std::thread::sleep(std::time::Duration::from_millis(4));
-        if current_source() != Source::Poll {
+        let source = current_source();
+        if source != Source::Poll && source != Source::Auto {
             held = [false; 256];
             std::thread::sleep(std::time::Duration::from_millis(100));
             continue;

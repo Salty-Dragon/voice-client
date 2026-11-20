@@ -227,7 +227,7 @@ Closing the window quits the app and takes you out of voice. If you would rather
 | **Volume** | Your own level for each net. |
 | **Priority** | Whether lower nets get quieter while a higher one is live, and how quiet. |
 | **Sounds** | The cue you hear when you are moved, and its volume. |
-| **Key capture** | How keys are read while the game is in front. Leave it on **Polling** unless told otherwise. |
+| **Key capture** | How keys are read while the game is in front. Leave it on **Automatic**, which uses Polling and Raw Input together, unless told otherwise. |
 | **Window and updates** | The compact strip, keeping the app running in the tray, automatic updates, and **Check for updates**. |
 | **Help** | Opens these guides, and **Is the service working?** opens the status page, which says whether the service itself is up. |
 | **Account** | Your in-game name, class and level, your other characters, **Sign out**, and **Delete my account**. |
@@ -238,7 +238,7 @@ Everything here is kept on your computer, except your name, class and level and 
 
 | Problem | What to do |
 | --- | --- |
-| Keys do nothing while the game is in front | Settings → **Key capture**: make sure **Polling** is selected. If it still fails, tick **Always start as administrator** and restart the app. |
+| Keys do nothing while the game is in front | Settings → **Key capture**: make sure **Automatic** is selected. If it still fails, tick **Always start as administrator** and restart the app. |
 | A banner says the sound is held back | Click **Enable audio**. |
 | You hear no one | Check the headset button at the top right is not red and crossed out, and that the right speakers or headset is chosen in Settings → Devices. |
 | Nobody hears you | Check the level bar moves in Settings → Devices, that the right microphone is chosen, and that the mic button at the top right is not red and crossed out. |

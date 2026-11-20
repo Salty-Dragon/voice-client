@@ -30,6 +30,9 @@ pub enum Source {
     Hook,
     Raw,
     Poll,
+    /// Raw Input and polling together: a key counts when either sees it. Some games' protection
+    /// hides keys from polling; a game run as administrator hides them from Raw Input.
+    Auto,
 }
 
 #[derive(Clone, Serialize)]
@@ -72,6 +75,8 @@ struct State {
     pressed_hook: HashSet<u32>,
     pressed_raw: HashSet<u32>,
     pressed_poll: HashSet<u32>,
+    /// Automatic: the keys reported down to the page, whichever of the two saw them.
+    pressed_auto: HashSet<u32>,
     hook_count: u64,
     raw_count: u64,
     poll_count: u64,
@@ -89,6 +94,7 @@ fn state() -> &'static Mutex<State> {
             pressed_hook: HashSet::new(),
             pressed_raw: HashSet::new(),
             pressed_poll: HashSet::new(),
+            pressed_auto: HashSet::new(),
             hook_count: 0,
             raw_count: 0,
             poll_count: 0,
@@ -117,7 +123,7 @@ pub(crate) fn on_input(src: Source, code: u32, down: bool) {
     let pressed = match src {
         Source::Hook => &mut st.pressed_hook,
         Source::Raw => &mut st.pressed_raw,
-        Source::Poll => &mut st.pressed_poll,
+        Source::Poll | Source::Auto => &mut st.pressed_poll,
     };
     // Held keys auto-repeat; only transitions matter.
     let changed = if down { pressed.insert(code) } else { pressed.remove(&code) };
@@ -127,9 +133,19 @@ pub(crate) fn on_input(src: Source, code: u32, down: bool) {
     match src {
         Source::Hook => st.hook_count += 1,
         Source::Raw => st.raw_count += 1,
-        Source::Poll => st.poll_count += 1,
+        Source::Poll | Source::Auto => st.poll_count += 1,
     }
-    if src != st.source {
+    if st.source == Source::Auto {
+        if src != Source::Raw && src != Source::Poll {
+            return;
+        }
+        // Down when the first of the two sees it; up when either sees it go up, so that a release
+        // one of them missed (the game took the keyboard at that moment) cannot hold a mic open.
+        let changed = if down { st.pressed_auto.insert(code) } else { st.pressed_auto.remove(&code) };
+        if !changed {
+            return;
+        }
+    } else if src != st.source {
         return;
     }
 
@@ -165,6 +181,7 @@ pub fn set_source(source: Source) {
         st.pressed_hook.clear();
         st.pressed_raw.clear();
         st.pressed_poll.clear();
+        st.pressed_auto.clear();
     }
     #[cfg(windows)]
     win::reconfigure();

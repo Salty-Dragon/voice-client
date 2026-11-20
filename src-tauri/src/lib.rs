@@ -4,6 +4,7 @@
 
 mod chat;
 mod input;
+mod strip;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -196,6 +197,7 @@ pub fn run() {
         .setup(|app| {
             input::start(app.handle().clone());
             chat::watch();
+            strip::watch(app.handle().clone());
             // Whoever started the app wants to see it: come to the front once the window exists.
             let handle = app.handle().clone();
             std::thread::spawn(move || {

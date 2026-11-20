@@ -14,7 +14,7 @@ export type CallTarget = "call1" | "call2" | "call3" | "call4" | "call5" | "call
 export const CALL_TARGETS: CallTarget[] = ["call1", "call2", "call3", "call4", "call5", "call6", "call7", "call8"];
 export type BindTarget = Exclude<NetKind, "lounge"> | "muteAll" | "deafen" | "broadcastLock" | "chat" | "ready" | CallTarget;
 export const bindTargetOf = (net: NetKind): Exclude<NetKind, "lounge"> => (net === "lounge" ? "party" : net);
-export type InputSource = "poll" | "hook" | "raw";
+export type InputSource = "auto" | "poll" | "hook" | "raw";
 
 export type Settings = {
   wizardDone: boolean;
@@ -27,6 +27,8 @@ export type Settings = {
   bindings: Record<BindTarget, number | null>;
   /** How keys are read while another window has focus. Polling needs no administrator rights. */
   source: InputSource;
+  /** Set once a player's Polling, the old default, has been moved to Automatic (0.33.0). */
+  keysV2?: boolean;
   /** Party and Reserve: hold a key, or open the mic on voice. */
   partyMode: "ptt" | "voice";
   /** Level in dBFS at which voice activation opens the mic. */
@@ -60,7 +62,7 @@ const DEFAULTS: Settings = {
   noiseSuppression: true,
   autoGainControl: true,
   bindings: { broadcast: null, command: null, clan: null, party: null, reserve: null, muteAll: null, deafen: null, broadcastLock: null, chat: null, ready: null, call1: null, call2: null, call3: null, call4: null, call5: null, call6: null, call7: null, call8: null },
-  source: "poll",
+  source: "auto",
   partyMode: "ptt",
   vadThresholdDb: -45,
   vadHoldMs: 400,
@@ -82,9 +84,13 @@ const KEY = "settings.v1";
 function read(): Settings {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? "{}") as Partial<Settings>;
+    // Polling was the default until 0.33.0, and some games' protection hides keys from it. A player still
+    // on it moves to Automatic, which polls and reads Raw Input together, once; a choice made after that stays.
+    if (saved.source === "poll" && !saved.keysV2) saved.source = "auto";
     return {
       ...DEFAULTS,
       ...saved,
+      keysV2: true,
       bindings: { ...DEFAULTS.bindings, ...saved.bindings },
       netVolume: { ...DEFAULTS.netVolume, ...saved.netVolume },
     };
