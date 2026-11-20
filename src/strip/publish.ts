@@ -13,7 +13,12 @@ let latest: StripState = { where: null, lines: [], muted: false, locked: false }
 let sent = "";
 let shown: boolean | null = null;
 
-const post = () => channel?.postMessage({ type: "state", state: latest } satisfies ToStrip);
+let postedAt = 0;
+
+const post = () => {
+  postedAt = Date.now();
+  channel?.postMessage({ type: "state", state: latest } satisfies ToStrip);
+};
 
 /** Called by the app whenever something the strip shows may have changed. */
 export function publishStrip(state: StripState) {
@@ -68,10 +73,14 @@ export function startStrip() {
     else if (m?.type === "mic-toggle") engine.toggleMuteAll();
     else if (m?.type === "headset-toggle") engine.toggleDeafen();
   };
-  // The strip treats silence as "the app has gone", so say something regularly.
-  window.setInterval(() => {
-    if (getSettings().strip) post();
-  }, 1500);
+  // The strip treats silence as "the app has gone", so say something regularly. Ordinary timers are slowed
+  // right down while a game covers this window or it is minimised, which is when the strip matters most:
+  // the mic meter's reports, made on the audio thread, are the clock, and the timer only the backup.
+  const beat = () => {
+    if (getSettings().strip && Date.now() - postedAt >= 1500) post();
+  };
+  engine.onLevel(beat);
+  window.setInterval(beat, 1500);
   void syncWindow().catch(() => {});
   onSettings(() => void syncWindow().catch(() => {}));
   // The chat key was pressed while the strip's window is closed: open it, chat and all. (With the window
