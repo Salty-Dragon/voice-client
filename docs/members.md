@@ -209,7 +209,7 @@ It sits over a game that runs in a window or in borderless mode. A game in exclu
 
 ## Updates and the tray icon
 
-When you open the app, a sword fills with red for about three seconds while it connects, then the app appears. The Windows app also keeps itself up to date: if a new version is waiting when you start it, the sword shows the download, the update installs (a few seconds) and the app opens by itself afterwards. If one arrives while the app is running, a bar offers **Restart to update**; nothing restarts until you click it, so it never interrupts an operation.
+When you open the app, a sword fills with red for about three seconds while it connects, then the app appears. The Windows app also keeps itself up to date: if a new version is waiting when you start it, the sword shows the download, the update installs (a few seconds) and the app opens by itself afterwards. If one arrives while the app is running, a bar offers **Restart to update**; nothing restarts until you click it, so it never interrupts an operation. The version you are running is shown at the top of **Settings**, beside the title.
 
 While the app runs, its horn icon sits in the Windows tray beside the clock. Click it to bring the window to the front; right-click it for **Quit**.
 

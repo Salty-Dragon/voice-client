@@ -1,7 +1,7 @@
 import { t } from "../words";
 import { useState, useSyncExternalStore } from "react";
 import { rpc } from "../api";
-import { APP_NAME, APP_VERSION, isDesktop, STATUS_URL } from "../config";
+import { APP_NAME, isDesktop, STATUS_URL, VERSION_TEXT } from "../config";
 import { foreground } from "../runtime";
 import { checkForUpdate, installUpdate, useUpdate } from "../update";
 import { CALL_TARGETS, setSettings, useSettings, type BindTarget, type CallTarget, type InputSource, type NetKind } from "../settings";
@@ -130,7 +130,10 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
     <div className="absolute inset-0 z-20 flex justify-end bg-black/60" onClick={onClose}>
       <aside className="panel h-full w-full max-w-md overflow-y-auto p-6 flex flex-col gap-5" onClick={(e) => e.stopPropagation()} aria-label="Settings">
         <div className="flex items-center justify-between">
-          <h1 className="title text-gold-bright">Settings</h1>
+          <div className="flex items-baseline gap-3">
+            <h1 className="title text-gold-bright">Settings</h1>
+            <span className="text-xs text-text-muted" data-app-version>Version {VERSION_TEXT}</span>
+          </div>
           <button type="button" className="btn btn-quiet text-sm" onClick={onClose}>Close</button>
         </div>
 
@@ -301,7 +304,7 @@ export function SettingsPanel({ onClose, onSignOut }: { onClose: () => void; onS
           <DeleteAccount leadsClan={info.membership?.role === "leader" && info.membership.status === "active"} onDeleted={onSignOut} />
         </Group>
 
-        <p className="text-center text-xs text-text-muted">{APP_NAME} {APP_VERSION}</p>
+        <p className="text-center text-xs text-text-muted">{APP_NAME} {VERSION_TEXT}</p>
       </aside>
     </div>
   );

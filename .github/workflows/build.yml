@@ -87,6 +87,8 @@ jobs:
           {
             echo "TAURI_SIGNING_PRIVATE_KEY=$(cat "$RUNNER_TEMP/throwaway.key")"
             echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD="
+            # The app shows that it is a test build, and of which commit (Settings, beside the version).
+            echo "VITE_BUILD_LABEL=test ${GITHUB_SHA::7}"
           } >> "$GITHUB_ENV"
       - run: npx tauri build
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

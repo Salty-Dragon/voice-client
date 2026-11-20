@@ -14,5 +14,7 @@ export default defineConfig({
   define: {
     "import.meta.env.VITE_APP_NAME": JSON.stringify(process.env.VITE_APP_NAME ?? productName),
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(version),
+    // A test build says so, and which commit it is: every test build carries the number of the last release.
+    "import.meta.env.VITE_BUILD_LABEL": JSON.stringify(process.env.VITE_BUILD_LABEL ?? ""),
   },
 });

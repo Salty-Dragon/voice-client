@@ -28,6 +28,10 @@ export const CONTROL_URLS: string[] = import.meta.env.VITE_CONTROL_URL
   : [...(DIRECT[new URL(SERVER).hostname] ? [DIRECT[new URL(SERVER).hostname]] : []), VIA_SITE];
 
 export const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? "dev";
+/** Empty for a release; "test 665ae94" for a test build. */
+export const BUILD_LABEL: string = import.meta.env.VITE_BUILD_LABEL ?? "";
+/** The version as the player is shown it. */
+export const VERSION_TEXT = BUILD_LABEL ? `${APP_VERSION} (${BUILD_LABEL})` : APP_VERSION;
 
 /** The guides, kept beside the client's source. */
 export const DOCS_URL = "https://github.com/Warcryer/client/blob/main/docs";
