@@ -23,8 +23,29 @@ static LAST_OTHER: AtomicIsize = AtomicIsize::new(0);
 /// as not, and must not open the mic while they are being typed.
 static TYPING: AtomicBool = AtomicBool::new(false);
 
+/// Typing counts only while one of our windows has the keyboard. The page says when the chat line
+/// gets and loses it, but a line that disappears while it has the keyboard, or a click into the game,
+/// may never say so; with the game in front, a talk key must always be a talk key.
 pub fn typing() -> bool {
-    TYPING.load(Ordering::Relaxed)
+    TYPING.load(Ordering::Relaxed) && ours_in_front()
+}
+
+#[cfg(windows)]
+fn ours_in_front() -> bool {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+    unsafe {
+        let window = GetForegroundWindow();
+        if window.is_null() {
+            return false;
+        }
+        let mut pid = 0u32;
+        GetWindowThreadProcessId(window, &mut pid);
+        pid == std::process::id()
+    }
+}
+#[cfg(not(windows))]
+fn ours_in_front() -> bool {
+    true
 }
 
 #[derive(Clone, Serialize)]

@@ -59,6 +59,17 @@ export function ChatPanel({
   /** The alliance's quick calls are laid out for a click. */
   const [callsOpen, setCallsOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  // A line taken away while it has the keyboard says nothing as it goes: say it for it, or the
+  // talk keys stay letters (decided natively, chat.rs).
+  const typingNow = useRef(false);
+  typingNow.current = typing;
+  useEffect(() => {
+    if (typing && !input.current) {
+      setTyping(false);
+      onTyping?.(false);
+    }
+  });
+  useEffect(() => () => void (typingNow.current && onTyping?.(false)), []); // eslint-disable-line react-hooks/exhaustive-deps
   const list = useRef<HTMLOListElement>(null);
   const channel: ChatChannel | undefined = view.channels.find((c) => c.room === room) ?? view.channels[0];
   const lines: ChatLineView[] = channel ? (view.lines[channel.room] ?? []) : [];
