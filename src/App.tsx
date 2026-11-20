@@ -322,13 +322,19 @@ export default function App() {
             ))}
           </nav>
           <span className="ml-auto flex items-center gap-3">
-            {onAir.length > 0 && (
-              <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-net-party" aria-label={`Your mic is open on ${onAir.join(", ")}`}>
-                <span className="pulse h-2 w-2 rounded-full bg-net-party" />
-                On air
-                <span className="font-normal normal-case tracking-normal text-text-muted">{onAir.join(", ")}</span>
-              </span>
-            )}
+            {/* Its room is kept whether or not the mic is open, so the header never grows a row as you talk
+                (with voice activation that would be every few words) and nothing below it jumps. */}
+            <span
+              className={`flex w-48 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-net-party ${onAir.length > 0 ? "" : "invisible"}`}
+              aria-label={onAir.length > 0 ? `Your mic is open on ${onAir.join(", ")}` : undefined}
+              aria-hidden={onAir.length === 0}
+              title={onAir.length > 0 ? onAir.join(", ") : undefined}
+              data-on-air
+            >
+              <span className={`h-2 w-2 shrink-0 rounded-full bg-net-party ${onAir.length > 0 ? "pulse" : ""}`} />
+              <span className="shrink-0">On air</span>
+              <span className="min-w-0 truncate font-normal normal-case tracking-normal text-text-muted">{onAir.join(", ")}</span>
+            </span>
             {state !== "online" && (
               <span className="flex items-center gap-1 text-xs text-danger">
                 Server link lost, retrying…

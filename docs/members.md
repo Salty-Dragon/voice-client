@@ -56,7 +56,7 @@ A plain member hears Broadcast, Clan and their Party. Each card shows who is spe
 Party, Reserve and the lounge work the same way, and you choose one of two modes:
 
 - **Push-to-talk.** Hold a key and speak. Mouse side buttons work. One key, the **Party** key, is used for your party and for the lounge.
-- **Voice activation.** The mic opens when you speak. Set the marker on the level bar above your keyboard noise and below your voice, or click **Auto** and stay quiet for five seconds.
+- **Voice activation.** The mic opens when you speak. Set the marker on the level bar above your background noise and below your voice, or click **Auto** and stay quiet for five seconds. Short sounds such as a key click or a knock on the desk do not open it.
 
 Broadcast, Command and Clan are always push-to-talk, each with its own key. If you are given a role that can speak on one of them, the app asks you to bind a key for it.
 

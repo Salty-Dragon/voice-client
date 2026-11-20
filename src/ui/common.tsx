@@ -295,7 +295,7 @@ export function PartyMode() {
             </button>
             <Help text="Auto measures the noise in your room for 5 seconds and sets the marker just above it." />
             <span className="text-text-muted text-xs">
-              The mic opens when the bar passes the marker. Set it above your keyboard noise and below your voice.
+              The mic opens when your voice keeps the bar past the marker; a click or a knock is too short to open it. Set it above your background noise and below your voice.
             </span>
           </div>
         </div>

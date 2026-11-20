@@ -92,6 +92,16 @@ const RELEASE_TAIL_MS = 200;
 const PRIORITY: Record<NetKind, number> = { broadcast: 0, command: 1, clan: 2, party: 3, reserve: 3, lounge: 4 };
 /** A net counts as live for this long after its last speaker closes their mic, so gaps between words do not pump the volume. */
 const LIVE_HOLD_MS = 400;
+/**
+ * Voice activation opens the mic only for a sound that lasts and holds up: above the marker for this many
+ * meter reports in a row (about 10 ms each), and still within VOICE_HOLD_DB of its loudest. A key click or a
+ * knock on the desk is a few milliseconds, but the browser's echo cancellation and noise suppression draw it
+ * out into a tail that fades over a quarter of a second; a voice holds its level.
+ */
+const VOICE_OPEN_REPORTS = 6;
+const VOICE_HOLD_DB = 10;
+/** How fast the remembered loudest level sinks, per report, so that a voice right after a click is not measured against the click. */
+const VOICE_PEAK_FALL_DB = 1;
 /** How often volumes are re-evaluated. */
 const VOLUME_TICK_MS = 50;
 /** Holding one of these sends your voice to that net only; voice activation pauses meanwhile. */
@@ -164,6 +174,9 @@ export class VoiceEngine {
   private queue: Promise<void> = Promise.resolve();
   private held = new Set<NetKind>();
   private voiceUntil = 0;
+  /** Meter reports in a row above the voice activation marker, and the loudest of them (sinking slowly). */
+  private loudReports = 0;
+  private loudPeak = -100;
   private refreshTimer: number | undefined;
   private settings: Settings = getSettings();
   /** With more than one lounge, the one the player talks in. They hear all of them. */
@@ -241,6 +254,10 @@ export class VoiceEngine {
         this.meterNode = new AudioWorkletNode(this.ctx, "meter");
         this.meterNode.port.onmessage = (e) => {
           this.level = e.data as number;
+          if (this.level >= this.settings.vadThresholdDb) {
+            this.loudPeak = this.loudReports === 0 ? this.level : Math.max(this.level, this.loudPeak - VOICE_PEAK_FALL_DB);
+            this.loudReports++;
+          } else this.loudReports = 0;
           this.levelListeners.forEach((l) => l(this.level));
           this.update();
         };
@@ -592,7 +609,10 @@ export class VoiceEngine {
     const now = Date.now();
     const s = this.settings;
     const voiceMode = s.partyMode === "voice";
-    if (voiceMode && this.level >= s.vadThresholdDb) this.voiceUntil = now + s.vadHoldMs;
+    const speech = this.loudReports >= VOICE_OPEN_REPORTS && this.level >= this.loudPeak - VOICE_HOLD_DB;
+    // Only a voice opens the mic or keeps it open: typing after a sentence must not hold it open. The gaps
+    // between words are bridged by the hold time ("Keep open after you stop").
+    if (voiceMode && speech) this.voiceUntil = now + s.vadHoldMs;
     if (this.lockedSince && (!this.lockable() || now - this.lockedSince > BROADCAST_LOCK_MAX_MS)) {
       this.lockedSince = 0;
       this.cue("released");

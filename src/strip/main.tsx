@@ -231,13 +231,14 @@ function Strip() {
       className="relative flex h-full flex-col border border-gold-dim text-[13px]"
       style={{ background: prefs.open ? `rgba(11, 12, 15, ${prefs.alpha})` : "var(--color-bg-0)" }}
     >
+    {/* The buttons sit in their own corner, top right, and stay there: who is speaking comes and goes beside
+        them, and a button that moved or was rebuilt under the pointer as a voice line came would miss the click. */}
     <div
-      className={`flex cursor-grab select-none flex-col justify-center px-2 leading-[22px] ${prefs.open ? "shrink-0 py-0.5" : "min-h-0 flex-1"}`}
+      className={`flex cursor-grab select-none items-start gap-2 px-2 leading-[22px] ${prefs.open ? "shrink-0 py-0.5" : "pt-[5px]"}`}
       onMouseDown={drag}
       onDoubleClick={openMain}
-      role="status"
-      aria-label="Who is speaking"
     >
+    <div className="flex min-w-0 flex-1 flex-col" role="status" aria-label="Who is speaking">
       {state?.locked && !stale && <div className="truncate font-semibold text-net-broadcast">Broadcast locked open</div>}
       {lines.length === 0 ? (
         <div className="flex items-center gap-2">
@@ -245,10 +246,9 @@ function Strip() {
           <span className="min-w-0 flex-1 truncate text-text-muted">
             {stale || !state ? "Waiting for the app…" : !state.where ? "Not in voice" : state.deafened ? `Headset off · ${state.where}` : state.muted ? `Mic muted · ${state.where}` : `Quiet · ${state.where}`}
           </span>
-          {controls}
         </div>
       ) : (
-        lines.map((line, i) => (
+        lines.map((line) => (
           <div key={`${line.net}-${line.label}`} className={`flex items-center gap-2 ${line.lowered ? "opacity-60" : ""}`}>
             <span className={`w-[5.5rem] shrink-0 truncate text-[11px] font-semibold uppercase tracking-wider max-[300px]:w-14 max-[240px]:w-9 ${NET_TEXT[line.net]}`}>
               {line.short}
@@ -262,10 +262,11 @@ function Strip() {
                 </span>
               ))}
             </span>
-            {i === 0 && controls}
           </div>
         ))
       )}
+    </div>
+    <div className="flex h-[22px] shrink-0 items-center" data-strip-controls>{controls}</div>
     </div>
     {!prefs.open && chatNow.order && (
       <div className="truncate px-2 font-semibold leading-[22px] text-net-broadcast" data-strip-order>{chatNow.order.text}</div>
